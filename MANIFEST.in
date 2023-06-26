@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include afif *.css
+recursive-include afif *.csv
+recursive-include afif *.html
+recursive-include afif *.ico
+recursive-include afif *.js
+recursive-include afif *.json
+recursive-include afif *.md
+recursive-include afif *.png
+recursive-include afif *.py
+recursive-include afif *.svg
+recursive-include afif *.txt
+recursive-exclude afif *.pyc
