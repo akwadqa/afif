@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-02 13:37:19.786855",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "beneficiaries_rejection",
+  "user",
+  "rejection_note",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "beneficiaries_rejection",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Beneficiary",
+   "options": "Beneficiaries Registration",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rejection_note",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Rejection Note",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Rejection Note",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "beneficiaries_rejection.user",
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-10-03 12:57:15.411803",
+ "modified_by": "Administrator",
+ "module": "Afif",
+ "name": "Rejection Note",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,260 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "Ben-Aid-.###.",
+ "creation": "2023-08-13 12:04:34.080549",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "request_category",
+  "beneficiaries",
+  "beneficiary_request",
+  "status",
+  "medical_assistance_section",
+  "medical_assistance",
+  "educational_assistance_section",
+  "educational_assistance",
+  "social_assistance_section",
+  "social_assistance",
+  "family_assistance_section",
+  "family_assistance",
+  "housing_assistance_section",
+  "housing_assistance",
+  "training_assistance_section",
+  "training_assistance",
+  "awareness_section",
+  "awareness_assistance",
+  "request_fields_section",
+  "suggested_amount",
+  "doner_id",
+  "installments_count",
+  "aid_amount",
+  "payment_periodicity",
+  "approval_date",
+  "payment_date",
+  "disbursement_decision",
+  "nb_installements",
+  "committee_suggested_amount",
+  "committee_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_category",
+   "fieldtype": "Link",
+   "label": "Request Category",
+   "options": "Categories"
+  },
+  {
+   "fieldname": "beneficiaries",
+   "fieldtype": "Link",
+   "label": "Beneficiary",
+   "options": "Beneficiaries Registration",
+   "reqd": 1
+  },
+  {
+   "fieldname": "beneficiary_request",
+   "fieldtype": "Link",
+   "label": "Beneficiary Request",
+   "options": "Beneficiary Request",
+   "reqd": 1
+  },
+  {
+   "default": "Under Processing",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Under Processing\nApproved",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "medical_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Medical Assistance Section"
+  },
+  {
+   "fieldname": "medical_assistance",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Medical Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nMedical Procedures\nMedical Equipment\nMedication\nMedical Supplies\nNatural Treatment\nOther Medical Assistance"
+  },
+  {
+   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "educational_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Educational Assistance Section"
+  },
+  {
+   "fieldname": "educational_assistance",
+   "fieldtype": "Select",
+   "label": "Education Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance"
+  },
+  {
+   "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "social_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Social Assistance Section"
+  },
+  {
+   "fieldname": "social_assistance",
+   "fieldtype": "Select",
+   "label": "Social Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nGarmeen\nOrphan sponsorship\nMarriage assistance\nEconomic empowerment assistance\nTravel ticket assistance\nWidow assistance\nDivorced women assistance\nElderly assistance\nUnemployed assistance\nVisitor assistance\nEmergency assistance\nPsychological support assistance\nOther social assistance"
+  },
+  {
+   "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "family_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Family Assistance Section"
+  },
+  {
+   "fieldname": "family_assistance",
+   "fieldtype": "Select",
+   "label": "Family Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nEmergency lump-sum financial assistance\nMonthly financial assistance\nIn-kind assistance\nFamily nursery sponsorship\nSeasonal financial assistance\nFood basket (food aid)\nIn-kind assistance with a monthly shopping card\nIn-kind assistance with a Ramadan shopping card\nUtility bills\nFines support\nOther family assistance"
+  },
+  {
+   "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "housing_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Housing Assistance Section"
+  },
+  {
+   "fieldname": "housing_assistance",
+   "fieldtype": "Select",
+   "label": "Housing Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nRent support\nLand purchase\nReal estate purchase\nLand purchase and construction\nDemolition and construction\nMaintenance and restoration\nFurnishing support\nOther social housing assistance"
+  },
+  {
+   "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "training_assistance_section",
+   "fieldtype": "Section Break",
+   "label": "Training Assistance"
+  },
+  {
+   "fieldname": "training_assistance",
+   "fieldtype": "Select",
+   "label": "Training Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nSecretarial training\nEntrepreneurship training\nStudent training\nPrisoner training\nOther training and rehabilitation"
+  },
+  {
+   "depends_on": "eval:in_list([\"Awareness Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "awareness_section",
+   "fieldtype": "Section Break",
+   "label": "Awarnes Assitance Section"
+  },
+  {
+   "fieldname": "awareness_assistance",
+   "fieldtype": "Select",
+   "label": "Awareness Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Awareness Assistance\", \"Akwad\"], doc.request_category)",
+   "options": "\nNational Awareness\nCultural Awareness\nSocial Awareness\nHealth Awareness\nEnvironmental Awareness\nCharitable Awareness\nConsumer Awareness\nOther Awareness Assistance"
+  },
+  {
+   "fieldname": "request_fields_section",
+   "fieldtype": "Section Break",
+   "label": "Request Fields"
+  },
+  {
+   "fieldname": "suggested_amount",
+   "fieldtype": "Data",
+   "label": "Estimated Amount"
+  },
+  {
+   "fieldname": "doner_id",
+   "fieldtype": "Select",
+   "label": "Doner Id",
+   "options": "\nDonor Entity\nDoner"
+  },
+  {
+   "fieldname": "installments_count",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Installments Count"
+  },
+  {
+   "fieldname": "aid_amount",
+   "fieldtype": "Data",
+   "label": "Aid Amount"
+  },
+  {
+   "fieldname": "payment_periodicity",
+   "fieldtype": "Select",
+   "label": "Payment Periodicity",
+   "options": "\nMonthly\nOne Time"
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Date",
+   "label": "Approval Date"
+  },
+  {
+   "fieldname": "payment_date",
+   "fieldtype": "Date",
+   "label": "Payment Date"
+  },
+  {
+   "fieldname": "disbursement_decision",
+   "fieldtype": "Text",
+   "label": "Disbursement decision"
+  },
+  {
+   "fieldname": "nb_installements",
+   "fieldtype": "Data",
+   "label": "Number of Installments"
+  },
+  {
+   "fieldname": "committee_amount",
+   "fieldtype": "Table",
+   "label": "Committee Suggested Amount",
+   "options": "Committee"
+  },
+  {
+   "fieldname": "committee_suggested_amount",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Committee Suggested Amount"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-09-18 16:28:42.434283",
+ "modified_by": "Administrator",
+ "module": "Afif",
+ "name": "Beneficiary Aid",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

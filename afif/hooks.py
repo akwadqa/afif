@@ -13,10 +13,16 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/afif/css/afif.css"
 # app_include_js = "/assets/afif/js/afif.js"
+app_include_js = "afif.bundle.js"
+# app_include_js = "/assets/afif/afif.bundle.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/afif/css/afif.css"
 # web_include_js = "/assets/afif/js/afif.js"
+web_include_js = [
+    "/assets/afif/js/override.js",
+    "afif.bundle.js"
+]
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "afif/public/scss/website"
@@ -102,13 +108,42 @@ app_license = "MIT"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	# "*": {
+	# 	"on_update": "method",
+	# 	"on_cancel": "method",
+	# 	"on_trash": "method"
+	# }
+    "Beneficiaries Registration": {
+        # "after_insert": "afif.hooks_call.create_user",
+        "after_insert": "afif.hooks_call.link_user",
+        "on_update": "afif.hooks_call.create_new_beneficiary",
+        "before_save": "afif.hooks_call.updated_status"
+    },
+    "Beneficiary Request": {
+        "before_insert": "afif.hooks_call.before_insert_request",
+        "on_update": [
+            "afif.hooks_call.new_subvention_request",
+            # "afif.hooks_call.update_subvention_request",
+            "afif.hooks_call.update_subvention_request_status"
+        ]
+    },
+    "Beneficiary Aid": {
+        "on_update": [
+            # "afif.hooks_call.set_suggested_amount",
+            "afif.hooks_call.set_aid_amount",
+            "afif.hooks_call.new_aid_request"
+        ],
+        "before_save": "afif.hooks_call.set_committee_member"
+    },
+    "Rejection Note": {
+        "on_submit": "afif.hooks_call.update_workflow_state"
+    },
+    "User": {
+        "after_insert": "afif.hooks_call.set_new_user_role"
+    }
+    
+}
 
 # Scheduled Tasks
 # ---------------
