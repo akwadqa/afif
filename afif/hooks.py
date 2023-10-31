@@ -234,3 +234,15 @@ doc_events = {
 # auth_hooks = [
 #	"afif.auth.validate"
 # ]
+
+
+fixtures = [
+        {"dt" : "Client Script", "filters" : [["module","in", "Afif"]]},
+        {"dt" : "Custom Field", "filters" : [["module","in", "Afif"]]},
+        "Workflow Action Master",
+        "Workflow State",
+        "Workflow",
+    "Letter Head",
+    "Property Setter",
+    "Notification"
+]

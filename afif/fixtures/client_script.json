@@ -1,0 +1,145 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Request",
+  "enabled": 0,
+  "modified": "2023-08-12 18:40:21.606546",
+  "module": "Afif",
+  "name": "New Aid",
+  "script": "frappe.ui.form.on('Request', {\r\n    refresh: function(frm) {\r\n        // Add a condition to run the script when the selected action is \"Create Aid\"\r\n        if (frm.doc.action === 'Create Aid') {\r\n            // Check if the document is saved and its status is \"Approved\"\r\n            if (!frm.doc.__islocal && frm.doc.status === 'Approved') {\r\n                const beneficiaries = frm.doc.beneficiaries;\r\n                const status = frm.doc.status;\r\n                const requested = frm.doc.requested_amount;\r\n                \r\n                // Open a new Aid document with pre-filled fields\r\n                frappe.new_doc('Aid', {\r\n\r\n                    // Set auto populate fields\r\n                });\r\n            }\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Test Workflow",
+  "enabled": 0,
+  "modified": "2023-09-12 16:12:09.936052",
+  "module": "Afif",
+  "name": "Registration Validation",
+  "script": "frappe.ui.form.on('Registration', {\r\n    after_save: function(frm) {\r\n        console.log('Step 1: after_save triggered');\r\n        \r\n        // Check if the current status is \"Not Accepted\"\r\n        if (frm.doc.status === 'Not Accepted') {\r\n            console.log('Step 2: Status is \"Not Accepted\"');\r\n            \r\n            // Trigger the \"Submit\" action\r\n            frappe.call({\r\n                method: 'frappe.model.workflow.apply_workflow',\r\n                args: {\r\n                    'doc': frm.doc,\r\n                    'action': 'Submit'\r\n                },\r\n                callback: function(response) {\r\n                    console.log('Step 3: Submit action triggered');\r\n                    \r\n                    if (!response.exc) {\r\n                        console.log('Step 4: Submit action successful');\r\n                        frappe.msgprint('Document submitted successfully');\r\n                        frm.reload_doc();\r\n                    } else {\r\n                        console.log('Step 4: Submit action failed', response.exc);\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 0,
+  "modified": "2023-08-13 20:39:35.336296",
+  "module": "Afif",
+  "name": "Registration Supervisor Validation",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    after_save: function(frm) {\r\n        console.log('Step 1: after_save triggered');\r\n        \r\n        // Check if the current status is \"Not Accepted\"\r\n        if (frm.doc.status === 'Not Accepted') {\r\n            console.log('Step 2: Status is \"Not Accepted\"');\r\n            \r\n            // Trigger the \"Submit\" action\r\n            frappe.call({\r\n                method: 'frappe.model.workflow.apply_workflow',\r\n                args: {\r\n                    'doc': frm.doc,\r\n                    'action': 'Submit'\r\n                },\r\n                callback: function(response) {\r\n                    console.log('Step 3: Submit action triggered');\r\n                    \r\n                    if (!response.exc) {\r\n                        console.log('Step 4: Submit action successful');\r\n                        frappe.msgprint('Document submitted successfully');\r\n                        frm.reload_doc();\r\n                    } else {\r\n                        console.log('Step 4: Submit action failed', response.exc);\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiary Request",
+  "enabled": 0,
+  "modified": "2023-08-13 13:33:45.627330",
+  "module": "Afif",
+  "name": "Create Aid",
+  "script": "frappe.ui.form.on('Beneficiary Request', {\r\n    refresh: function(frm) {\r\n             // Add a condition to run the script when the selected action is \"Create Aid\"\r\n        if (frm.doc.action === 'Create Aid') {\r\n            // Open a new Aid document\r\n            frappe.new_doc('Beneficiary Aid');\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiary Request",
+  "enabled": 0,
+  "modified": "2023-08-13 12:05:54.554929",
+  "module": "Afif",
+  "name": "Create New Aid",
+  "script": "frappe.ui.form.on('Beneficiary Request', {\r\n    onload: function(frm) {\r\n        console.log(\"Status:\", frm.doc.status);\r\n        if (frm.doc.status === 'Create Aid') {\r\n            frappe.msgprint(\"Status matches 'Create Aid'\");\r\n            frm.page.set_primary_action('Create Aid', function() {\r\n                frappe.new_doc('Aid');\r\n            });\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiary Request",
+  "enabled": 1,
+  "modified": "2023-08-14 17:47:03.771146",
+  "module": "Afif",
+  "name": "Aid Button",
+  "script": "frappe.ui.form.on('Beneficiary Request', {\n    refresh: function(frm) {\n        if (frm.doc.status === 'Approved For Aid') {\n            frm.add_custom_button(__('Create Aid'), function() {\n                frappe.new_doc('Beneficiary Aid', {\n                 request_category: frm.doc.request_category,\n                 beneficiaries: frm.doc.beneficiaries,\n                 beneficiary_request: frm.doc.name,\n                 suggested_amount: frm.doc.approved_amount\n\n                });\n            });\n   }\n}\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 0,
+  "modified": "2023-08-13 20:48:19.187508",
+  "module": "Afif",
+  "name": "Beneficiaries Portal",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    onload: function(frm) {\r\n        // Store initial field values for comparison\r\n        frm.initialFieldValues = Object.assign({}, frm.doc);\r\n    },\r\n    validate: function(frm) {\r\n        // Compare current field values with initial values\r\n        let isChanged = Object.keys(frm.doc).some(field => frm.initialFieldValues[field] !== frm.doc[field]);\r\n\r\n        if (isChanged && frm.doc.status === 'Not Accepted') {\r\n            // Trigger the \"Submit\" action\r\n            frappe.call({\r\n                method: 'frappe.model.workflow.apply_workflow',\r\n                args: {\r\n                    'doc': frm.doc,\r\n                    'action': 'Submit'\r\n                },\r\n                callback: function(response) {\r\n                    if (!response.exc) {\r\n                        frappe.msgprint('Document submitted successfully');\r\n                        frm.reload_doc();\r\n                    } else {\r\n                        console.log('Submit action failed', response.exc);\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiary Request",
+  "enabled": 0,
+  "modified": "2023-08-16 15:28:58.513868",
+  "module": "Afif",
+  "name": "Beneficiary Request Naming",
+  "script": "frappe.ui.form.on('Beneficiary Request', {\r\n    onload: function(frm) {\r\n        // Check if the document is new (unsaved) and if a beneficiary is selected\r\n        if (frm.doc.__islocal && frm.doc.beneficiary) {\r\n            // Fetch the beneficiary's name using frappe.db.get_value\r\n            frappe.db.get_value('Beneficiary', frm.doc.beneficiary, 'beneficiary_name', function(res) {\r\n                if (res && res.beneficiary_name) {\r\n                    // Set the beneficiary name to the field so that it appears on the form\r\n                    frm.set_value('beneficiary_name', res.beneficiary_name);\r\n                }\r\n            });\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 0,
+  "modified": "2023-10-02 14:25:52.565097",
+  "module": "Afif",
+  "name": "Rejection Note",
+  "script": "frappe.ui.form.on(\"Beneficiaries Registration\", {\n    onload: function(frm) {\n        setTimeout(function() {\n            var isNotAccepted = frm.doc.status === \"Not Accepted\";\n\n            if (isNotAccepted) {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 0);\n                frappe.msgprint(\"You need to fill the rejection note.\");\n            } else {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 1);\n            }\n        }, 100); // Delay execution for 100 milliseconds\n\u00a0\u00a0\u00a0\u00a0}\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 1,
+  "modified": "2023-09-12 16:58:23.113065",
+  "module": "Afif",
+  "name": "Beneficiaries Registration - Accepted",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    refresh: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted') {\r\n            frm.fields.forEach(function(field) {\r\n                field.df.read_only = 1;\r\n            });\r\n            frm.refresh_fields();\r\n        } else {\r\n            frm.fields.forEach(function(field) {\r\n                field.df.read_only = 0;\r\n            });\r\n            frm.refresh_fields();\r\n        }\r\n    },\r\n    \r\n    before_save: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted') {\r\n            frappe.msgprint(__('Cannot save the document in \"Accepted\" state.'));\r\n            frappe.validated = false;\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 0,
+  "modified": "2023-09-12 16:12:01.928599",
+  "module": "Afif",
+  "name": "Status Script",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    after_save: function(frm) {\r\n        console.log('Step 1: after_save triggered');\r\n        \r\n        // Check if the current status is \"Not Accepted\"\r\n        if (frm.doc.status === 'Not Accepted') {\r\n            console.log('Step 2: Status is \"Not Accepted\"');\r\n            \r\n            // Trigger the \"Submit\" action\r\n            frappe.call({\r\n                method: 'frappe.model.workflow.apply_workflow',\r\n                args: {\r\n                    'doc': frm.doc,\r\n                    'action': 'Submit'\r\n                },\r\n                callback: function(response) {\r\n                    console.log('Step 3: Submit action triggered');\r\n                    \r\n                    if (!response.exc) {\r\n                        console.log('Step 4: Submit action successful');\r\n                        frappe.msgprint('Document submitted successfully');\r\n                        frm.reload_doc();\r\n                    } else {\r\n                        console.log('Step 4: Submit action failed', response.exc);\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 1,
+  "modified": "2023-10-04 20:04:04.061127",
+  "module": "Afif",
+  "name": "Rejection Button",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    refresh: function(frm) {\r\n         if (frm.doc.status === 'Rejected Without Note') {\r\n             frm.add_custom_button(__('Create Rejection Note'), function() {\r\n                 promptRejectionReasonAndCreateNote(frm);\r\n             });\r\n         }\r\n      //  if(frappe.session.user === \"Administrator\") {\r\n        //    frm.add_custom_button(__('Create Rejection Note'), function() {\r\n          //          promptRejectionReasonAndCreateNote(frm);\r\n        //    });\r\n        }\r\n    //}\r\n});\r\n\r\nfunction promptRejectionReasonAndCreateNote(frm) {\r\n    frappe.prompt(\r\n        [\r\n            {\r\n                label: 'Rejection Note Reason',\r\n                fieldname: 'rejection_reason',\r\n                fieldtype: 'Text',\r\n                reqd: 1\r\n            }\r\n        ],\r\n        function(values) {\r\n            // Create a new Rejection Note document on the client side\r\n            var rejection_note = frappe.model.get_new_doc('Rejection Note');\r\n            rejection_note.beneficiaries_rejection = frm.doc.name;\r\n            rejection_note.rejection_note = values.rejection_reason;\r\n            // Set other relevant fields as needed\r\n\r\n            // Insert the Rejection Note document into the local database\r\n            frappe.db.insert(rejection_note).then(function(response) {\r\n                if (response.exc) {\r\n                    frappe.msgprint('Error: ' + response.exc);\r\n                } else {\r\n                    frappe.msgprint('Rejection Note inserted successfully.');\r\n                    \r\n                    // Now submit the Rejection Note\r\n                    frappe.call({\r\n                        method: 'frappe.client.submit',\r\n                        args: {\r\n                            doc: response\r\n                        },\r\n                        callback: function(r) {\r\n                            if (!r.exc) {\r\n                                frappe.msgprint('Rejection Note submitted successfully.');\r\n                                \r\n                                // Reload the Beneficiaries Registration document\r\n                                cur_frm.reload_doc();\r\n                            } else {\r\n                                frappe.msgprint('Error: ' + r.exc);\r\n                            }\r\n                        }\r\n                    });\r\n                    \r\n                }\r\n            });\r\n        },\r\n        'Create Rejection Note'\r\n    );\r\n}\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 1,
+  "modified": "2023-10-25 16:31:14.809368",
+  "module": "Afif",
+  "name": "Beneficiaries Registration - DOB validation",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\n    \n    validate: function(frm) {\n        let dob = frm.doc.date_of_birth;\n        if (dob) {\n            let today = new Date();\n            let birthDate = new Date(dob);\n            let age = today.getFullYear() - birthDate.getFullYear();\n\n            let monthDifference = today.getMonth() - birthDate.getMonth();\n            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {\n                age--;\n            }\n\n            if (age < 21) {\n                frappe.msgprint('Must be 21 years of age or older.');\n                frm.set_value('date_of_birth', '');\n                frappe.validated = false;\n            }\n        }\n    }\n    \n})",
+  "view": "Form"
+ }
+]

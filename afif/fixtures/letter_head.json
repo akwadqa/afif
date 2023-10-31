@@ -1,0 +1,23 @@
+[
+ {
+  "align": "Left",
+  "content": "<div style=\"text-align: left;\">\n<img alt=\"Afif\" height=\"50.0\" src=\"/files/logo_190_520-1.png\" style=\"height: 50.0px;\">\n</div>",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Letter Head",
+  "footer": null,
+  "footer_align": "Left",
+  "footer_image": null,
+  "footer_image_height": 0.0,
+  "footer_image_width": 0.0,
+  "footer_source": "HTML",
+  "image": "/files/logo_190_520-1.png",
+  "image_height": 50.0,
+  "image_width": 0.0,
+  "is_default": 1,
+  "letter_head_name": "Afif",
+  "modified": "2023-09-12 15:19:22.631546",
+  "name": "Afif",
+  "source": "Image"
+ }
+]
