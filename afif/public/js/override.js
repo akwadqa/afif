@@ -31,7 +31,7 @@ $.extend(frappe, {
                     language_switcher.change(() => {
                         let lang = language_switcher.val();
                         frappe
-                            .call("frappe.translate.set_preferred_language_cookie", {
+                            .call("afif.hooks_call.set_preferred_language_cookie", {
                                 preferred_language: lang,
                             })
                             .then(() => {

@@ -1181,3 +1181,7 @@ def update_user_language(user, language):
     user_doc = frappe.get_doc("User", user)
     user_doc.language = language
     user_doc.save()
+
+@frappe.whitelist(allow_guest=True)
+def set_preferred_language_cookie(preferred_language):
+	frappe.local.cookie_manager.set_cookie("preferred_language", preferred_language)
