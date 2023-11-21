@@ -10,7 +10,7 @@ $.extend(frappe, {
                     let language = frappe.get_cookie("preferred_language");
                     let language_codes = [];
                     let language_switcher = $("#language-switcher .form-control");
-                    
+    
                     language_list.forEach((language_doc) => {
                         if (language_doc.language_code === 'en' || language_doc.language_code === 'ar') {
                             language_codes.push(language_doc.language_code);
@@ -21,7 +21,7 @@ $.extend(frappe, {
                             );
                         }
                     });
-
+    
                     $("#language-switcher").removeClass("hide");
                     language =
                         language ||
@@ -29,25 +29,21 @@ $.extend(frappe, {
                     language_switcher.val(language);
                     document.documentElement.lang = language;
                     language_switcher.change(() => {
-                        let lang = language_switcher.val();
-                        frappe
-                            .call("afif.hooks_call.set_preferred_language_cookie", {
-                                preferred_language: lang,
-                            })
-                            .then(() => {
-                                if(frappe.session.user !== "Guest") {
-                                    return frappe.call({
-                                        method: "afif.hooks_call.update_user_language",
-                                        args: {
-                                            user: frappe.session.user,
-                                            language: lang
-                                        }
-                                    });
+                        const lang = language_switcher.val();
+                        document.cookie = `preferred_language=${lang}`;
+                        if(frappe.session.user !== "Guest") {
+                            return frappe.call({
+                                method: "afif.hooks_call.update_user_language",
+                                args: {
+                                    user: frappe.session.user,
+                                    language: lang
                                 }
-                            })
-                            .then(() => {
+                            }).then(() => {
                                 window.location.reload();
                             });
+                        } else {
+                            window.location.reload();
+                        }
                     });
                 });
         }
