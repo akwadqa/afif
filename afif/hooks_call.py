@@ -580,7 +580,10 @@ def before_insert_request(doc, method):
 
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 
-        last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
+        try:
+            last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
+        except frappe.DoesNotExistError:
+            last_created_request = None
         if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved"]:
             frappe.throw("A previous request is pending review.")
         else:
