@@ -174,13 +174,15 @@
   {
    "fieldname": "suggested_amount",
    "fieldtype": "Data",
-   "label": "Estimated Amount"
+   "label": "Estimated Amount",
+   "read_only": 1
   },
   {
    "fieldname": "doner_id",
    "fieldtype": "Select",
    "label": "Doner Id",
-   "options": "\nDonor Entity\nDoner"
+   "options": "\nDonor Entity\nDoner",
+   "reqd": 1
   },
   {
    "fieldname": "installments_count",
@@ -191,39 +193,46 @@
   {
    "fieldname": "aid_amount",
    "fieldtype": "Data",
-   "label": "Aid Amount"
+   "label": "Aid Amount",
+   "read_only": 1
   },
   {
    "fieldname": "payment_periodicity",
    "fieldtype": "Select",
    "label": "Payment Periodicity",
-   "options": "\nMonthly\nOne Time"
+   "options": "\nMonthly\nOne Time",
+   "reqd": 1
   },
   {
    "fieldname": "approval_date",
    "fieldtype": "Date",
-   "label": "Approval Date"
+   "label": "Approval Date",
+   "reqd": 1
   },
   {
    "fieldname": "payment_date",
    "fieldtype": "Date",
-   "label": "Payment Date"
+   "label": "Payment Date",
+   "reqd": 1
   },
   {
    "fieldname": "disbursement_decision",
    "fieldtype": "Text",
-   "label": "Disbursement decision"
+   "label": "Disbursement decision",
+   "reqd": 1
   },
   {
    "fieldname": "nb_installements",
    "fieldtype": "Data",
-   "label": "Number of Installments"
+   "label": "Number of Installments",
+   "reqd": 1
   },
   {
    "fieldname": "committee_amount",
    "fieldtype": "Table",
    "label": "Committee Suggested Amount",
-   "options": "Committee"
+   "options": "Committee",
+   "reqd": 1
   },
   {
    "fieldname": "committee_suggested_amount",
@@ -234,7 +243,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-18 16:28:42.434283",
+ "modified": "2023-12-17 15:08:47.185827",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

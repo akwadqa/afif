@@ -10,6 +10,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "beneficiary_information_tab",
   "beneficiary_section",
   "status",
   "ben_id",
@@ -17,6 +18,7 @@
   "en_name",
   "ar_name",
   "user",
+  "user_language",
   "email",
   "visa_type",
   "gender",
@@ -50,6 +52,7 @@
   "education_level",
   "sponsor_name",
   "monthly_income",
+  "family_information_tab",
   "family_information",
   "family_size",
   "visa_dependent",
@@ -65,6 +68,7 @@
   "children_school_information",
   "afif_charity_assistance",
   "affif_assistance",
+  "income_obligation_tab",
   "beneficiary_income_section_section",
   "income_type",
   "ben_income",
@@ -123,10 +127,11 @@
   "debt_obligations_installments_count",
   "bank_payments_amount",
   "debt_obligations_note",
+  "address_information_tab",
   "housing_information",
   "housing_type",
   "adress",
-  "cb4",
+  "column_br11",
   "zone",
   "building_name",
   "building",
@@ -137,9 +142,11 @@
   "court_tried",
   "copy_of_court_judgment",
   "additional_information",
+  "additional_information_text",
   "coresidence",
   "bank_loans",
   "attachments_section",
+  "attachment_tab",
   "qid",
   "passport",
   "wife_id",
@@ -172,7 +179,8 @@
   "partner_death_certificate",
   "id_coresidents",
   "id_sponsored",
-  "rejection_note"
+  "rejection_note",
+  "last_tab"
  ],
  "fields": [
   {
@@ -205,6 +213,8 @@
   {
    "fieldname": "user",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "User",
    "options": "User"
   },
@@ -321,7 +331,7 @@
    "fieldname": "marital_status",
    "fieldtype": "Select",
    "label": "Marital Status",
-   "options": "\nSingle\nMarried\nDivorced\nWidow\nSeparated"
+   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
@@ -406,7 +416,7 @@
    "fieldname": "education_level",
    "fieldtype": "Select",
    "label": "Education Level",
-   "options": "\nIgnorant\nPrimary School Gradute\nIndustrial School\nSecondary Schoold Graduate\nHigh Education Level\nAbove High Education Level"
+   "options": "\nIgnorant\nPrimary School Graduate\nIndustrial School\nSecondary School Graduate\nHigh Education Level\nAbove High Education Level"
   },
   {
    "fieldname": "sponsor_name",
@@ -456,11 +466,9 @@
    "options": "\nResidence\nVisit"
   },
   {
-   "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "fieldname": "partner_working",
    "fieldtype": "Select",
    "label": "Partner Working",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "options": "\nYes\nNo"
   },
   {
@@ -1052,18 +1060,18 @@
    "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
   },
   {
-   "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "fieldname": "wife_bank_statement",
    "fieldtype": "Attach",
    "label": "Wife Bank Statement From The Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)"
   },
   {
-   "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "fieldname": "wife_credit_certificate",
    "fieldtype": "Attach",
    "label": "Wife's Qatar Credit Information",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)"
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
@@ -1080,11 +1088,11 @@
    "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)"
   },
   {
-   "depends_on": "eval:in_list([\"Qatari\", \"Akwad\"], doc.nationality) || in_list([\"No\", \"Akwad\"], doc.currently_working)",
+   "depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
    "fieldname": "social_security_certificate",
    "fieldtype": "Attach",
    "label": "Social Security Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Qatari\", \"Akwad\"], doc.nationality) || in_list([\"No\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)"
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.partner_working)",
@@ -1237,20 +1245,63 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "cb4",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "beneficiary_section",
    "fieldtype": "Section Break",
    "label": "Beneficiary"
+  },
+  {
+   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)",
+   "fieldname": "additional_information_text",
+   "fieldtype": "Text",
+   "label": "Kindly Write Your Additional Information",
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)"
+  },
+  {
+   "fetch_from": "user.language",
+   "fieldname": "user_language",
+   "fieldtype": "Data",
+   "label": "User Language"
+  },
+  {
+   "fieldname": "family_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Family Information"
+  },
+  {
+   "fieldname": "beneficiary_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Personal Information"
+  },
+  {
+   "fieldname": "last_tab",
+   "fieldtype": "Tab Break",
+   "label": "Last Tab"
+  },
+  {
+   "fieldname": "income_obligation_tab",
+   "fieldtype": "Tab Break",
+   "label": "Income and Obligation"
+  },
+  {
+   "fieldname": "address_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address Information"
+  },
+  {
+   "fieldname": "attachment_tab",
+   "fieldtype": "Tab Break",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "column_br11",
+   "fieldtype": "Column Break"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2023-10-25 15:59:19.568509",
+ "modified": "2023-12-17 14:46:14.472500",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1295,6 +1346,7 @@
   }
  ],
  "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
@@ -1310,5 +1362,6 @@
    "color": "Green",
    "title": "Accepted"
   }
- ]
+ ],
+ "title_field": "en_name"
 }

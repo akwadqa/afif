@@ -23,10 +23,24 @@ $.extend(frappe, {
                     });
     
                     $("#language-switcher").removeClass("hide");
-                    language =
-                        language ||
-                        (language_codes.includes(navigator.language) ? navigator.language : "en");
-                    language_switcher.val(language);
+
+                    if (frappe.session.user !== "Guest") {
+                        frappe.call({
+                            method: "afif.hooks_call.get_user_language",
+                            args: {
+                                user: frappe.session.user
+                            }
+                        }).then((response) => {
+                            language = response.message;
+                            language_switcher.val(language);
+                        });
+                    } else {
+						language =
+							language ||
+							(language_codes.includes(navigator.language) ? navigator.language : "en");
+						language_switcher.val(language);
+					}
+
                     document.documentElement.lang = language;
                     language_switcher.change(() => {
                         const lang = language_switcher.val();

@@ -3,6 +3,15 @@
   "docstatus": 0,
   "doctype": "Workflow State",
   "icon": "",
+  "modified": "2023-12-17 13:05:16.549268",
+  "name": "Expired",
+  "style": "",
+  "workflow_state_name": "Expired"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
   "modified": "2023-07-27 16:41:57.107303",
   "name": "Under Review",
   "style": "Primary",

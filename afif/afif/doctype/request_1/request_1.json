@@ -32,7 +32,9 @@
   "request_id",
   "request_serial",
   "request_fullserial",
-  "approved_amount"
+  "approved_amount",
+  "request_ddate",
+  "test_amount"
  ],
  "fields": [
   {
@@ -201,11 +203,21 @@
    "fieldname": "approved_amount",
    "fieldtype": "Data",
    "label": "Approved Amount"
+  },
+  {
+   "fieldname": "request_ddate",
+   "fieldtype": "Datetime",
+   "label": "Request DDate"
+  },
+  {
+   "fieldname": "test_amount",
+   "fieldtype": "Float",
+   "label": "test amount"
   }
  ],
  "hide_toolbar": 1,
  "links": [],
- "modified": "2023-09-12 11:28:14.479285",
+ "modified": "2023-12-13 14:35:19.983073",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Request 1",

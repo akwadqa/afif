@@ -12,6 +12,8 @@
   "request_category",
   "beneficiaries",
   "status",
+  "request_date",
+  "declaration",
   "medical_assistance_section",
   "medical_assistance",
   "educational_assistance_section",
@@ -97,20 +99,19 @@
    "fieldname": "beneficiaries",
    "fieldtype": "Link",
    "label": "Beneficiary",
-   "options": "Beneficiaries Registration"
+   "options": "Beneficiaries Registration",
+   "read_only": 1
   },
   {
    "default": "Pending Supervisor Approval",
    "fieldname": "status",
    "fieldtype": "Select",
-   "hidden": 1,
    "in_filter": 1,
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Pending Supervisor Approval\nPending Specialist Approval\nRejected by Supervisor\nApproved\nRejected\nApproved For Aid\nSaved",
-   "read_only": 1
+   "options": "Pending Supervisor Approval\nPending Specialist Approval\nRejected by Supervisor\nApproved\nRejected\nApproved For Aid\nSaved\nExpired"
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
@@ -229,17 +230,20 @@
   {
    "fieldname": "request_id",
    "fieldtype": "Data",
-   "label": "Request Id"
+   "label": "Request Id",
+   "read_only": 1
   },
   {
    "fieldname": "request_serial",
    "fieldtype": "Data",
-   "label": "Request Serial"
+   "label": "Request Serial",
+   "read_only": 1
   },
   {
    "fieldname": "request_fullserial",
    "fieldtype": "Data",
-   "label": "Request Full Serial"
+   "label": "Request Full Serial",
+   "read_only": 1
   },
   {
    "fieldname": "approved_amount",
@@ -602,11 +606,21 @@
    "fieldtype": "Attach",
    "label": "Monthly financial need proof",
    "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)\r\n"
+  },
+  {
+   "fieldname": "request_date",
+   "fieldtype": "Datetime",
+   "label": "Request Posting Date"
+  },
+  {
+   "fieldname": "declaration",
+   "fieldtype": "Attach",
+   "label": "Beneficiary Declaration"
   }
  ],
  "hide_toolbar": 1,
  "links": [],
- "modified": "2023-10-25 13:31:53.179841",
+ "modified": "2023-12-17 14:58:50.028487",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
