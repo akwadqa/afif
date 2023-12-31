@@ -13,16 +13,16 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/afif/css/afif.css"
 # app_include_js = "/assets/afif/js/afif.js"
-app_include_js = "afif.bundle.js"
+# app_include_js = "afif.bundle.js"
 # app_include_js = "/assets/afif/afif.bundle.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/afif/css/afif.css"
 # web_include_js = "/assets/afif/js/afif.js"
-web_include_js = [
-    "/assets/afif/js/override.js",
-    "afif.bundle.js"
-]
+# web_include_js = [
+#     "/assets/afif/js/override.js",
+#     "afif.bundle.js"
+# ]
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "afif/public/scss/website"
