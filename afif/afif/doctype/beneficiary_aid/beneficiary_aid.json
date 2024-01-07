@@ -206,8 +206,7 @@
   {
    "fieldname": "approval_date",
    "fieldtype": "Date",
-   "label": "Approval Date",
-   "reqd": 1
+   "label": "Approval Date"
   },
   {
    "fieldname": "payment_date",
@@ -222,8 +221,10 @@
    "reqd": 1
   },
   {
+   "default": "1",
    "fieldname": "nb_installements",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Number of Installments",
    "reqd": 1
   },
@@ -243,7 +244,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-17 15:08:47.185827",
+ "modified": "2024-01-02 17:32:26.302373",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

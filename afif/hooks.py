@@ -23,6 +23,7 @@ app_license = "MIT"
 #     "/assets/afif/js/override.js",
 #     "afif.bundle.js"
 # ]
+web_include_js = "/assets/afif/js/custom_web_form.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "afif/public/scss/website"
@@ -134,13 +135,16 @@ doc_events = {
             "afif.hooks_call.set_aid_amount",
             "afif.hooks_call.new_aid_request"
         ],
-        "before_save": "afif.hooks_call.set_committee_member"
+        "before_save": [
+            "afif.hooks_call.set_committee_member",
+            "afif.hooks_call.set_approval_date"
+        ]
     },
     "Rejection Note": {
         "on_submit": "afif.hooks_call.update_workflow_state"
     },
     "User": {
-        "after_insert": "afif.hooks_call.set_new_user_role"
+        "after_insert": "afif.hooks_call.set_new_user_role_and_lang"
     }
     
 }

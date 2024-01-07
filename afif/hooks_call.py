@@ -2,13 +2,15 @@ import frappe
 import requests
 import json
 from datetime import datetime, timedelta, timezone
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, today
 # from frappe.utils.background_jobs import enqueue
 
 
-def set_new_user_role(doc, method):
+def set_new_user_role_and_lang(doc, method):
     if doc.name != "Administrator":
         doc.role_profile_name = "Beneficiary New Registration"
+        if frappe.local.lang:
+            doc.language = frappe.local.lang
         doc.save(ignore_permissions=True)
 
 
@@ -1169,6 +1171,11 @@ def set_committee_member(doc, method):
                 amount.committee_member = frappe.session.user
                 amount.full_name = frappe.get_value("User", frappe.session.user, "full_name")
 
+
+def set_approval_date(doc, method):
+    frappe.log_error("set_approval_date", doc.workflow_state)
+    if doc.workflow_state == "Approved" and not doc.approval_date:
+        doc.approval_date = today()
 
 
 @frappe.whitelist()
