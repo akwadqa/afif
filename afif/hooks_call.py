@@ -187,7 +187,7 @@ def create_new_beneficiary(doc, method):
                 if doc.visa_type != "Visit":
                     occupation_status = get_occupation_status(doc)
                 else:
-                    occupation_status = None
+                    occupation_status = 0
                 marital_status = get_marital_status(doc)
                 if doc.requestor_idtype:
                     requestor_idtype = get_idtype(doc.requestor_idtype)
