@@ -23,7 +23,10 @@ app_license = "MIT"
 #     "/assets/afif/js/override.js",
 #     "afif.bundle.js"
 # ]
-web_include_js = "/assets/afif/js/custom_web_form.js"
+web_include_js = [
+    "/assets/afif/js/custom_web_form.js",
+    "/assets/afif/js/custom_web_form_list.js"
+]
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "afif/public/scss/website"
