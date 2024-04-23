@@ -1187,7 +1187,7 @@ def set_approval_date(doc, method):
 #         return None
 
 @frappe.whitelist()
-def get_existing_doc(id):
+def get_existing_doc(id, dir):
     if frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": id}):
         user_id = frappe.get_value("Beneficiaries Registration", {"ben_primary_idnumber": id}, "user")
 
@@ -1210,7 +1210,10 @@ def get_existing_doc(id):
 
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
         
-        msg = f"{id} is already associated with {hidden_user_id}"
+        if dir == "rtl":
+            msg = f"{hidden_user_id} مرتبط بالفعل بالحساب {id}"
+        else:
+            msg = f"{id} is already associated with {hidden_user_id}"
         return msg
 
     else:
