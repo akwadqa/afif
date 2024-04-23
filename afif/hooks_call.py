@@ -1178,11 +1178,41 @@ def set_approval_date(doc, method):
         doc.approval_date = today()
 
 
+# @frappe.whitelist()
+# def get_existing_doc(id):
+#     if frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": id}):
+#         doc = frappe.get_doc("Beneficiaries Registration", {"ben_primary_idnumber": id})
+#         return doc
+#     else:
+#         return None
+
 @frappe.whitelist()
 def get_existing_doc(id):
     if frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": id}):
-        doc = frappe.get_doc("Beneficiaries Registration", {"ben_primary_idnumber": id})
-        return doc
+        user_id = frappe.get_value("Beneficiaries Registration", {"ben_primary_idnumber": id}, "user")
+
+        # split the user_id
+        user, domain = user_id.split("@")
+        
+        # hide the middle part of the user with asterisks
+        if len(user) > 2:
+            hidden_user = user[0] + "*" * (len(user) - 2) + user[-1]
+        else:
+            hidden_user = user[0] + "*"
+        
+        # hide the middle part of the domain with asterisks
+        domain_name, domain_extension = domain.split(".")
+        if len(domain_name) > 2:
+            hidden_domain_name = domain_name[0] + "*" * (len(domain_name) - 2) + domain_name[-1]
+        else:
+            hidden_domain_name = domain_name[0] + "*"
+        
+
+        hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
+        
+        msg = f"{id} is already associated with {hidden_user_id}"
+        return msg
+
     else:
         return None
 
