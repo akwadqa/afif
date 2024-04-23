@@ -1211,7 +1211,7 @@ def get_existing_doc(id, dir):
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
         
         if dir == "rtl":
-            msg = f"{hidden_user_id} مرتبط بالفعل بالحساب {id}"
+            msg = f"{id} مرتبط بالفعل بالحساب {hidden_user_id}"
         else:
             msg = f"{id} is already associated with {hidden_user_id}"
         return msg
