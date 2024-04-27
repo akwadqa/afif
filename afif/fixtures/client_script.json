@@ -92,10 +92,10 @@
   "doctype": "Client Script",
   "dt": "Beneficiaries Registration",
   "enabled": 0,
-  "modified": "2023-10-02 14:25:52.565097",
+  "modified": "2024-04-14 13:00:21.168948",
   "module": "Afif",
   "name": "Rejection Note",
-  "script": "frappe.ui.form.on(\"Beneficiaries Registration\", {\n    onload: function(frm) {\n        setTimeout(function() {\n            var isNotAccepted = frm.doc.status === \"Not Accepted\";\n\n            if (isNotAccepted) {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 0);\n                frappe.msgprint(\"You need to fill the rejection note.\");\n            } else {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 1);\n            }\n        }, 100); // Delay execution for 100 milliseconds\n\u00a0\u00a0\u00a0\u00a0}\n});",
+  "script": "frappe.ui.form.on(\"Beneficiaries Registration\", {\n    onload: function(frm) {\n        setTimeout(function() {\n            var isNotAccepted = frm.doc.status === \"Not Accepted\";\n\n            if (isNotAccepted) {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 0);\n                frappe.msgprint(\"You need to fill the rejection note.\");\n            } else {\n                frm.set_df_property(\"rejection_note\", \"hidden\", 1);\n            }\n        }, 100); // Delay execution for 100 milliseconds\n    }\n});",
   "view": "Form"
  },
  {
@@ -103,10 +103,10 @@
   "doctype": "Client Script",
   "dt": "Beneficiaries Registration",
   "enabled": 1,
-  "modified": "2023-09-12 16:58:23.113065",
+  "modified": "2024-04-27 13:38:09.419205",
   "module": "Afif",
   "name": "Beneficiaries Registration - Accepted",
-  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    refresh: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted') {\r\n            frm.fields.forEach(function(field) {\r\n                field.df.read_only = 1;\r\n            });\r\n            frm.refresh_fields();\r\n        } else {\r\n            frm.fields.forEach(function(field) {\r\n                field.df.read_only = 0;\r\n            });\r\n            frm.refresh_fields();\r\n        }\r\n    },\r\n    \r\n    before_save: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted') {\r\n            frappe.msgprint(__('Cannot save the document in \"Accepted\" state.'));\r\n            frappe.validated = false;\r\n        }\r\n    }\r\n});",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    refresh: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted') {\r\n            frm.fields.forEach(function(field) {\r\n                if (field.df.fieldname !== \"rejection_note\") {\r\n                    field.df.read_only = 1;\r\n                }\r\n            });\r\n            frm.refresh_fields();\r\n        } else {\r\n            frm.fields.forEach(function(field) {\r\n                field.df.read_only = 0;\r\n            });\r\n            frm.refresh_fields();\r\n        }\r\n    },\r\n    \r\n    before_save: function(frm) {\r\n        if (frm.doc.workflow_state === 'Accepted' && frm.doc.rejection_note === \"\") {\r\n            frappe.msgprint(__('Cannot save the document in \"Accepted\" state.'));\r\n            frappe.validated = false;\r\n        }\r\n    }\r\n});",
   "view": "Form"
  },
  {
@@ -124,8 +124,8 @@
   "docstatus": 0,
   "doctype": "Client Script",
   "dt": "Beneficiaries Registration",
-  "enabled": 1,
-  "modified": "2023-10-04 20:04:04.061127",
+  "enabled": 0,
+  "modified": "2024-04-27 13:42:17.145999",
   "module": "Afif",
   "name": "Rejection Button",
   "script": "frappe.ui.form.on('Beneficiaries Registration', {\r\n    refresh: function(frm) {\r\n         if (frm.doc.status === 'Rejected Without Note') {\r\n             frm.add_custom_button(__('Create Rejection Note'), function() {\r\n                 promptRejectionReasonAndCreateNote(frm);\r\n             });\r\n         }\r\n      //  if(frappe.session.user === \"Administrator\") {\r\n        //    frm.add_custom_button(__('Create Rejection Note'), function() {\r\n          //          promptRejectionReasonAndCreateNote(frm);\r\n        //    });\r\n        }\r\n    //}\r\n});\r\n\r\nfunction promptRejectionReasonAndCreateNote(frm) {\r\n    frappe.prompt(\r\n        [\r\n            {\r\n                label: 'Rejection Note Reason',\r\n                fieldname: 'rejection_reason',\r\n                fieldtype: 'Text',\r\n                reqd: 1\r\n            }\r\n        ],\r\n        function(values) {\r\n            // Create a new Rejection Note document on the client side\r\n            var rejection_note = frappe.model.get_new_doc('Rejection Note');\r\n            rejection_note.beneficiaries_rejection = frm.doc.name;\r\n            rejection_note.rejection_note = values.rejection_reason;\r\n            // Set other relevant fields as needed\r\n\r\n            // Insert the Rejection Note document into the local database\r\n            frappe.db.insert(rejection_note).then(function(response) {\r\n                if (response.exc) {\r\n                    frappe.msgprint('Error: ' + response.exc);\r\n                } else {\r\n                    frappe.msgprint('Rejection Note inserted successfully.');\r\n                    \r\n                    // Now submit the Rejection Note\r\n                    frappe.call({\r\n                        method: 'frappe.client.submit',\r\n                        args: {\r\n                            doc: response\r\n                        },\r\n                        callback: function(r) {\r\n                            if (!r.exc) {\r\n                                frappe.msgprint('Rejection Note submitted successfully.');\r\n                                \r\n                                // Reload the Beneficiaries Registration document\r\n                                cur_frm.reload_doc();\r\n                            } else {\r\n                                frappe.msgprint('Error: ' + r.exc);\r\n                            }\r\n                        }\r\n                    });\r\n                    \r\n                }\r\n            });\r\n        },\r\n        'Create Rejection Note'\r\n    );\r\n}\r\n",
