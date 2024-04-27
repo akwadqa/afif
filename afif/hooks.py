@@ -122,7 +122,8 @@ doc_events = {
         # "after_insert": "afif.hooks_call.create_user",
         "after_insert": "afif.hooks_call.link_user",
         "on_update": "afif.hooks_call.create_new_beneficiary",
-        "before_save": "afif.hooks_call.updated_status"
+        "before_save": "afif.hooks_call.updated_status",
+        "validate": "afif.hooks_call.rejection_note"
     },
     "Beneficiary Request": {
         "before_insert": "afif.hooks_call.before_insert_request",

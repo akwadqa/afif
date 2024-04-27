@@ -125,6 +125,10 @@ def updated_status(doc, method):
 #         user_doc.save(ignore_permissions=True)
 
 
+def rejection_note(doc, method):
+    if doc.workflow_state == "Not Accepted" and not doc.custom_notes:
+        frappe.throw("The 'Field Notes' must be filled in to reject the registration.")
+
 
 def create_new_beneficiary(doc, method):
     frappe.log_error("create_new_beneficiary")
