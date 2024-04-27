@@ -143,9 +143,9 @@ doc_events = {
             "afif.hooks_call.set_approval_date"
         ]
     },
-    "Rejection Note": {
-        "on_submit": "afif.hooks_call.update_workflow_state"
-    },
+    # "Rejection Note": {
+    #     "on_submit": "afif.hooks_call.update_workflow_state"
+    # },
     "User": {
         "after_insert": "afif.hooks_call.set_new_user_role_and_lang"
     }

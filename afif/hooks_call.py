@@ -106,22 +106,23 @@ def updated_status(doc, method):
     #     if workflow_state == "Rejected Without Note":
     #         frappe.throw("In order to Reject, please create and submit a Rejection Note.")
 
-# set workflow_state and status to Not Accepted when Rejection Note is submitted
-def update_workflow_state(doc, method):
-    query = f"""update `tabBeneficiaries Registration` set `workflow_state`="Not Accepted", `status`="Not Accepted"
-                where name="{doc.beneficiaries_rejection}" """
-    frappe.db.sql(query)
-    frappe.db.commit()
 
-    ben_reg_doc = frappe.get_doc("Beneficiaries Registration", doc.beneficiaries_rejection)
-    ben_reg_doc.reload()
+# # set workflow_state and status to Not Accepted when Rejection Note is submitted
+# def update_workflow_state(doc, method):
+#     query = f"""update `tabBeneficiaries Registration` set `workflow_state`="Not Accepted", `status`="Not Accepted"
+#                 where name="{doc.beneficiaries_rejection}" """
+#     frappe.db.sql(query)
+#     frappe.db.commit()
 
-    # update role to Beneficiary Not Accepted
-    frappe.log_error("update role - Not Accepted")
-    if doc.user != "Administrator":
-        user_doc = frappe.get_doc("User", doc.user)
-        user_doc.role_profile_name = "Beneficiary Not Accepted"
-        user_doc.save(ignore_permissions=True)
+#     ben_reg_doc = frappe.get_doc("Beneficiaries Registration", doc.beneficiaries_rejection)
+#     ben_reg_doc.reload()
+
+#     # update role to Beneficiary Not Accepted
+#     frappe.log_error("update role - Not Accepted")
+#     if doc.user != "Administrator":
+#         user_doc = frappe.get_doc("User", doc.user)
+#         user_doc.role_profile_name = "Beneficiary Not Accepted"
+#         user_doc.save(ignore_permissions=True)
 
 
 
