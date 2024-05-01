@@ -127,7 +127,7 @@ def updated_status(doc, method):
 
 def rejection_note(doc, method):
     if doc.workflow_state == "Not Accepted" and not doc.custom_notes:
-        frappe.throw("The 'Field Notes' must be filled in to reject the registration.")
+        frappe.throw("The field 'Notes' must be filled in to reject the registration.")
 
 
 def create_new_beneficiary(doc, method):
@@ -1039,6 +1039,9 @@ def set_aid_amount(doc, method):
         for amount in doc.committee_amount:
             total_amount += float(amount.suggested_amount)
         average_amount = total_amount/int(len(doc.committee_amount))
+
+        if average_amount > float(frappe.get_value("Beneficiary Request", doc.beneficiary_request, "approved_amount")):
+            frappe.throw("Aid Amount can't be more than Approved Amount")
 
         query = f"""update `tabBeneficiary Aid` set `aid_amount`={average_amount}
             where name="{doc.name}" """
