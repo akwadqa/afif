@@ -13,7 +13,6 @@ frappe.ready(function() {
                     limit_page_length: 1
                 },
                 callback: function(r) {
-                    console.log(r.message)
                     if (r.message && r.message.length > 0) {
                         $('.web-list-actions a.button-new').text('New Aid Request').show();
                     } else {
