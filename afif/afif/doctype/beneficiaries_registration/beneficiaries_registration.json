@@ -532,7 +532,8 @@
    "default": "0",
    "fieldname": "ben_income",
    "fieldtype": "Check",
-   "label": "Beneficiary Income"
+   "label": "Beneficiary Income",
+   "options": "\nYes\nNo"
   },
   {
    "default": "0",
@@ -597,22 +598,22 @@
    "fieldname": "ben_periodic_type",
    "fieldtype": "Select",
    "label": "Beneficiary Periodic Income Type",
-   "mandatory_depends_on": "eval:doc.ben_income==1",
+   "mandatory_depends_on": "eval:doc.ben_income==\"Yes\"",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
-   "depends_on": "eval:doc.ben_income==1",
+   "depends_on": "eval:doc.ben_income==\"Yes\"",
    "fieldname": "salary_amount",
    "fieldtype": "Data",
    "label": "Beneficiary Salary",
-   "mandatory_depends_on": "eval:doc.ben_income==1"
+   "mandatory_depends_on": "eval:doc.ben_income==\"Yes\""
   },
   {
-   "depends_on": "eval:doc.ben_income==1",
+   "depends_on": "eval:doc.ben_income==\"Yes\"",
    "fieldname": "benficiary_note",
    "fieldtype": "Data",
    "label": "Beneficiary Income Note",
-   "mandatory_depends_on": "eval:doc.ben_income==1"
+   "mandatory_depends_on": "eval:doc.ben_income==\"Yes\""
   },
   {
    "depends_on": "eval:doc.children_income==1",
@@ -1307,7 +1308,7 @@
  "index_web_pages_for_search": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2024-04-27 15:33:50.868107",
+ "modified": "2024-07-01 14:28:51.189073",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1357,16 +1358,20 @@
  "sort_order": "DESC",
  "states": [
   {
-   "color": "Blue",
-   "title": "Updated"
+   "color": "Green",
+   "title": "Accepted"
+  },
+  {
+   "color": "Orange",
+   "title": "New Registration"
   },
   {
    "color": "Red",
    "title": "Not Accepted"
   },
   {
-   "color": "Green",
-   "title": "Accepted"
+   "color": "Blue",
+   "title": "Updated"
   }
  ],
  "title_field": "en_name"

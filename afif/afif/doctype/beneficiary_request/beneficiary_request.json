@@ -85,7 +85,8 @@
   "psych_proof",
   "other_social_proof",
   "lump_proof",
-  "family_finance"
+  "family_finance",
+  "personal_id"
  ],
  "fields": [
   {
@@ -616,11 +617,18 @@
    "fieldname": "declaration",
    "fieldtype": "Attach",
    "label": "Beneficiary Declaration"
+  },
+  {
+   "fetch_from": "beneficiaries.ben_primary_idnumber",
+   "fetch_if_empty": 1,
+   "fieldname": "personal_id",
+   "fieldtype": "Data",
+   "label": "Personal ID"
   }
  ],
  "hide_toolbar": 1,
  "links": [],
- "modified": "2023-12-17 14:58:50.028487",
+ "modified": "2024-07-01 10:32:34.087095",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
