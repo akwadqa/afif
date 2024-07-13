@@ -256,8 +256,8 @@
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
    "fieldname": "medical_report",
    "fieldtype": "Attach",
-   "label": "Medical Report",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)"
+   "hidden": 1,
+   "label": "Medical Report"
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
@@ -270,36 +270,36 @@
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medical Equipment\", \"Akwad\"], doc.medical_assistance)",
    "fieldname": "equipment_quote",
    "fieldtype": "Attach",
-   "label": "Medical Equipment Quotation",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medical Equipment\", \"Akwad\"], doc.medical_assistance)"
+   "hidden": 1,
+   "label": "Medical Equipment Quotation"
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medication\", \"Akwad\"], doc.medical_assistance)",
    "fieldname": "medication_notice",
    "fieldtype": "Attach",
-   "label": "Medication Doctor Notice",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medication\", \"Akwad\"], doc.medical_assistance)"
+   "hidden": 1,
+   "label": "Medication Doctor Notice"
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medical Supplies\", \"Akwad\"], doc.medical_assistance)",
    "fieldname": "medical_supplies_bill",
    "fieldtype": "Attach",
-   "label": "Medical Supplies Bill",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medical Supplies\", \"Akwad\"], doc.medical_assistance)"
+   "hidden": 1,
+   "label": "Medical Supplies Bill"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Rent support\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "late_rent",
    "fieldtype": "Attach",
-   "label": "Late Rent Letter",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Rent support\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Late Rent Letter"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Land purchase\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "land_deed",
    "fieldtype": "Attach",
-   "label": "Land Purchase Deed",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Land purchase\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Land Purchase Deed"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Real estate purchase\", \"Akwad\"], doc.housing_assistance)",
@@ -312,162 +312,162 @@
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Land purchase and construction\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "land_construction",
    "fieldtype": "Attach",
-   "label": "Land purchase and construction document",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Land purchase and construction\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Land purchase and construction document"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Demolition and construction\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "demo_document",
    "fieldtype": "Attach",
-   "label": "Demolition and construction document",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Demolition and construction\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Demolition and construction document"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Maintenance and restoration\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "maintenance_document",
    "fieldtype": "Attach",
-   "label": "Maintenance and restoration",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Maintenance and restoration\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Maintenance and restoration"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Furnishing support\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "furnishing_document",
    "fieldtype": "Attach",
-   "label": "Furnishing proof document",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Furnishing support\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Furnishing proof document"
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other social housing assistance\", \"Akwad\"], doc.housing_assistance)",
    "fieldname": "other_housing_document",
    "fieldtype": "Attach",
-   "label": "Housing other document",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other social housing assistance\", \"Akwad\"], doc.housing_assistance)"
+   "hidden": 1,
+   "label": "Housing other document"
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Secretarial training\", \"Akwad\"], doc.training_assistance)",
    "fieldname": "sec_training_proof",
    "fieldtype": "Attach",
-   "label": "Secretarial Training Enrollment Proof",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Secretarial training\", \"Akwad\"], doc.training_assistance)"
+   "hidden": 1,
+   "label": "Secretarial Training Enrollment Proof"
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Entrepreneurship training\", \"Akwad\"], doc.training_assistance)",
    "fieldname": "ent_training_proof",
    "fieldtype": "Attach",
-   "label": "Entrepreneurship Training Enrollment Proof",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Entrepreneurship training\", \"Akwad\"], doc.training_assistance)"
+   "hidden": 1,
+   "label": "Entrepreneurship Training Enrollment Proof"
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Student training\", \"Akwad\"], doc.training_assistance)",
    "fieldname": "std_enrollment",
    "fieldtype": "Attach",
-   "label": "Student Training Enrollment Proof",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Student training\", \"Akwad\"], doc.training_assistance)"
+   "hidden": 1,
+   "label": "Student Training Enrollment Proof"
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Prisoner training\", \"Akwad\"], doc.training_assistance)",
    "fieldname": "prisoner_enrollment",
    "fieldtype": "Attach",
-   "label": "Prisoner Training Enrollment Proof",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Prisoner training\", \"Akwad\"], doc.training_assistance)"
+   "hidden": 1,
+   "label": "Prisoner Training Enrollment Proof"
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other training and rehabilitation\", \"Akwad\"], doc.training_assistance)",
    "fieldname": "other_training_proof",
    "fieldtype": "Attach",
-   "label": "Other training Proof",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other training and rehabilitation\", \"Akwad\"], doc.training_assistance)"
+   "hidden": 1,
+   "label": "Other training Proof"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency lump-sum financial assistance\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "family_lumpsum",
    "fieldtype": "Attach",
-   "label": "Family lump-sum need Proof",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency lump-sum financial assistance\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Family lump-sum need Proof"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "income_attachement",
    "fieldtype": "Attach",
-   "label": "Income Statement",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Income Statement"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "outgoing_need",
    "fieldtype": "Attach",
-   "label": "Proof of outgoing financial need",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Proof of outgoing financial need"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) ",
    "fieldname": "inkind_proof",
    "fieldtype": "Attach",
-   "label": "Proof of income or financial hardship",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) "
+   "hidden": 1,
+   "label": "Proof of income or financial hardship"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Family nursery sponsorship\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "nursery_proof",
    "fieldtype": "Attach",
-   "label": "Proof of children enrollment in nursery",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Family nursery sponsorship\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Proof of children enrollment in nursery"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Seasonal financial assistance\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "seasonal_hardship",
    "fieldtype": "Attach",
-   "label": "Proof of seasonal hardship",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Seasonal financial assistance\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Proof of seasonal hardship"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Food basket (food aid)\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "houshold_aid",
    "fieldtype": "Attach",
-   "label": "Houshold size document",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Food basket (food aid)\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Houshold size document"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"In-kind assistance with a monthly shopping card\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "inkind_need",
    "fieldtype": "Attach",
-   "label": "Proof of need for specific items",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"In-kind assistance with a monthly shopping card\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Proof of need for specific items"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"In-kind assistance with a Ramadan shopping card\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "ramadan_proof",
    "fieldtype": "Attach",
-   "label": "Proof of need for specific items",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"In-kind assistance with a Ramadan shopping card\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Proof of need for specific items"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Utility bills\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "utility_bills",
    "fieldtype": "Attach",
-   "label": "Utility Bills",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Utility bills\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Utility Bills"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Fines support\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "proof_fines",
    "fieldtype": "Attach",
-   "label": "Documents proof of fines",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Fines support\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Documents proof of fines"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other family assistance\", \"Akwad\"], doc.family_assistance)",
    "fieldname": "other_family_proof",
    "fieldtype": "Attach",
-   "label": "Other family assistance proof",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other family assistance\", \"Akwad\"], doc.family_assistance)"
+   "hidden": 1,
+   "label": "Other family assistance proof"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Tuition Fees\", \"Akwad\"], doc.educational_assistance)",
    "fieldname": "tuition_proof",
    "fieldtype": "Attach",
-   "label": "Tuition Costs Proof",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Tuition Fees\", \"Akwad\"], doc.educational_assistance)"
+   "hidden": 1,
+   "label": "Tuition Costs Proof"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
@@ -480,29 +480,29 @@
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Transportation Fees\", \"Akwad\"], doc.educational_assistance)",
    "fieldname": "transportation_proof",
    "fieldtype": "Attach",
-   "label": "Transportation Cost Proof",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Transportation Fees\", \"Akwad\"], doc.educational_assistance)"
+   "hidden": 1,
+   "label": "Transportation Cost Proof"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Books And Resources\", \"Akwad\"], doc.educational_assistance)",
    "fieldname": "ed_ressources_proof",
    "fieldtype": "Attach",
-   "label": "Education Resources Proof",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Books And Resources\", \"Akwad\"], doc.educational_assistance)"
+   "hidden": 1,
+   "label": "Education Resources Proof"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Educational Equipment\", \"Akwad\"], doc.educational_assistance)",
    "fieldname": "ed_equipement",
    "fieldtype": "Attach",
-   "label": "Educational Equipment",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Educational Equipment\", \"Akwad\"], doc.educational_assistance)"
+   "hidden": 1,
+   "label": "Educational Equipment"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other Educational Assistance\", \"Akwad\"], doc.educational_assistance)",
    "fieldname": "ed_other",
    "fieldtype": "Attach",
-   "label": "Other Educational Assistance proof",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other Educational Assistance\", \"Akwad\"], doc.educational_assistance)"
+   "hidden": 1,
+   "label": "Other Educational Assistance proof"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",
@@ -515,22 +515,22 @@
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Orphan sponsorship\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "oprhan_need_proof",
    "fieldtype": "Attach",
-   "label": "Orphan Needs Proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Orphan sponsorship\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Orphan Needs Proof"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Marriage assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "marriage_assist_document",
    "fieldtype": "Attach",
-   "label": "Marriage assistance Documents",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Marriage assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Marriage assistance Documents"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Economic empowerment assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "eco_assist_doc",
    "fieldtype": "Attach",
-   "label": "Economic Empowerment Assistance Docyment",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Economic empowerment assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Economic Empowerment Assistance Docyment"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Travel ticket assistance\", \"Akwad\"], doc.social_assistance)",
@@ -543,71 +543,71 @@
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Widow assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "widow_document",
    "fieldtype": "Attach",
-   "label": "Widow Documents",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Widow assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Widow Documents"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Divorced women assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "divorce_assistance",
    "fieldtype": "Attach",
-   "label": "Divorce papers",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Divorced women assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Divorce papers"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Elderly assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "elederly_need",
    "fieldtype": "Attach",
-   "label": "Elderly needs proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Elderly assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Elderly needs proof"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Unemployed assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "unemployment_papers",
    "fieldtype": "Attach",
-   "label": "Unemployment papers",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Unemployed assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Unemployment papers"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Visitor assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "visitor_proof",
    "fieldtype": "Attach",
-   "label": "Visitor proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Visitor assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Visitor proof"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "emergency_proof",
    "fieldtype": "Attach",
-   "label": "Emergency need proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Emergency need proof"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Psychological support assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "psych_proof",
    "fieldtype": "Attach",
-   "label": "Psychiatrist doctor report",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Psychological support assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Psychiatrist doctor report"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other social assistance\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "other_social_proof",
    "fieldtype": "Attach",
-   "label": "Other social needs proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Other social assistance\", \"Akwad\"], doc.social_assistance)"
+   "hidden": 1,
+   "label": "Other social needs proof"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency lump-sum financial assistance\", \"Akwad\"], doc.family_assistance)\r\n",
    "fieldname": "lump_proof",
    "fieldtype": "Attach",
-   "label": "Family lump-sum need prrof",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Emergency lump-sum financial assistance\", \"Akwad\"], doc.family_assistance)\r\n"
+   "hidden": 1,
+   "label": "Family lump-sum need prrof"
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)\r\n",
    "fieldname": "family_finance",
    "fieldtype": "Attach",
-   "label": "Monthly financial need proof",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Monthly financial assistance\", \"Akwad\"], doc.family_assistance)\r\n"
+   "hidden": 1,
+   "label": "Monthly financial need proof"
   },
   {
    "fieldname": "request_date",
@@ -640,7 +640,7 @@
  ],
  "hide_toolbar": 1,
  "links": [],
- "modified": "2024-07-10 17:47:12.238760",
+ "modified": "2024-07-13 17:12:14.287571",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
