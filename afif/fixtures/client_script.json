@@ -2,6 +2,17 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Beneficiaries Registration",
+  "enabled": 0,
+  "modified": "2024-04-27 13:42:38.035928",
+  "module": "Afif",
+  "name": "Notes",
+  "script": "frappe.ui.form.on('Beneficiaries Registration', { \r\n    before_workflow_action: function(frm) {\r\n        if (frm.doc.workflow_state === \"Not Accepted\" && frm.doc.workflow_action === \"Reject\" && !frm.doc.custom_notes) {\r\n            frappe.msgprint(__('Please enter a reason in the Custom Notes field before rejecting.'));\r\n            frm.workflow_action = 'Cancel'; // Cancels the workflow action\r\n            return false; // Prevents the workflow action from proceeding\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Request",
   "enabled": 0,
   "modified": "2023-08-12 18:40:21.606546",
