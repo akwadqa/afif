@@ -29,7 +29,7 @@ frappe.ready(function() {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
                 if (node.nodeType === 1 && $(node).hasClass('no-result')) {
-                    if ($('body').data('path') === 'registration-afif2/list') {
+                    if ($('body').data('path') === 'registration-afif/list') {
                         $(node).css('flex-direction', 'column');
 
                         // Check if the HTML tag has dir="rtl"

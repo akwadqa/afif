@@ -5,6 +5,13 @@ from datetime import datetime, timedelta, timezone
 from frappe.utils import now_datetime, today
 # from frappe.utils.background_jobs import enqueue
 
+sanadi_integration_settings = frappe.get_single("Sanadi Integration Settings")
+
+BASE_URL = sanadi_integration_settings.base_url
+QID = sanadi_integration_settings.qid
+USER_NAME = sanadi_integration_settings.usr_name
+PASSWORD = sanadi_integration_settings.pwd
+
 
 def set_new_user_role_and_lang(doc, method):
     if doc.name != "Administrator":
@@ -147,14 +154,14 @@ def create_new_beneficiary(doc, method):
             user_doc.save(ignore_permissions=True)
 
         # Authentication
-        url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
+        url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
             "Content-Type": "application/json"
         }
         body = {
-            "userName": "STGINT_AFIF",
-            "userPassword": "PwdX2y@73",
-            "qId": 28676001381,
+            "userName": USER_NAME,
+            "userPassword": PASSWORD,
+            "qId": QID,
             "lang": "EN"
         }
 
@@ -165,7 +172,7 @@ def create_new_beneficiary(doc, method):
             frappe.log_error("authentication response", msg)
 
             # Validate Token
-            url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/validate-token"
+            url = f"{BASE_URL}eservices/api/v2/sanadi/auth/validate-token"
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -179,7 +186,7 @@ def create_new_beneficiary(doc, method):
                 frappe.log_error("validate response", msg)
 
                 # Create new beneficiary
-                url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/aids/beneficiary?with-check=false"
+                url = f"{BASE_URL}eservices/api/v2/sanadi/aids/beneficiary?with-check=false"
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": response_auth.json().get('rs').get('token')
@@ -610,14 +617,14 @@ def new_subvention_request(doc, method):
     frappe.log_error("subvention_request")
     if doc.workflow_state == "Pending Specialist Approval":
         # Authentication
-        url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
+        url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
             "Content-Type": "application/json"
         }
         body = {
-            "userName": "STGINT_AFIF",
-            "userPassword": "PwdX2y@73",
-            "qId": 28676001381,
+            "userName": USER_NAME,
+            "userPassword": PASSWORD,
+            "qId": QID,
             "lang": "EN"
         }
 
@@ -628,7 +635,7 @@ def new_subvention_request(doc, method):
             frappe.log_error("authentication response", msg)
 
             # Validate Token
-            url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/validate-token"
+            url = f"{BASE_URL}eservices/api/v2/sanadi/auth/validate-token"
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -642,7 +649,7 @@ def new_subvention_request(doc, method):
                 frappe.log_error("validate response", msg)
 
                 # save new request
-                url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/aids/subvention-request"
+                url = f"{BASE_URL}eservices/api/v2/sanadi/aids/subvention-request"
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": response_auth.json().get('rs').get('token')
@@ -859,16 +866,16 @@ def get_aid_lookup_parent_id(doc):
 # def update_subvention_request(doc, method):
 #     frappe.log_error("update subvention_request")
 #     # Authentication
-#     url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
+#     url = "https://api.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
 #     headers = {
 #         "Content-Type": "application/json"
 #     }
 #     body = {
-#         "userName": "STGINT_AFIF",
-#         "userPassword": "PwdX2y@73",
-#         "qId": 28676001381,
-#         "lang": "EN"
-#     }
+        #     "userName": "int_afif",
+        #     "userPassword": "TRu_osaRA4+1",
+        #     "qId": 28981808830,
+        #     "lang": "EN"
+        # }
 
 #     response_auth = requests.post(url=url, data=json.dumps(body), headers=headers, verify=False)
 
@@ -948,14 +955,14 @@ def update_subvention_request_status(doc, method):
 
     if doc.workflow_state == "Rejected" or doc.workflow_state == "Approved":
         # Authentication
-        url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
+        url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
             "Content-Type": "application/json"
         }
         body = {
-            "userName": "STGINT_AFIF",
-            "userPassword": "PwdX2y@73",
-            "qId": 28676001381,
+            "userName": USER_NAME,
+            "userPassword": PASSWORD,
+            "qId": QID,
             "lang": "EN"
         }
 
@@ -966,7 +973,7 @@ def update_subvention_request_status(doc, method):
             frappe.log_error("authentication response", msg)
 
             # Validate Token
-            url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/validate-token"
+            url = f"{BASE_URL}eservices/api/v2/sanadi/auth/validate-token"
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -981,9 +988,9 @@ def update_subvention_request_status(doc, method):
 
                 # update request status
                 if doc.workflow_state == "Rejected":
-                    url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/aids/subvention-request/cancel"
+                    url = f"{BASE_URL}eservices/api/v2/sanadi/aids/subvention-request/cancel"
                 elif doc.workflow_state == "Approved":
-                    url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/aids/subvention-request/approve"
+                    url = f"{BASE_URL}eservices/api/v2/sanadi/aids/subvention-request/approve"
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": response_auth.json().get('rs').get('token')
@@ -1053,14 +1060,14 @@ def new_aid_request(doc, method):
     frappe.log_error("new aid request")
     if doc.workflow_state == "Approved":
         # Authentication
-        url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/integration/login"
+        url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
             "Content-Type": "application/json"
         }
         body = {
-            "userName": "STGINT_AFIF",
-            "userPassword": "PwdX2y@73",
-            "qId": 28676001381,
+            "userName": USER_NAME,
+            "userPassword": PASSWORD,
+            "qId": QID,
             "lang": "EN"
         }
 
@@ -1071,7 +1078,7 @@ def new_aid_request(doc, method):
             frappe.log_error("authentication response", msg)
 
             # Validate Token
-            url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/auth/validate-token"
+            url = f"{BASE_URL}eservices/api/v2/sanadi/auth/validate-token"
             headers = {
                 "Accept": "application/json",
                 "Content-Type": "application/json",
@@ -1085,7 +1092,7 @@ def new_aid_request(doc, method):
                 frappe.log_error("validate response", msg)
 
                 # aid request
-                url = "https://stgapi.raca.gov.qa/eservices/api/v2/sanadi/aids/subvention-aid"
+                url = f"{BASE_URL}eservices/api/v2/sanadi/aids/subvention-aid"
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": response_auth.json().get('rs').get('token')
@@ -1226,6 +1233,12 @@ def get_existing_doc(id, dir):
 
     else:
         return None
+
+
+
+@frappe.whitelist()
+def get_full_name(user):
+    return frappe.get_value("User", user, "full_name")
 
 
 

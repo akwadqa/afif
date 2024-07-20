@@ -87,7 +87,12 @@
   "lump_proof",
   "family_finance",
   "personal_id",
-  "phone_number"
+  "phone_number",
+  "education_invoice",
+  "garmeen_disclosure",
+  "rent_contract",
+  "onwer_qid",
+  "late_letter"
  ],
  "fields": [
   {
@@ -95,7 +100,8 @@
    "fieldtype": "Select",
    "ignore_user_permissions": 1,
    "label": "Request Category",
-   "options": "\nMedical Assistance\nEducation Assistance\nSocial Assistance\nFamily Assistance\nHousing Assistance\nTraining Assistance\nAwareness Assistance"
+   "options": "\nMedical Assistance\nEducation Assistance\nSocial Assistance\nFamily Assistance\nHousing Assistance\nTraining Assistance\nAwareness Assistance",
+   "read_only": 1
   },
   {
    "fieldname": "beneficiaries",
@@ -113,7 +119,8 @@
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Pending Supervisor Approval\nPending Specialist Approval\nRejected by Supervisor\nApproved\nRejected\nApproved For Aid\nSaved\nExpired"
+   "options": "Pending Supervisor Approval\nPending Specialist Approval\nRejected by Supervisor\nApproved\nRejected\nApproved For Aid\nSaved\nExpired",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
@@ -128,7 +135,8 @@
    "in_list_view": 1,
    "label": "Medical Assistance",
    "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nMedical Procedures\nMedical Equipment\nMedication\nMedical Supplies\nNatural Treatment\nOther Medical Assistance"
+   "options": "\nMedical Procedures\nMedical Equipment\nMedication\nMedical Supplies\nNatural Treatment\nOther Medical Assistance",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
@@ -142,7 +150,8 @@
    "fieldtype": "Select",
    "label": "Education Assistance",
    "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance"
+   "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
@@ -156,7 +165,8 @@
    "fieldtype": "Select",
    "label": "Social Assistance",
    "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nGarmeen\nOrphan sponsorship\nMarriage assistance\nEconomic empowerment assistance\nTravel ticket assistance\nWidow assistance\nDivorced women assistance\nElderly assistance\nUnemployed assistance\nVisitor assistance\nEmergency assistance\nPsychological support assistance\nOther social assistance"
+   "options": "\nGarmeen\nOrphan sponsorship\nMarriage assistance\nEconomic empowerment assistance\nTravel ticket assistance\nWidow assistance\nDivorced women assistance\nElderly assistance\nUnemployed assistance\nVisitor assistance\nEmergency assistance\nPsychological support assistance\nOther social assistance",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category)",
@@ -170,7 +180,8 @@
    "fieldtype": "Select",
    "label": "Family Assistance",
    "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nEmergency lump-sum financial assistance\nMonthly financial assistance\nIn-kind assistance\nFamily nursery sponsorship\nSeasonal financial assistance\nFood basket (food aid)\nIn-kind assistance with a monthly shopping card\nIn-kind assistance with a Ramadan shopping card\nUtility bills\nFines support\nOther family assistance"
+   "options": "\nEmergency lump-sum financial assistance\nMonthly financial assistance\nIn-kind assistance\nFamily nursery sponsorship\nSeasonal financial assistance\nFood basket (food aid)\nIn-kind assistance with a monthly shopping card\nIn-kind assistance with a Ramadan shopping card\nUtility bills\nFines support\nOther family assistance",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
@@ -184,7 +195,8 @@
    "fieldtype": "Select",
    "label": "Housing Assistance",
    "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nRent support\nLand purchase\nReal estate purchase\nLand purchase and construction\nDemolition and construction\nMaintenance and restoration\nFurnishing support\nOther social housing assistance"
+   "options": "\nRent support\nLand purchase\nReal estate purchase\nLand purchase and construction\nDemolition and construction\nMaintenance and restoration\nFurnishing support\nOther social housing assistance",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category)",
@@ -198,7 +210,8 @@
    "fieldtype": "Select",
    "label": "Training Assistance",
    "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nSecretarial training\nEntrepreneurship training\nStudent training\nPrisoner training\nOther training and rehabilitation"
+   "options": "\nSecretarial training\nEntrepreneurship training\nStudent training\nPrisoner training\nOther training and rehabilitation",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Awareness Assistance\", \"Akwad\"], doc.request_category)",
@@ -212,7 +225,8 @@
    "fieldtype": "Select",
    "label": "Awareness Assistance",
    "mandatory_depends_on": "eval:in_list([\"Awareness Assistance\", \"Akwad\"], doc.request_category)",
-   "options": "\nNational Awareness\nCultural Awareness\nSocial Awareness\nHealth Awareness\nEnvironmental Awareness\nCharitable Awareness\nConsumer Awareness\nOther Awareness Assistance"
+   "options": "\nNational Awareness\nCultural Awareness\nSocial Awareness\nHealth Awareness\nEnvironmental Awareness\nCharitable Awareness\nConsumer Awareness\nOther Awareness Assistance",
+   "read_only": 1
   },
   {
    "fieldname": "request_fields_section",
@@ -222,12 +236,14 @@
   {
    "fieldname": "requested_amount",
    "fieldtype": "Data",
-   "label": "Requested Amount"
+   "label": "Requested Amount",
+   "read_only": 1
   },
   {
    "fieldname": "request_summary",
    "fieldtype": "Text",
-   "label": "Request Summary"
+   "label": "Request Summary",
+   "read_only": 1
   },
   {
    "fieldname": "request_id",
@@ -250,7 +266,8 @@
   {
    "fieldname": "approved_amount",
    "fieldtype": "Data",
-   "label": "Approved Amount"
+   "label": "Approved Amount",
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\" "
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
@@ -473,8 +490,8 @@
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
    "fieldname": "education_proof",
    "fieldtype": "Attach",
-   "label": "Education Enrollment Proof",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)"
+   "hidden": 1,
+   "label": "Education Enrollment Proof"
   },
   {
    "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Transportation Fees\", \"Akwad\"], doc.educational_assistance)",
@@ -612,10 +629,10 @@
   {
    "fieldname": "request_date",
    "fieldtype": "Datetime",
-   "label": "Request Posting Date"
+   "label": "Request Posting Date",
+   "read_only": 1
   },
   {
-   "depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\" || doc.workflow_state===\"Pending Specialist Approval\"",
    "fieldname": "declaration",
    "fieldtype": "Attach",
    "label": "Beneficiary Declaration",
@@ -627,7 +644,8 @@
    "fieldname": "personal_id",
    "fieldtype": "Data",
    "in_standard_filter": 1,
-   "label": "Personal ID"
+   "label": "Personal ID",
+   "read_only": 1
   },
   {
    "fetch_from": "beneficiaries.phone_number",
@@ -635,12 +653,53 @@
    "fieldname": "phone_number",
    "fieldtype": "Data",
    "in_standard_filter": 1,
-   "label": "Phone Number"
+   "label": "Phone Number",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "education_invoice",
+   "fieldtype": "Attach",
+   "label": "School/university dues invoice",
+   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)"
+  },
+  {
+   "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",
+   "fieldname": "garmeen_disclosure",
+   "fieldtype": "Attach",
+   "label": "Disclosure of cases and rulings (updated)",
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)"
+  },
+  {
+   "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
+   "fieldname": "rent_contract",
+   "fieldtype": "Attach",
+   "label": "Notarized lease contract",
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) "
+  },
+  {
+   "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
+   "fieldname": "onwer_qid",
+   "fieldtype": "Attach",
+   "label": "Qatari owner's card",
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)"
+  },
+  {
+   "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
+   "fieldname": "late_letter",
+   "fieldtype": "Attach",
+   "label": "Letter from the landlord with the value of rent arrears with a recent date",
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) "
   }
  ],
- "hide_toolbar": 1,
- "links": [],
- "modified": "2024-07-13 17:12:14.287571",
+ "links": [
+  {
+   "link_doctype": "Beneficiary Aid",
+   "link_fieldname": "beneficiary_request",
+   "table_fieldname": "beneficiary_request"
+  }
+ ],
+ "modified": "2024-07-17 16:20:18.967401",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
@@ -672,5 +731,38 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [
+  {
+   "color": "Blue",
+   "title": "Pending Supervisor Approval"
+  },
+  {
+   "color": "Cyan",
+   "title": "Pending Specialist Approval"
+  },
+  {
+   "color": "Red",
+   "title": "Rejected by Supervisor"
+  },
+  {
+   "color": "Green",
+   "title": "Approved"
+  },
+  {
+   "color": "Red",
+   "title": "Rejected"
+  },
+  {
+   "color": "Orange",
+   "title": "Approved For Aid"
+  },
+  {
+   "color": "Pink",
+   "title": "Saved"
+  },
+  {
+   "color": "Gray",
+   "title": "Expired"
+  }
+ ]
 }

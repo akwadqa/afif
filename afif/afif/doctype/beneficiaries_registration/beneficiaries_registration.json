@@ -204,20 +204,23 @@
    "fieldname": "en_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "English Name"
+   "label": "English Name",
+   "read_only": 1
   },
   {
    "fieldname": "ar_name",
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Arabic Name"
+   "label": "Arabic Name",
+   "read_only": 1
   },
   {
    "fieldname": "user",
    "fieldtype": "Link",
    "label": "User",
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "ben_id",
@@ -230,20 +233,23 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Visa Type",
-   "options": "\nResidence\nVisit"
+   "options": "\nResidence\nVisit",
+   "read_only": 1
   },
   {
    "fieldname": "ben_requestor_relationtype",
    "fieldtype": "Select",
    "label": "Beneficiary Relation To Requestion",
-   "options": "\nRelative to the subvention requestor\nThe same subvention requestor"
+   "options": "\nRelative to the subvention requestor\nThe same subvention requestor",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
    "fieldname": "requestor_name",
    "fieldtype": "Data",
    "label": "Requestor Name",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)"
+   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
@@ -251,7 +257,8 @@
    "fieldtype": "Select",
    "label": "Requestor ID Type",
    "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
-   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number"
+   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
@@ -259,6 +266,7 @@
    "fieldtype": "Data",
    "label": "Requestor ID Number",
    "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "read_only": 1,
    "unique": 1
   },
   {
@@ -268,21 +276,24 @@
    "ignore_user_permissions": 1,
    "label": "Requestor Nationality",
    "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
-   "options": "Country"
+   "options": "Country",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.requestor_nationality)",
    "fieldname": "requestor_other_nationality",
    "fieldtype": "Data",
    "label": "Requestor Other Nationality",
-   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.requestor_nationality)"
+   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.requestor_nationality)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
    "fieldname": "requestor_number",
    "fieldtype": "Data",
    "label": "Requestor Number",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)"
+   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "read_only": 1
   },
   {
    "fieldname": "ben_primary_idtype",
@@ -296,19 +307,22 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Personal ID",
+   "read_only": 1,
    "unique": 1
   },
   {
    "fieldname": "ben_sec_idtype",
    "fieldtype": "Select",
    "label": "Beneficiary Secondary Id Type",
-   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number\nNone"
+   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number\nNone",
+   "read_only": 1
   },
   {
    "fieldname": "ben_sec_nationality",
    "fieldtype": "Link",
    "label": "Beneficiary Secondary Nationality",
-   "options": "Country"
+   "options": "Country",
+   "read_only": 1
   },
   {
    "fieldname": "ben_sec_idnumber",
@@ -318,69 +332,80 @@
   {
    "fieldname": "passport_number",
    "fieldtype": "Data",
-   "label": "Passport Number"
+   "label": "Passport Number",
+   "read_only": 1
   },
   {
    "fieldname": "gender",
    "fieldtype": "Select",
    "label": "Gender",
-   "options": "\nFemale\nMale"
+   "options": "\nFemale\nMale",
+   "read_only": 1
   },
   {
    "fieldname": "date_of_birth",
    "fieldtype": "Date",
-   "label": "Date Of Birth"
+   "label": "Date Of Birth",
+   "read_only": 1
   },
   {
    "fieldname": "marital_status",
    "fieldtype": "Select",
    "label": "Marital Status",
-   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
+   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
    "fieldname": "partner_name",
    "fieldtype": "Data",
    "label": "Partner Name",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
    "fieldname": "expartner_name",
    "fieldtype": "Data",
    "label": "ExPartner Name",
-   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
+   "read_only": 1
   },
   {
    "fieldname": "ben_nationality",
    "fieldtype": "Link",
    "label": "Nationality",
-   "options": "Country"
+   "options": "Country",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)",
    "fieldname": "other_nationality",
    "fieldtype": "Data",
    "label": "Other Nationality",
-   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)"
+   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.ben_nationality!=\"Qatar\"",
    "fieldname": "residence_years",
    "fieldtype": "Data",
-   "label": "Years of Residence"
+   "label": "Years of Residence",
+   "read_only": 1
   },
   {
    "fieldname": "phone_number",
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Phone Number"
+   "label": "Phone Number",
+   "read_only": 1
   },
   {
    "fieldname": "email",
    "fieldtype": "Data",
-   "label": "Email"
+   "label": "Email",
+   "read_only": 1
   },
   {
    "depends_on": "eval:!in_list([\"Visit\", \"Akwad\"], doc.visa_type)",
@@ -388,28 +413,32 @@
    "fieldtype": "Select",
    "label": "Currently Working",
    "mandatory_depends_on": "eval:!in_list([\"Visit\", \"Akwad\"], doc.visa_type)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "employer_name",
    "fieldtype": "Data",
    "label": "Employer Name",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "employer_address",
    "fieldtype": "Data",
    "label": "Employer Address",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "occupation",
    "fieldtype": "Data",
    "label": "Occupation",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
@@ -417,24 +446,28 @@
    "fieldtype": "Select",
    "label": "Worked Before and Now Unemployed",
    "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "fieldname": "education_level",
    "fieldtype": "Select",
    "label": "Education Level",
-   "options": "\nIgnorant\nPrimary School Graduate\nIndustrial School\nSecondary School Graduate\nHigh Education Level\nAbove High Education Level"
+   "options": "\nIgnorant\nPrimary School Graduate\nIndustrial School\nSecondary School Graduate\nHigh Education Level\nAbove High Education Level",
+   "read_only": 1
   },
   {
    "fieldname": "sponsor_name",
    "fieldtype": "Data",
-   "label": "Sponsor Name"
+   "label": "Sponsor Name",
+   "read_only": 1
   },
   {
    "fieldname": "monthly_income",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Monthly Icome"
+   "label": "Monthly Icome",
+   "read_only": 1
   },
   {
    "fieldname": "family_information",
@@ -444,12 +477,14 @@
   {
    "fieldname": "ben_dependent_count",
    "fieldtype": "Data",
-   "label": "Beneficiary Dependent Count"
+   "label": "Beneficiary Dependent Count",
+   "read_only": 1
   },
   {
    "fieldname": "family_size",
    "fieldtype": "Data",
-   "label": "Family Size"
+   "label": "Family Size",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
@@ -457,32 +492,37 @@
    "fieldtype": "Select",
    "label": "Others Under Own Visa Besides Family",
    "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
    "fieldname": "names_and_relation_to_sponsored",
    "fieldtype": "Data",
    "label": "Names and Relation to Sponsored",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
+   "read_only": 1
   },
   {
    "fieldname": "family_visa_type",
    "fieldtype": "Select",
    "label": "Family Has Visa",
-   "options": "\nResidence\nVisit"
+   "options": "\nResidence\nVisit",
+   "read_only": 1
   },
   {
    "fieldname": "partner_working",
    "fieldtype": "Select",
    "label": "Partner Working",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "fieldname": "have_children",
    "fieldtype": "Select",
    "label": "Have Children",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
@@ -490,7 +530,8 @@
    "fieldtype": "Select",
    "label": "Children Above Eighteen",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
@@ -498,7 +539,8 @@
    "fieldtype": "Select",
    "label": "Children In School",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
@@ -506,7 +548,8 @@
    "fieldtype": "Select",
    "label": "Children School Type",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
-   "options": "\nPrivate\nPublic"
+   "options": "\nPrivate\nPublic",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
@@ -514,14 +557,16 @@
    "fieldtype": "Select",
    "label": "Special Needs Children",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
    "fieldname": "children_school_information",
    "fieldtype": "Data",
    "label": "Number of children in schools with their names and educational levels",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "read_only": 1
   },
   {
    "fieldname": "beneficiary_income_section_section",
@@ -531,6 +576,7 @@
   {
    "fieldname": "income_type",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Beneficiary Income Type",
    "options": "\nBeneficiary Salary\nFamily Income\nExtra Income"
   },
@@ -566,19 +612,22 @@
    "default": "0",
    "fieldname": "private_income",
    "fieldtype": "Check",
-   "label": "Private Business Income"
+   "label": "Private Business Income",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "stock_income",
    "fieldtype": "Check",
-   "label": "Stock Market Profits"
+   "label": "Stock Market Profits",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "rent_income",
    "fieldtype": "Check",
-   "label": "Rent Income"
+   "label": "Rent Income",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.family_income==1",
@@ -753,31 +802,36 @@
    "default": "0",
    "fieldname": "family_obligation",
    "fieldtype": "Check",
-   "label": "Family Obligations"
+   "label": "Family Obligations",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "rent_obligation",
    "fieldtype": "Check",
-   "label": "Rent Obligations"
+   "label": "Rent Obligations",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "treatment_obligation",
    "fieldtype": "Check",
-   "label": "Treatment Obligations"
+   "label": "Treatment Obligations",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "debt_obligation",
    "fieldtype": "Check",
-   "label": "Debt Obligations"
+   "label": "Debt Obligations",
+   "reqd": 1
   },
   {
    "default": "0",
    "fieldname": "tuition_obligation",
    "fieldtype": "Check",
-   "label": "Tuition Obligations"
+   "label": "Tuition Obligations",
+   "reqd": 1
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
@@ -1232,14 +1286,16 @@
    "fieldname": "afif_charity_assistance",
    "fieldtype": "Select",
    "label": "Received Afif Charity Assistance Before",
-   "options": "\nYes\nNo"
+   "options": "\nYes\nNo",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)",
    "fieldname": "affif_assistance",
    "fieldtype": "Data",
    "label": "Amount and Year of Afif Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
@@ -1316,11 +1372,19 @@
    "label": "Notes"
   }
  ],
- "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
- "links": [],
+ "links": [
+  {
+   "link_doctype": "Beneficiary Request",
+   "link_fieldname": "beneficiaries"
+  },
+  {
+   "link_doctype": "Beneficiary Aid",
+   "link_fieldname": "beneficiaries"
+  }
+ ],
  "make_attachments_public": 1,
- "modified": "2024-07-13 19:08:04.712630",
+ "modified": "2024-07-17 17:25:37.481702",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1386,5 +1450,5 @@
    "title": "Updated"
   }
  ],
- "title_field": "en_name"
+ "title_field": "ar_name"
 }
