@@ -275,15 +275,21 @@ def create_new_beneficiary(doc, method):
                     "requestorPhoneNumber": doc.requestor_number,
                     "statusDateModified": formatted_date_time
                 }
+
+                if doc.ben_id:
+                    url = f"{BASE_URL}eservices/api/v2/sanadi/aids/beneficiary"
+                    body.update({"id": int(doc.ben_id)})
+                    response_ben = requests.put(url=url, headers=headers, data=json.dumps(body), verify=False)
+                else:
+                    response_ben = requests.post(url=url, headers=headers, data=json.dumps(body), verify=False)
+                
                 frappe.log_error("body", body)
-
-                response_ben = requests.post(url=url, headers=headers, data=json.dumps(body), verify=False)
-
+                
                 if response_ben.status_code == 200:
                     msg = f"Beneficiary response success: {response_ben.json()}"
                     frappe.log_error("beneficiary response", msg)
 
-                    if response_ben.json().get('rs').get('first') == 'SAVED':
+                    if not doc.ben_id and response_ben.json().get('rs').get('first') == 'SAVED':
                         ben_id = response_ben.json().get('rs').get('second').get('id')
                         query = f"""update `tabBeneficiaries Registration` set `ben_id`={ben_id}
                             where name="{doc.name}" """
@@ -600,6 +606,7 @@ def before_insert_request(doc, method):
             last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
         except frappe.DoesNotExistError:
             last_created_request = None
+
         if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
             frappe.throw("A previous request is pending review.")
         else:
@@ -615,7 +622,7 @@ def before_insert_request(doc, method):
 
 def new_subvention_request(doc, method):
     frappe.log_error("subvention_request")
-    if doc.workflow_state == "Pending Specialist Approval":
+    if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
@@ -657,10 +664,11 @@ def new_subvention_request(doc, method):
 
                 # Get the current date and time in the UTC timezone
                 now = datetime.now()
-                # Subtract one day from the current date
-                one_day_ago = now - timedelta(days=1)
-                # Format the date and time as a string in the desired format
-                formatted_date_time = one_day_ago.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                # # Subtract one day from the current date
+                # one_day_ago = now - timedelta(days=1)
+                # # Format the date and time as a string in the desired format
+                # formatted_date_time = one_day_ago.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                formatted_date_time = now.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
                 aid_lookup_parent_id, aid_lookup_id = get_aid_lookup_parent_id(doc)
                 
@@ -1279,3 +1287,76 @@ def add_business_days(start_date, business_days):
         if current_date.weekday() not in [4, 5]:
             business_days -= 1
     return current_date
+
+
+
+
+
+def validate_subvention_request(doc, method):
+    if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
+
+        # Authentication
+        url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        body = {
+            "userName": USER_NAME,
+            "userPassword": PASSWORD,
+            "qId": QID,
+            "lang": "EN"
+        }
+
+        response_auth = requests.post(url=url, data=json.dumps(body), headers=headers, verify=False)
+
+        if response_auth.status_code == 200:
+            msg = f"Authentication response success: {response_auth.json()}"
+            frappe.log_error("authentication response", msg)
+
+            # Validate Token
+            url = f"{BASE_URL}eservices/api/v2/sanadi/auth/validate-token"
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": response_auth.json().get('rs').get('token')
+            }
+
+            response_val = requests.post(url=url, headers=headers, verify=False)
+
+            if response_val.status_code == 200:
+                msg = f"Validate response success: {response_val.json()}"
+                frappe.log_error("validate response", msg)
+ 
+                # active requests
+                url = f"{BASE_URL}eservices/api/v2/sanadi/aids/subvention-request/search"
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": response_auth.json().get('rs').get('token')
+                }
+                body = {
+                    "status": 2,
+                    "beneficiary": {
+                        "benPrimaryIdNumber": frappe.get_value("Beneficiaries Registration", doc.beneficiaries, "ben_primary_idnumber")
+                    }
+                }
+                response_req = requests.post(url=url, data=json.dumps(body), headers=headers, verify=False)
+
+                if response_req.status_code == 200:
+                    msg = f"Active requests response success: {response_req.json()}"
+                    frappe.log_error("active requests response", msg)
+
+                    if response_req.json().get('count') > 0:
+                        frappe.throw('The beneficiary already has an active request.')
+                
+                else:
+                    msg = f"Active requests response fail: {response_req.json()}"
+                    frappe.log_error("active requests response", msg)
+                    frappe.throw("Active requests search failed.")
+
+            else:
+                msg = f"Validate response fail: {response_val.json()}"
+                frappe.log_error("validate response", msg)
+
+        else:
+            msg = f"Authentication response fail: {response_auth.json()}"
+            frappe.log_error("authentication response", msg)

@@ -87,7 +87,6 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Medical Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nMedical Procedures\nMedical Equipment\nMedication\nMedical Supplies\nNatural Treatment\nOther Medical Assistance",
    "read_only": 1
   },
@@ -101,7 +100,6 @@
    "fieldname": "educational_assistance",
    "fieldtype": "Select",
    "label": "Education Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance",
    "read_only": 1
   },
@@ -115,7 +113,6 @@
    "fieldname": "social_assistance",
    "fieldtype": "Select",
    "label": "Social Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nGarmeen\nOrphan sponsorship\nMarriage assistance\nEconomic empowerment assistance\nTravel ticket assistance\nWidow assistance\nDivorced women assistance\nElderly assistance\nUnemployed assistance\nVisitor assistance\nEmergency assistance\nPsychological support assistance\nOther social assistance",
    "read_only": 1
   },
@@ -129,7 +126,6 @@
    "fieldname": "family_assistance",
    "fieldtype": "Select",
    "label": "Family Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Family Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nEmergency lump-sum financial assistance\nMonthly financial assistance\nIn-kind assistance\nFamily nursery sponsorship\nSeasonal financial assistance\nFood basket (food aid)\nIn-kind assistance with a monthly shopping card\nIn-kind assistance with a Ramadan shopping card\nUtility bills\nFines support\nOther family assistance",
    "read_only": 1
   },
@@ -143,7 +139,6 @@
    "fieldname": "housing_assistance",
    "fieldtype": "Select",
    "label": "Housing Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nRent support\nLand purchase\nReal estate purchase\nLand purchase and construction\nDemolition and construction\nMaintenance and restoration\nFurnishing support\nOther social housing assistance",
    "read_only": 1
   },
@@ -157,7 +152,6 @@
    "fieldname": "training_assistance",
    "fieldtype": "Select",
    "label": "Training Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Training Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nSecretarial training\nEntrepreneurship training\nStudent training\nPrisoner training\nOther training and rehabilitation",
    "read_only": 1
   },
@@ -171,7 +165,6 @@
    "fieldname": "awareness_assistance",
    "fieldtype": "Select",
    "label": "Awareness Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Awareness Assistance\", \"Akwad\"], doc.request_category)",
    "options": "\nNational Awareness\nCultural Awareness\nSocial Awareness\nHealth Awareness\nEnvironmental Awareness\nCharitable Awareness\nConsumer Awareness\nOther Awareness Assistance",
    "read_only": 1
   },
@@ -262,7 +255,7 @@
    "link_fieldname": "beneficiaries"
   }
  ],
- "modified": "2024-07-17 12:26:17.969825",
+ "modified": "2024-07-20 17:12:30.341156",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

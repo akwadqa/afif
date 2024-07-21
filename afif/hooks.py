@@ -127,10 +127,11 @@ doc_events = {
     },
     "Beneficiary Request": {
         "before_insert": "afif.hooks_call.before_insert_request",
+        "validate": "afif.hooks_call.validate_subvention_request",
         "on_update": [
             "afif.hooks_call.new_subvention_request",
             # "afif.hooks_call.update_subvention_request",
-            "afif.hooks_call.update_subvention_request_status"
+            "afif.hooks_call.update_subvention_request_status",
         ]
     },
     "Beneficiary Aid": {
@@ -254,10 +255,5 @@ scheduler_events = {
 fixtures = [
         {"dt" : "Client Script", "filters" : [["module","in", "Afif"]]},
         {"dt" : "Custom Field", "filters" : [["module","in", "Afif"]]},
-        "Workflow Action Master",
-        "Workflow State",
-        "Workflow",
-    "Letter Head",
-    "Property Setter",
-    "Notification"
+        {"dt" : "Property Setter", "filters" : [["module","in", "Afif"]]}
 ]
