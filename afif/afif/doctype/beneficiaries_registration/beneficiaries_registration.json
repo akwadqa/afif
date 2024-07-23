@@ -1378,9 +1378,9 @@
    "depends_on": "eval:doc.ben_sec_idtype === \"GCC Id\"",
    "fieldname": "ben_sec_gulf_country",
    "fieldtype": "Select",
-   "label": "Beneficiary Secondary Gulf Country",
+   "label": "Beneficiary Secondary Gulf Country.",
    "mandatory_depends_on": "eval:doc.ben_sec_idtype === \"GCC Id\"",
-   "options": "\nBahrain\nKuwait\nOman\nQatar\nSaudi Arabia\nUnited Arab Emirates"
+   "options": "\nNone\nSaudi Arabia\nOman\nKuwait\nUnited Arab Emirates\nBahrain"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -1395,7 +1395,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2024-07-21 15:49:08.406107",
+ "modified": "2024-07-22 10:39:33.593794",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",

@@ -267,7 +267,7 @@
    "fieldname": "approved_amount",
    "fieldtype": "Data",
    "label": "Approved Amount",
-   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\" "
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\""
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
@@ -281,7 +281,8 @@
    "fieldname": "medical_bill",
    "fieldtype": "Attach",
    "label": "Medical Bill",
-   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)"
+   "mandatory_depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Medical Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Medical Equipment\", \"Akwad\"], doc.medical_assistance)",
@@ -323,7 +324,8 @@
    "fieldname": "estate_pruchase",
    "fieldtype": "Attach",
    "label": "Real Estate Document",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Real estate purchase\", \"Akwad\"], doc.housing_assistance)"
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Real estate purchase\", \"Akwad\"], doc.housing_assistance)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Land purchase and construction\", \"Akwad\"], doc.housing_assistance)",
@@ -526,7 +528,8 @@
    "fieldname": "garmeen_proof",
    "fieldtype": "Attach",
    "label": "Garmeen Proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)"
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Orphan sponsorship\", \"Akwad\"], doc.social_assistance)",
@@ -554,7 +557,8 @@
    "fieldname": "travel_ticket_doc",
    "fieldtype": "Attach",
    "label": "Travel ticket need proof",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Travel ticket assistance\", \"Akwad\"], doc.social_assistance)"
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Travel ticket assistance\", \"Akwad\"], doc.social_assistance)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Widow assistance\", \"Akwad\"], doc.social_assistance)",
@@ -636,7 +640,8 @@
    "fieldname": "declaration",
    "fieldtype": "Attach",
    "label": "Beneficiary Declaration",
-   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\""
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\"",
+   "read_only": 1
   },
   {
    "fetch_from": "beneficiaries.ben_primary_idnumber",
@@ -661,35 +666,40 @@
    "fieldname": "education_invoice",
    "fieldtype": "Attach",
    "label": "School/university dues invoice",
-   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)"
+   "mandatory_depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",
    "fieldname": "garmeen_disclosure",
    "fieldtype": "Attach",
    "label": "Disclosure of cases and rulings (updated)",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)"
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
    "fieldname": "rent_contract",
    "fieldtype": "Attach",
    "label": "Notarized lease contract",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) "
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
    "fieldname": "onwer_qid",
    "fieldtype": "Attach",
    "label": "Qatari owner's card",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)"
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category)",
+   "read_only": 1
   },
   {
    "depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
    "fieldname": "late_letter",
    "fieldtype": "Attach",
    "label": "Letter from the landlord with the value of rent arrears with a recent date",
-   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) "
+   "mandatory_depends_on": "eval:in_list([\"Housing Assistance\", \"Akwad\"], doc.request_category) ",
+   "read_only": 1
   }
  ],
  "links": [
@@ -699,7 +709,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2024-07-17 16:20:18.967401",
+ "modified": "2024-07-22 15:07:30.374517",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",

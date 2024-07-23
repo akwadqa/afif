@@ -245,17 +245,8 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "link_doctype": "Beneficiaries Registration",
-   "link_fieldname": "name"
-  },
-  {
-   "link_doctype": "Beneficiary Request",
-   "link_fieldname": "beneficiaries"
-  }
- ],
- "modified": "2024-07-20 17:12:30.341156",
+ "links": [],
+ "modified": "2024-07-22 13:07:22.508894",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

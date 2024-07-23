@@ -193,6 +193,7 @@ def create_new_beneficiary(doc, method):
                 }
 
                 nationality = frappe.get_value("Country", doc.ben_nationality, "sanadi_code")
+                residence_country = frappe.get_value("Country", doc.ben_sec_gulf_country, "sanadi_code")
                 ben_primary_idtype = get_idtype(doc.ben_primary_idtype)
                 gender = get_gender(doc)
                 education_level = get_education_level(doc)
@@ -246,6 +247,7 @@ def create_new_beneficiary(doc, method):
                     "educationLevel": education_level,
                     "phoneNumber1": doc.phone_number,
                     "residenceCity": residence_city,
+                    "residenceCountry": int(residence_country),
                     "zone": doc.zone,
                     "buildingName": doc.building_name,
                     "unit": doc.unit,
