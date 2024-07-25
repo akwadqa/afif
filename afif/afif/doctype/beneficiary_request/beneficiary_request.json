@@ -640,8 +640,7 @@
    "fieldname": "declaration",
    "fieldtype": "Attach",
    "label": "Beneficiary Declaration",
-   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\"",
-   "read_only": 1
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Pending Supervisor Approval\""
   },
   {
    "fetch_from": "beneficiaries.ben_primary_idnumber",
@@ -709,7 +708,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2024-07-22 15:07:30.374517",
+ "modified": "2024-07-24 12:26:29.351940",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",

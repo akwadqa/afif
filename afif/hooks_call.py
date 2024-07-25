@@ -139,7 +139,7 @@ def rejection_note(doc, method):
 
 def create_new_beneficiary(doc, method):
     frappe.log_error("create_new_beneficiary")
-    if doc.workflow_state == "Accepted":
+    if doc.workflow_state == "Accepted" and not doc.custom_notes:
         # frappe.sendmail(
         #     recipients=doc.email,
         #     subject="AFIF - Beneficiary Registration",
@@ -247,7 +247,7 @@ def create_new_beneficiary(doc, method):
                     "educationLevel": education_level,
                     "phoneNumber1": doc.phone_number,
                     "residenceCity": residence_city,
-                    "residenceCountry": int(residence_country),
+                    "residenceCountry": int(residence_country) if residence_country else None,
                     "zone": doc.zone,
                     "buildingName": doc.building_name,
                     "unit": doc.unit,
