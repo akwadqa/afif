@@ -139,7 +139,9 @@ def rejection_note(doc, method):
 
 def create_new_beneficiary(doc, method):
     frappe.log_error("create_new_beneficiary")
-    if doc.workflow_state == "Accepted" and not doc.custom_notes:
+    if doc.workflow_state == "Accepted":
+        # if doc.custom_notes:
+        #     frappe.throw("The field 'Notes' must be empty to accept the registration.")
         # frappe.sendmail(
         #     recipients=doc.email,
         #     subject="AFIF - Beneficiary Registration",
@@ -604,17 +606,17 @@ def before_insert_request(doc, method):
 
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 
-        try:
-            last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
-        except frappe.DoesNotExistError:
-            last_created_request = None
+        # try:
+        #     last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
+        # except frappe.DoesNotExistError:
+        #     last_created_request = None
 
-        if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-            frappe.throw("A previous request is pending review.")
-        else:
+        # if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
+        #     frappe.throw("A previous request is pending review.")
+        # else:
             # set request ben id
-            doc.beneficiaries = beneficiary
-            doc.request_date = now_datetime()
+        doc.beneficiaries = beneficiary
+        doc.request_date = now_datetime()
 
     else:
         frappe.throw("Beneficiary is Not Accepted. Refer to your email and update your registration.")
