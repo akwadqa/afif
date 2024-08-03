@@ -1003,7 +1003,8 @@
    "fieldname": "copy_of_court_judgment",
    "fieldtype": "Attach",
    "label": "Copy of Court Judgment",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.court_tried)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.court_tried)",
+   "print_hide": 1
   },
   {
    "fieldname": "additional_information",
@@ -1033,113 +1034,130 @@
   {
    "fieldname": "qid",
    "fieldtype": "Attach",
-   "label": "QID"
+   "label": "QID",
+   "print_hide": 1
   },
   {
    "fieldname": "passport",
    "fieldtype": "Attach",
-   "label": "Passport"
+   "label": "Passport",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
    "fieldname": "wife_id",
    "fieldtype": "Attach",
    "label": "Wife QID",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
    "fieldname": "wife_passport",
    "fieldtype": "Attach",
    "label": "Wife Passport ",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
    "fieldname": "children_identification",
    "fieldtype": "Attach",
    "label": "Children IDs or Passport",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Rental\", \"Akwad\"], doc.housing_type)",
    "fieldname": "rent_contract",
    "fieldtype": "Attach",
    "label": "Rent Contract",
-   "mandatory_depends_on": "eval:in_list([\"Rental\", \"Akwad\"], doc.housing_type)"
+   "mandatory_depends_on": "eval:in_list([\"Rental\", \"Akwad\"], doc.housing_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type)",
    "fieldname": "property_deed",
    "fieldtype": "Attach",
    "label": "Property Deed",
-   "mandatory_depends_on": "eval:in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type)"
+   "mandatory_depends_on": "eval:in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
    "fieldname": "bank_statement",
    "fieldtype": "Attach",
    "label": "Bank Statement Form Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "fieldname": "wife_bank_statement",
    "fieldtype": "Attach",
    "label": "Wife Bank Statement From The Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
    "fieldname": "wife_credit_certificate",
    "fieldtype": "Attach",
    "label": "Wife's Qatar Credit Information",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
    "fieldname": "children_bank_statement",
    "fieldtype": "Attach",
    "label": "Children Bank Statement from the Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
    "fieldname": "children_credit_information",
    "fieldtype": "Attach",
    "label": "Credit Information for Children Above 18",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
    "fieldname": "social_security_certificate",
    "fieldtype": "Attach",
    "label": "Social Security Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.partner_working)",
    "fieldname": "partner_work_certificate",
    "fieldtype": "Attach",
    "label": "Partner Recent Work Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.partner_working)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.partner_working)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "employment_certificate",
    "fieldtype": "Attach",
    "label": "Employment Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
+   "print_hide": 1
   },
   {
    "fieldname": "metrash_adress",
    "fieldtype": "Attach",
-   "label": "Metrash Address"
+   "label": "Metrash Address",
+   "print_hide": 1
   },
   {
    "fieldname": "additional_documents",
    "fieldtype": "Attach",
-   "label": "Additional Documents"
+   "label": "Additional Documents",
+   "print_hide": 1
   },
   {
    "default": "0",
@@ -1167,28 +1185,32 @@
    "fieldname": "vehicle_certificate",
    "fieldtype": "Attach",
    "label": "Vehicle Ownership Certificate  ",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
    "fieldname": "iban_picture",
    "fieldtype": "Attach",
    "label": "IBAN Picture",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
    "fieldname": "children_schooling_proof",
    "fieldtype": "Attach",
    "label": "Children Schooling Proof",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_special_needs)",
    "fieldname": "special_needs_certificate",
    "fieldtype": "Attach",
    "label": "Certified medical report for children with special needs",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_special_needs)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_special_needs)",
+   "print_hide": 1
   },
   {
    "default": "0",
@@ -1196,49 +1218,56 @@
    "fieldname": "removal_memorandum",
    "fieldtype": "Attach",
    "label": "Removal memorandum ",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)"
+   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before)",
    "fieldname": "termination_letter",
    "fieldtype": "Attach",
    "label": "Termination_letter",
-   "mandatory_depends_on": "eval:in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before)"
+   "mandatory_depends_on": "eval:in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
    "fieldname": "nonmarriage_proof",
    "fieldtype": "Attach",
    "label": "Proof of NonMarriage",
-   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
    "fieldname": "divorce_paper",
    "fieldtype": "Attach",
    "label": "Divorce Paper",
-   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
    "fieldname": "partner_death_certificate",
    "fieldtype": "Attach",
    "label": "Partner Death Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.coresidence)",
    "fieldname": "id_coresidents",
    "fieldtype": "Attach",
    "label": "IDs or Visa of Coresidents ",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.coresidence)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.coresidence)",
+   "print_hide": 1
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
    "fieldname": "id_sponsored",
    "fieldtype": "Attach",
    "label": "IDs or Visas of Sponsored ",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)"
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
+   "print_hide": 1
   },
   {
    "fieldname": "afif_charity_assistance",
@@ -1258,7 +1287,8 @@
    "fieldname": "beneficiary_credit_certificate",
    "fieldtype": "Attach",
    "label": "Beneficiary Qatar Credit Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)"
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "print_hide": 1
   },
   {
    "fieldname": "rejection_note",
@@ -1348,7 +1378,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2024-07-25 09:48:32.689865",
+ "modified": "2024-08-02 00:54:15.958574",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1358,37 +1388,25 @@
   {
    "create": 1,
    "delete": 1,
-   "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "Administrator",
-   "share": 1,
    "write": 1
   },
   {
    "create": 1,
    "delete": 1,
-   "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "Supervisor",
-   "share": 1,
    "write": 1
   },
   {
    "create": 1,
    "delete": 1,
-   "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "Specialist",
-   "share": 1,
    "write": 1
   }
  ],
