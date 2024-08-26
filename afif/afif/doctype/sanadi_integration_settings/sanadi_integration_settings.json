@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-25 17:58:41.208324",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "usr_name",
+  "qid",
+  "pwd",
+  "base_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "usr_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "User Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "qid",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "QID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pwd",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Password",
+   "reqd": 1
+  },
+  {
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-08-26 12:12:30.409792",
+ "modified_by": "Administrator",
+ "module": "Afif",
+ "name": "Sanadi Integration Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "role": "System Manager",
+   "select": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
