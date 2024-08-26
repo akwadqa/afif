@@ -260,6 +260,7 @@
   {
    "fieldname": "request_fullserial",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Request Full Serial",
    "read_only": 1
   },
@@ -708,7 +709,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2024-07-24 12:26:29.351940",
+ "modified": "2024-08-25 16:09:56.689814",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
@@ -738,6 +739,7 @@
    "share": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
@@ -746,7 +748,7 @@
    "title": "Pending Supervisor Approval"
   },
   {
-   "color": "Cyan",
+   "color": "Yellow",
    "title": "Pending Specialist Approval"
   },
   {
@@ -773,5 +775,6 @@
    "color": "Gray",
    "title": "Expired"
   }
- ]
+ ],
+ "title_field": "beneficiaries"
 }

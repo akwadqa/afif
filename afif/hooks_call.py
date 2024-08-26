@@ -3,6 +3,7 @@ import requests
 import json
 from datetime import datetime, timedelta, timezone
 from frappe.utils import now_datetime, today
+from frappe.utils.file_manager import get_file_path
 # from frappe.utils.background_jobs import enqueue
 
 sanadi_integration_settings = frappe.get_single("Sanadi Integration Settings")
@@ -606,17 +607,17 @@ def before_insert_request(doc, method):
 
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 
-        # try:
-        #     last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
-        # except frappe.DoesNotExistError:
-        #     last_created_request = None
+        try:
+            last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
+        except frappe.DoesNotExistError:
+            last_created_request = None
 
-        # if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-        #     frappe.throw("A previous request is pending review.")
-        # else:
+        if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
+            frappe.throw("A previous request is pending review.")
+        else:
             # set request ben id
-        doc.beneficiaries = beneficiary
-        doc.request_date = now_datetime()
+            doc.beneficiaries = beneficiary
+            doc.request_date = now_datetime()
 
     else:
         frappe.throw("Beneficiary is Not Accepted. Refer to your email and update your registration.")
@@ -694,25 +695,67 @@ def new_subvention_request(doc, method):
                     msg = f"Subvention response success: {response_req.json()}"
                     frappe.log_error("subvention response", msg)
 
+                    # subvention_request_id = response_req.json().get('rs').get('id')
+                    # query = f"""update `tabBeneficiary Request` set `request_id`={subvention_request_id}
+                    #     where name="{doc.name}" """
+                    # frappe.db.sql(query)
+                    # frappe.db.commit()
+
+                    # subvention_request_serial = response_req.json().get('rs').get('requestSerial')
+                    # query = f"""update `tabBeneficiary Request` set `request_serial`={subvention_request_serial}
+                    #     where name="{doc.name}" """
+                    # frappe.db.sql(query)
+                    # frappe.db.commit()
+
+                    # subvention_request_full_serial = response_req.json().get('rs').get('requestFullSerial')
+                    # query = f"""update `tabBeneficiary Request` set `request_fullserial`='{subvention_request_full_serial}'
+                    #     where name="{doc.name}" """
+                    # frappe.db.sql(query)
+                    # frappe.db.commit()
 
                     subvention_request_id = response_req.json().get('rs').get('id')
-                    query = f"""update `tabBeneficiary Request` set `request_id`={subvention_request_id}
-                        where name="{doc.name}" """
-                    frappe.db.sql(query)
-                    frappe.db.commit()
-
                     subvention_request_serial = response_req.json().get('rs').get('requestSerial')
-                    query = f"""update `tabBeneficiary Request` set `request_serial`={subvention_request_serial}
+                    subvention_request_full_serial = response_req.json().get('rs').get('requestFullSerial')
+
+                    query = f"""
+                        update `tabBeneficiary Request` 
+                        set `request_id`={subvention_request_id}, `request_serial`={subvention_request_serial}, `request_fullserial`='{subvention_request_full_serial}'
                         where name="{doc.name}" """
                     frappe.db.sql(query)
                     frappe.db.commit()
 
-                    subvention_request_full_serial = response_req.json().get('rs').get('requestFullSerial')
-                    frappe.log_error("subvention response", subvention_request_full_serial)
-                    query = f"""update `tabBeneficiary Request` set `request_fullserial`='{subvention_request_full_serial}'
-                        where name="{doc.name}" """
-                    frappe.db.sql(query)
-                    frappe.db.commit()
+
+                    # attachment
+                    url = f"{BASE_URL}eservices/api/v2/sanadi/aids/sanadi-attachment"
+                    headers = {
+                        "Authorization": response_auth.json().get('rs').get('token')
+                    }
+
+                    file_path = get_file_path(doc.declaration)
+                    with open(file_path, 'rb') as file:
+                        file_content = file.read()
+
+                    data = {
+                        "entity": json.dumps({
+                            "attachmentType": 3,
+                            "requestId": subvention_request_id,
+                            "documentTitle": "Beneficiary Declaration"
+                        })  # Entity JSON object as a string
+                    }
+                    
+                    files = {
+                        "content": (file_path, file_content)  # Binary file content
+                    }
+
+                    response_attach = requests.post(url=url, headers=headers, data=data, files=files, verify=False)
+
+                    if response_attach.status_code == 200:
+                        msg = f"Attachment response success: {response_attach.json()}"
+                        frappe.log_error("attachment response", msg)
+                    else:
+                        msg = f"Attachment response fail: {response_attach.json()}"
+                        frappe.log_error("attachment response", msg)
+
 
                 else:
                     msg = f"Subvention response fail: {response_req.json()}"
