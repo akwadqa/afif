@@ -316,7 +316,7 @@
    "fieldname": "ben_sec_idnumber",
    "fieldtype": "Data",
    "label": "Benificiary Secondary Id ",
-   "mandatory_depends_on": "eval:doc.ben_sec_idtype!=\"None\""
+   "mandatory_depends_on": "eval:doc.ben_sec_idtype != \"None\""
   },
   {
    "fieldname": "passport_number",
@@ -1378,7 +1378,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2024-08-02 00:54:15.958574",
+ "modified": "2024-08-28 08:25:37.180667",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
