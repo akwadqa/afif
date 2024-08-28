@@ -132,6 +132,7 @@ doc_events = {
             "afif.hooks_call.new_subvention_request",
             # "afif.hooks_call.update_subvention_request",
             "afif.hooks_call.update_subvention_request_status",
+            "afif.hooks_call.set_date_fields"
         ]
     },
     "Beneficiary Aid": {

@@ -4,14 +4,17 @@ import json
 from datetime import datetime, timedelta, timezone
 from frappe.utils import now_datetime, today
 from frappe.utils.file_manager import get_file_path
+from dateutil.relativedelta import relativedelta
 # from frappe.utils.background_jobs import enqueue
 
-sanadi_integration_settings = frappe.get_single("Sanadi Integration Settings")
 
-BASE_URL = sanadi_integration_settings.base_url
-QID = sanadi_integration_settings.qid
-USER_NAME = sanadi_integration_settings.usr_name
-PASSWORD = sanadi_integration_settings.pwd
+if frappe.db.exists("Sanadi Integration Settings", {"user": frappe.session.user}):
+    sanadi_integration_settings = frappe.get_doc("Sanadi Integration Settings", {"user": frappe.session.user})
+
+    BASE_URL = sanadi_integration_settings.base_url
+    QID = sanadi_integration_settings.qid
+    USER_NAME = sanadi_integration_settings.usr_name
+    PASSWORD = sanadi_integration_settings.pwd
 
 
 def set_new_user_role_and_lang(doc, method):
@@ -604,7 +607,6 @@ def before_insert_request(doc, method):
     frappe.log_error("before_insert_request")
     user = frappe.session.user
     if frappe.get_value("Beneficiaries Registration", {"user": user}, "workflow_state") == "Accepted":
-
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 
         try:
@@ -612,12 +614,36 @@ def before_insert_request(doc, method):
         except frappe.DoesNotExistError:
             last_created_request = None
 
-        if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-            frappe.throw("A previous request is pending review.")
-        else:
-            # set request ben id
-            doc.beneficiaries = beneficiary
-            doc.request_date = now_datetime()
+        # if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
+        #     frappe.throw("A previous request is pending review.")
+        # else:
+        #     # set request ben id
+        #     doc.beneficiaries = beneficiary
+        #     doc.request_date = now_datetime()
+
+        if last_created_request:
+            if last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
+                frappe.throw("A previous request is pending review.")
+
+            elif last_created_request.rejected_date:
+                # Calculate the exact date 3 months after the rejected_date
+                three_months_later = last_created_request.rejected_date + relativedelta(months=3)
+                
+                # Compare with the current datetime
+                if now_datetime() < three_months_later:
+                    frappe.throw("Three months must pass since the last rejected request before a new one can be created.")
+
+            elif last_created_request.approved_for_aid_date:
+                # Calculate the exact date 6 months after the approved_for_aid_date
+                six_months_later = last_created_request.approved_for_aid_date + relativedelta(months=6)
+
+                # Compare with the current datetime
+                if now_datetime() < six_months_later:
+                    frappe.throw("Six months must pass since the last approved request before a new one can be created.")
+
+        # set request ben id
+        doc.beneficiaries = beneficiary
+        doc.request_date = now_datetime()
 
     else:
         frappe.throw("Beneficiary is Not Accepted. Refer to your email and update your registration.")
@@ -1102,8 +1128,8 @@ def set_aid_amount(doc, method):
             total_amount += float(amount.suggested_amount)
         average_amount = total_amount/int(len(doc.committee_amount))
 
-        if average_amount > float(frappe.get_value("Beneficiary Request", doc.beneficiary_request, "approved_amount")):
-            frappe.throw("Aid Amount can't be more than Approved Amount")
+        # if average_amount > float(frappe.get_value("Beneficiary Request", doc.beneficiary_request, "approved_amount")):
+        #     frappe.throw("Aid Amount can't be more than Approved Amount")
 
         query = f"""update `tabBeneficiary Aid` set `aid_amount`={average_amount}
             where name="{doc.name}" """
@@ -1407,3 +1433,14 @@ def validate_subvention_request(doc, method):
         else:
             msg = f"Authentication response fail: {response_auth.json()}"
             frappe.log_error("authentication response", msg)
+
+
+
+
+
+def set_date_fields(doc, method):
+    if doc.workflow_state == "Approved" and not doc.approved_for_aid_date:
+        frappe.db.set_value("Beneficiary Request", doc.name, "approved_for_aid_date", now_datetime())
+    
+    elif doc.workflow_state in ["Rejected", "Rejected by Supervisor"] and not doc.rejected_date:
+        frappe.db.set_value("Beneficiary Request", doc.name, "rejected_date", now_datetime())
