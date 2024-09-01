@@ -184,6 +184,7 @@
    "fieldtype": "Select",
    "label": "Doner Id",
    "options": "\nDonor Entity\nDoner",
+   "read_only_depends_on": "eval:doc.workflow_state===\"Approved\"",
    "reqd": 1
   },
   {
@@ -203,23 +204,30 @@
    "fieldtype": "Select",
    "label": "Payment Periodicity",
    "options": "\nMonthly\nOne Time",
+   "read_only_depends_on": "eval:doc.workflow_state===\"Approved\"",
    "reqd": 1
   },
   {
+   "depends_on": "eval: doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\"",
    "fieldname": "approval_date",
    "fieldtype": "Date",
-   "label": "Approval Date"
+   "label": "Approval Date",
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Under Processing\"",
+   "read_only_depends_on": "eval:doc.workflow_state===\"Approved\""
   },
   {
+   "depends_on": "eval: doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\"",
    "fieldname": "payment_date",
    "fieldtype": "Date",
    "label": "Payment Date",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.workflow_state===\"Under Processing\"",
+   "read_only_depends_on": "eval:doc.workflow_state===\"Approved\""
   },
   {
    "fieldname": "disbursement_decision",
    "fieldtype": "Text",
    "label": "Disbursement decision",
+   "read_only_depends_on": "eval:doc.workflow_state===\"Approved\"",
    "reqd": 1
   },
   {
@@ -246,7 +254,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-22 13:07:22.508894",
+ "modified": "2024-08-29 17:34:27.512376",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",
