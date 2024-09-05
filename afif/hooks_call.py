@@ -7,14 +7,19 @@ from frappe.utils.file_manager import get_file_path
 from dateutil.relativedelta import relativedelta
 # from frappe.utils.background_jobs import enqueue
 
+def get_sanadi_integration_settings():
+    if frappe.db.exists("Sanadi Integration Settings", {"user": frappe.session.user}):
+        sanadi_integration_settings = frappe.get_doc("Sanadi Integration Settings", {"user": frappe.session.user})
 
-if frappe.db.exists("Sanadi Integration Settings", {"user": frappe.session.user}):
-    sanadi_integration_settings = frappe.get_doc("Sanadi Integration Settings", {"user": frappe.session.user})
+        BASE_URL = sanadi_integration_settings.base_url
+        QID = sanadi_integration_settings.qid
+        USER_NAME = sanadi_integration_settings.usr_name
+        PASSWORD = sanadi_integration_settings.pwd
 
-    BASE_URL = sanadi_integration_settings.base_url
-    QID = sanadi_integration_settings.qid
-    USER_NAME = sanadi_integration_settings.usr_name
-    PASSWORD = sanadi_integration_settings.pwd
+        return BASE_URL, QID, USER_NAME, PASSWORD
+    
+    else:
+        frappe.throw("Sanadi Integration Settings not available for current user.")
 
 
 def set_new_user_role_and_lang(doc, method):
@@ -158,6 +163,9 @@ def create_new_beneficiary(doc, method):
             user_doc = frappe.get_doc("User", doc.user)
             user_doc.role_profile_name = "Beneficiary Accepted"
             user_doc.save(ignore_permissions=True)
+
+        # Get Sanadi Integration Settings
+        BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
 
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
@@ -654,6 +662,9 @@ def before_insert_request(doc, method):
 def new_subvention_request(doc, method):
     frappe.log_error("subvention_request")
     if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
+        # Get Sanadi Integration Settings
+        BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
+
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
@@ -1035,6 +1046,9 @@ def update_subvention_request_status(doc, method):
     frappe.log_error("update subvention_request status")
 
     if doc.workflow_state == "Rejected" or doc.workflow_state == "Approved":
+        # Get Sanadi Integration Settings
+        BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
+
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
@@ -1140,6 +1154,9 @@ def set_aid_amount(doc, method):
 def new_aid_request(doc, method):
     frappe.log_error("new aid request")
     if doc.workflow_state == "Approved":
+        # Get Sanadi Integration Settings
+        BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
+
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
         headers = {
@@ -1367,6 +1384,8 @@ def add_business_days(start_date, business_days):
 
 def validate_subvention_request(doc, method):
     if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
+        # Get Sanadi Integration Settings
+        BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
 
         # Authentication
         url = f"{BASE_URL}eservices/api/v2/sanadi/auth/integration/login"
