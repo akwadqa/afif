@@ -244,8 +244,7 @@
   {
    "fieldname": "request_summary",
    "fieldtype": "Text",
-   "label": "Request Summary",
-   "read_only": 1
+   "label": "Request Summary"
   },
   {
    "fieldname": "request_id",
@@ -727,7 +726,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2024-08-27 15:57:50.625259",
+ "modified": "2024-08-29 11:07:40.541865",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",

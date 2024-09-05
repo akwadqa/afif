@@ -1378,7 +1378,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2024-08-28 08:25:37.180667",
+ "modified": "2024-08-28 17:12:42.759656",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1391,6 +1391,7 @@
    "print": 1,
    "read": 1,
    "role": "Administrator",
+   "select": 1,
    "write": 1
   },
   {
