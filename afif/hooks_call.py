@@ -1357,26 +1357,26 @@ def get_full_name(user):
 
 
 # scheduler
-def expire_documents():
-    documents = frappe.get_all('Beneficiary Request', filters={'status': ('!=', 'Expired'), 'declaration': ['=', '']}, fields=['name', 'request_date'])
-    for doc in documents:
-        submission_date = doc.request_date
-        frappe.log_error("submission_date", submission_date)
-        expiration_date = add_business_days(submission_date, 3)
-        frappe.log_error("expiration_date", expiration_date)
-        if now_datetime() >= expiration_date:
-            # Update the status to 'Expired' if 3 business days have passed
-            expired_doc = frappe.get_doc('Beneficiary Request', doc.name)
-            expired_doc.status = 'Expired'
-            expired_doc.save()
+# def expire_documents():
+#     documents = frappe.get_all('Beneficiary Request', filters={'status': ('!=', 'Expired'), 'declaration': ['=', '']}, fields=['name', 'request_date'])
+#     for doc in documents:
+#         submission_date = doc.request_date
+#         frappe.log_error("submission_date", submission_date)
+#         expiration_date = add_business_days(submission_date, 3)
+#         frappe.log_error("expiration_date", expiration_date)
+#         if now_datetime() >= expiration_date:
+#             # Update the status to 'Expired' if 3 business days have passed
+#             expired_doc = frappe.get_doc('Beneficiary Request', doc.name)
+#             expired_doc.status = 'Expired'
+#             expired_doc.save()
 
-def add_business_days(start_date, business_days):
-    current_date = start_date
-    while business_days > 0:
-        current_date += timedelta(days=1)
-        if current_date.weekday() not in [4, 5]:
-            business_days -= 1
-    return current_date
+# def add_business_days(start_date, business_days):
+#     current_date = start_date
+#     while business_days > 0:
+#         current_date += timedelta(days=1)
+#         if current_date.weekday() not in [4, 5]:
+#             business_days -= 1
+#     return current_date
 
 
 
