@@ -64,7 +64,7 @@
    "reqd": 1
   },
   {
-   "default": "Under Processing",
+   "default": "New Aid",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_filter": 1,
@@ -256,7 +256,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-03 13:30:01.949484",
+ "modified": "2024-10-09 10:09:10.726482",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",
