@@ -32,10 +32,10 @@
   "installments_count",
   "aid_amount",
   "payment_periodicity",
+  "nb_installements",
   "approval_date",
   "payment_date",
   "disbursement_decision",
-  "nb_installements",
   "committee_suggested_amount",
   "committee_amount"
  ],
@@ -234,11 +234,12 @@
   },
   {
    "default": "1",
+   "depends_on": "eval: doc.payment_periodicity === \"Monthly\" && (doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\")",
    "fieldname": "nb_installements",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Number of Installments",
-   "reqd": 1
+   "mandatory_depends_on": "eval: doc.payment_periodicity == \"Monthly\" && doc.workflow_state === \"Under Processing\"",
+   "read_only_depends_on": "eval:doc.workflow_state ==\"Approved\""
   },
   {
    "fieldname": "committee_amount",
@@ -256,7 +257,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-09 10:09:10.726482",
+ "modified": "2024-10-16 14:07:20.559821",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",
