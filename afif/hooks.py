@@ -139,7 +139,8 @@ doc_events = {
         "on_update": [
             # "afif.hooks_call.set_suggested_amount",
             "afif.hooks_call.set_aid_amount",
-            "afif.hooks_call.new_aid_request"
+            "afif.hooks_call.new_aid_request",
+            "afif.hooks_call.set_aid_total_amount"
         ],
         "before_save": [
             "afif.hooks_call.set_committee_member",

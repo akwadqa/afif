@@ -32,10 +32,11 @@
   "installments_count",
   "aid_amount",
   "payment_periodicity",
+  "nb_installements",
+  "aid_total_amount",
   "approval_date",
   "payment_date",
   "disbursement_decision",
-  "nb_installements",
   "committee_suggested_amount",
   "committee_amount"
  ],
@@ -189,6 +190,7 @@
    "read_only_depends_on": "eval:doc.workflow_state===\"Approved\""
   },
   {
+   "default": "0",
    "fieldname": "installments_count",
    "fieldtype": "Data",
    "hidden": 1,
@@ -234,11 +236,12 @@
   },
   {
    "default": "1",
+   "depends_on": "eval: doc.payment_periodicity == \"Monthly\" && (doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\")",
    "fieldname": "nb_installements",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Number of Installments",
-   "reqd": 1
+   "mandatory_depends_on": "eval: doc.payment_periodicity == \"Monthly\" && doc.workflow_state === \"Under Processing\"",
+   "read_only_depends_on": "eval:doc.workflow_state ==\"Approved\""
   },
   {
    "fieldname": "committee_amount",
@@ -252,11 +255,17 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Committee Suggested Amount"
+  },
+  {
+   "fieldname": "aid_total_amount",
+   "fieldtype": "Data",
+   "label": "Aid Total Amount",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-09 10:09:10.726482",
+ "modified": "2024-10-23 12:56:09.816392",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

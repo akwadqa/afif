@@ -1151,6 +1151,18 @@ def set_aid_amount(doc, method):
         frappe.db.commit()
 
 
+def set_aid_total_amount(doc, method):
+    frappe.log_error("set_aid_total_amount")
+    aid_amount, nb_installements = frappe.db.get_value(doc.doctype, doc.name, ["aid_amount", "nb_installements"])
+    if aid_amount and nb_installements:
+        aid_total_amount = float(aid_amount) * float(nb_installements)
+        query = f"""update `tabBeneficiary Aid` set `aid_total_amount`={aid_total_amount}
+            where name="{doc.name}" """
+        frappe.db.sql(query)
+        frappe.db.commit()
+        doc.reload()
+
+
 def new_aid_request(doc, method):
     frappe.log_error("new aid request")
     if doc.workflow_state == "Approved":
