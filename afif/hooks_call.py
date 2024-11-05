@@ -252,7 +252,7 @@ def create_new_beneficiary(doc, method):
                     "benNationality": nationality,
                     "benPrimaryIdType": ben_primary_idtype,
                     "benPrimaryIdNumber": doc.ben_primary_idnumber,
-                    "benPrimaryIdNationality": nationality,
+                    "benPrimaryIdNationality": 1 if ben_primary_idtype in [1, 4] else nationality,
                     "benSecIdType": ben_sec_idtype,
                     "benSecIdNationality": ben_sec_nationality,
                     "benSecIdNumber": doc.ben_sec_idnumber,
