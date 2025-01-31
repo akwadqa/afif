@@ -179,7 +179,7 @@ doc_events = {
 
 scheduler_events = {
     "daily": [
-        # "afif.hooks_call.expire_documents",
+        # "afif.hooks_call.expire_documents"
         "afif.hooks_call.beneficiary_update_required_status"
     ]
 }

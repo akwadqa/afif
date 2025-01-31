@@ -1391,18 +1391,17 @@ def get_full_name(user):
 #     return current_date
 
 
-
-
-
 def beneficiary_update_required_status():
     frappe.log_error("beneficiary_update_required_status")
     # Calculate the date thresholds
     three_months_ago = now_datetime() - relativedelta(months=3)
     six_months_ago = now_datetime() - relativedelta(months=6)
+    one_week_ago = datetime.now() - relativedelta(weeks=1)
 
+    # First Query: Find Beneficiary Requests that require status update
     query = """
         SELECT 
-            name, beneficiaries
+            beneficiaries
         FROM 
             `tabBeneficiary Request` 
         WHERE 
@@ -1414,15 +1413,14 @@ def beneficiary_update_required_status():
     result = frappe.db.sql(query, (three_months_ago, six_months_ago), as_dict=True)
     frappe.log_error("result", result)
 
-    # Update the beneficiaries' status to "Update Required"
+    # First Query: Find Beneficiaries with Requests that were Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
     for res in result:
-        request_name = res.get("name")
         beneficiary_name = res.get("beneficiaries")
 
         # Delete associated files
-        if request_name:
-            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (request_name,))
-            frappe.log_error("request_name", request_name)
+        if beneficiary_name:
+            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+            frappe.log_error("beneficiary_name", beneficiary_name)
 
         # Update Beneficiary status and workflow state
         if beneficiary_name:
@@ -1432,8 +1430,128 @@ def beneficiary_update_required_status():
                 frappe.db.set_value("Beneficiary", beneficiary_name, "status", "Update Required")
                 frappe.db.set_value("Beneficiary", beneficiary_name, "workflow_state", "Update Required")
                 frappe.log_error("beneficiary_name", beneficiary_name)
+
+
+        # Second Query: Find Beneficiaries Registered 1 Week Ago or Earlier, Without Any Requests
+        query_beneficiary_registrations = """
+            SELECT 
+                br.name 
+            FROM 
+                `tabBeneficiaries Registration` br
+            LEFT JOIN 
+                `tabBeneficiary Request` brq 
+            ON 
+                br.name = brq.beneficiaries
+            WHERE 
+                br.creation <= %s AND 
+                brq.name IS NULL
+        """
+
+        second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
+        frappe.log_error("second_query_result", second_query_result)
+
+        # Process Beneficiaries Without Requests
+        for res in second_query_result:
+            beneficiary_name = res.get("name")
+
+            # Delete attached files
+            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+            frappe.log_error("beneficiary_name", beneficiary_name)
+
+            # Update status and workflow state
+            status = frappe.db.get_value("Beneficiary", beneficiary_name, "status")
+            workflow_state = frappe.db.get_value("Beneficiary", beneficiary_name, "workflow_state")
+            if status != "Update Required" and workflow_state != "Update Required":
+                frappe.db.set_value("Beneficiary", beneficiary_name, "status", "Update Required")
+                frappe.db.set_value("Beneficiary", beneficiary_name, "workflow_state", "Update Required")
+                frappe.log_error("beneficiary_name", beneficiary_name)
+
         
     frappe.db.commit()
+    frappe.log_error(".")
+
+
+
+
+
+def beneficiary_update_required_status():
+    frappe.log_error("beneficiary_update_required_status")
+    # Calculate the date thresholds
+    three_months_ago = now_datetime() - relativedelta(months=3)
+    six_months_ago = now_datetime() - relativedelta(months=6)
+    one_week_ago = datetime.now() - relativedelta(weeks=1)
+
+    # First Query: Find Beneficiary Requests that require status update
+    query = """
+        SELECT 
+            beneficiaries
+        FROM 
+            `tabBeneficiary Request` 
+        WHERE 
+            (status = 'Rejected' AND rejected_date <= %s)
+            OR 
+            (status = 'Approved For Aid' AND approved_for_aid_date <= %s)
+    """
+
+    result = frappe.db.sql(query, (three_months_ago, six_months_ago), as_dict=True)
+    frappe.log_error("result", result)
+
+    # First Query: Find Beneficiaries with Requests that were Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
+    for res in result:
+        beneficiary_name = res.get("beneficiaries")
+
+        # Delete associated files
+        if beneficiary_name:
+            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+            frappe.log_error("beneficiary_name", beneficiary_name)
+
+        # Update Beneficiary status and workflow state
+        if beneficiary_name:
+            status = frappe.db.get_value("Beneficiary", beneficiary_name, "status")
+            workflow_state = frappe.db.get_value("Beneficiary", beneficiary_name, "workflow_state")
+            if status != "Update Required" and workflow_state != "Update Required":
+                frappe.db.set_value("Beneficiary", beneficiary_name, "status", "Update Required")
+                frappe.db.set_value("Beneficiary", beneficiary_name, "workflow_state", "Update Required")
+                frappe.log_error("beneficiary_name", beneficiary_name)
+
+
+        # Second Query: Find Beneficiaries Registered 1 Week Ago or Earlier, Without Any Requests
+        query_beneficiary_registrations = """
+            SELECT 
+                br.name 
+            FROM 
+                `tabBeneficiaries Registration` br
+            LEFT JOIN 
+                `tabBeneficiary Request` brq 
+            ON 
+                br.name = brq.beneficiaries
+            WHERE 
+                br.creation <= %s AND 
+                brq.name IS NULL
+        """
+
+        second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
+        frappe.log_error("second_query_result", second_query_result)
+
+        # Process Beneficiaries Without Requests
+        for res in second_query_result:
+            beneficiary_name = res.get("name")
+
+            # Delete attached files
+            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+            frappe.log_error("beneficiary_name", beneficiary_name)
+
+            # Update status and workflow state
+            status = frappe.db.get_value("Beneficiary", beneficiary_name, "status")
+            workflow_state = frappe.db.get_value("Beneficiary", beneficiary_name, "workflow_state")
+            if status != "Update Required" and workflow_state != "Update Required":
+                frappe.db.set_value("Beneficiary", beneficiary_name, "status", "Update Required")
+                frappe.db.set_value("Beneficiary", beneficiary_name, "workflow_state", "Update Required")
+                frappe.log_error("beneficiary_name", beneficiary_name)
+
+        
+    frappe.db.commit()
+    frappe.log_error(".")
 
 
 
