@@ -1418,18 +1418,16 @@ def beneficiary_update_required_status():
     for res in result:
         beneficiary_name = res.get("beneficiaries")
 
-        # Delete associated files
         if beneficiary_name:
-            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
-            frappe.log_error("beneficiary_name", beneficiary_name)
-
-        # Update Beneficiary status and workflow state
-        if beneficiary_name:
-            status = frappe.db.get_value("Beneficiaries Regisration", beneficiary_name, "status")
-            workflow_state = frappe.db.get_value("Beneficiaries Regisration", beneficiary_name, "workflow_state")
+            status = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "status")
+            workflow_state = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "workflow_state")
             if status != "Update Required" and workflow_state != "Update Required":
-                frappe.db.set_value("Beneficiaries Regisration", beneficiary_name, "status", "Update Required")
-                frappe.db.set_value("Beneficiaries Regisration", beneficiary_name, "workflow_state", "Update Required")
+                # Delete associated files
+                frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+
+                # Update Beneficiary status and workflow state
+                frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+                frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
                 frappe.log_error("beneficiary_name", beneficiary_name)
 
 
@@ -1444,8 +1442,10 @@ def beneficiary_update_required_status():
         ON 
             br.name = brq.beneficiaries
         WHERE 
-            br.creation <= %s AND 
-            brq.name IS NULL
+            br.creation <= %s 
+            AND brq.name IS NULL 
+            AND br.status != 'Update Required' 
+            AND br.workflow_state != 'Update Required' 
     """
 
     second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
@@ -1455,16 +1455,13 @@ def beneficiary_update_required_status():
     for res in second_query_result:
         beneficiary_name = res.get("name")
 
-        # Delete attached files
-        frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
-        frappe.log_error("beneficiary_name", beneficiary_name)
+        if beneficiary_name:
+            # Delete attached files
+            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
 
-        # Update status and workflow state
-        status = frappe.db.get_value("Beneficiaries Regisration", beneficiary_name, "status")
-        workflow_state = frappe.db.get_value("Beneficiaries Regisration", beneficiary_name, "workflow_state")
-        if status != "Update Required" and workflow_state != "Update Required":
-            frappe.db.set_value("Beneficiaries Regisration", beneficiary_name, "status", "Update Required")
-            frappe.db.set_value("Beneficiaries Regisration", beneficiary_name, "workflow_state", "Update Required")
+            # Update status and workflow state
+            frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+            frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
             frappe.log_error("beneficiary_name", beneficiary_name)
 
         
