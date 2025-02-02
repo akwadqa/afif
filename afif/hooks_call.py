@@ -1388,7 +1388,6 @@ def get_full_name(user):
 #             business_days -= 1
 #     return current_date
 
-#test
 
 def validate_subvention_request(doc, method):
     if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
