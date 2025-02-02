@@ -1366,8 +1366,6 @@ def get_full_name(user):
 #     return language
 
 
-
-
 # scheduler
 # def expire_documents():
 #     documents = frappe.get_all('Beneficiary Request', filters={'status': ('!=', 'Expired'), 'declaration': ['=', '']}, fields=['name', 'request_date'])
@@ -1390,6 +1388,7 @@ def get_full_name(user):
 #             business_days -= 1
 #     return current_date
 
+#test
 
 def validate_subvention_request(doc, method):
     if doc.workflow_state == "Pending Specialist Approval" and not doc.request_id:
