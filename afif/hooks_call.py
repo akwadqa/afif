@@ -1425,6 +1425,9 @@ def beneficiary_update_required_status():
                 # Delete associated files
                 frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
 
+                # Clear attachment fields
+                clear_attachment_fields(beneficiary_name)
+
                 # Update Beneficiary status and workflow state
                 frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
                 frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
@@ -1459,6 +1462,9 @@ def beneficiary_update_required_status():
             # Delete attached files
             frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
 
+            # Clear attachment fields
+            clear_attachment_fields(beneficiary_name)
+
             # Update status and workflow state
             frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
             frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
@@ -1467,6 +1473,30 @@ def beneficiary_update_required_status():
         
     frappe.db.commit()
     frappe.log_error(".")
+
+
+def clear_attachment_fields(beneficiary_name):
+    fields_to_clear = [
+        "copy_of_court_judgment", "qid", "passport", "wife_id", "wife_passport",
+        "children_identification", "rent_contract", "property_deed", "bank_statement",
+        "wife_bank_statement", "wife_credit_certificate", "beneficiary_credit_certificate",
+        "children_bank_statement", "children_credit_information", "social_security_certificate",
+        "partner_work_certificate", "employment_certificate", "metrash_adress",
+        "additional_documents", "vehicle_certificate", "iban_picture",
+        "children_schooling_proof", "special_needs_certificate", "removal_memorandum",
+        "termination_letter", "nonmarriage_proof", "divorce_paper", "partner_death_certificate",
+        "id_coresidents", "id_sponsored"
+    ]
+
+    fields_update_query = ", ".join([f"`{field}` = NULL" for field in fields_to_clear])
+
+    update_query = f"""
+        UPDATE `tabBeneficiaries Registration`
+        SET {fields_update_query}
+        WHERE name = %s
+    """
+    frappe.log_error("update_query", update_query)
+    frappe.db.sql(update_query, (beneficiary_name,))
 
 
 
