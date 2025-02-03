@@ -1444,8 +1444,8 @@ def beneficiary_update_required_status():
         WHERE 
             br.creation <= %s 
             AND brq.name IS NULL 
-            AND br.status != 'Update Required' 
-            AND br.workflow_state != 'Update Required' 
+            AND br.status = 'Accepted' 
+            AND br.workflow_state = 'Accepted' 
     """
 
     second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
