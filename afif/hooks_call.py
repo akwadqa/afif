@@ -1406,7 +1406,7 @@ def beneficiary_update_required_status():
         FROM 
             `tabBeneficiary Request` 
         WHERE 
-            (status = 'Rejected' AND rejected_date <= %s)
+            (status IN ('Rejected', 'Rejected by Supervisor') AND rejected_date <= %s)
             OR 
             (status = 'Approved For Aid' AND approved_for_aid_date <= %s)
     """
