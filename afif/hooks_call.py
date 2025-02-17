@@ -164,6 +164,9 @@ def create_new_beneficiary(doc, method):
             user_doc.role_profile_name = "Beneficiary Accepted"
             user_doc.save(ignore_permissions=True)
 
+        # set registration_acceptance_date
+        frappe.db.set_value("Beneficiaries Registration", doc.name, "registration_acceptance_date", now_datetime())
+        
         # Get Sanadi Integration Settings
         BASE_URL, QID, USER_NAME, PASSWORD = get_sanadi_integration_settings()
 
@@ -1392,6 +1395,90 @@ def get_full_name(user):
 
 
 
+# def beneficiary_update_required_status():
+#     frappe.log_error("beneficiary_update_required_status")
+#     # Calculate the date thresholds
+#     three_months_ago = now_datetime() - relativedelta(months=3)
+#     six_months_ago = now_datetime() - relativedelta(months=6)
+#     one_week_ago = now_datetime() - relativedelta(weeks=1)
+
+#     # First Query: Find Beneficiary Requests that require status update
+#     query = """
+#         SELECT 
+#             beneficiaries
+#         FROM 
+#             `tabBeneficiary Request` 
+#         WHERE 
+#             (status IN ('Rejected', 'Rejected by Supervisor') AND rejected_date <= %s)
+#             OR 
+#             (status = 'Approved For Aid' AND approved_for_aid_date <= %s)
+#     """
+
+#     result = frappe.db.sql(query, (three_months_ago, six_months_ago), as_dict=True)
+#     frappe.log_error("result", result)
+
+#     # First Query: Find Beneficiaries with Requests that were Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
+#     for res in result:
+#         beneficiary_name = res.get("beneficiaries")
+
+#         if beneficiary_name:
+#             status = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "status")
+#             workflow_state = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "workflow_state")
+#             if status != "Update Required" and workflow_state != "Update Required":
+#                 # Delete associated files
+#                 frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+
+#                 # Clear attachment fields
+#                 clear_attachment_fields(beneficiary_name)
+
+#                 # Update Beneficiary status and workflow state
+#                 frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+#                 frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
+#                 frappe.log_error("beneficiary_name", beneficiary_name)
+
+
+#     # Second Query: Find Beneficiaries Registered 1 Week Ago or Earlier, Without Any Requests
+#     query_beneficiary_registrations = """
+#         SELECT 
+#             br.name 
+#         FROM 
+#             `tabBeneficiaries Registration` br
+#         LEFT JOIN 
+#             `tabBeneficiary Request` brq 
+#         ON 
+#             br.name = brq.beneficiaries
+#         WHERE 
+#             br.creation <= %s 
+#             AND brq.name IS NULL 
+#             AND br.status = 'Accepted' 
+#             AND br.workflow_state = 'Accepted' 
+#     """
+
+#     second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
+#     frappe.log_error("second_query_result", second_query_result)
+
+#     # Process Beneficiaries Without Requests
+#     for res in second_query_result:
+#         beneficiary_name = res.get("name")
+
+#         if beneficiary_name:
+#             # Delete attached files
+#             frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+
+#             # Clear attachment fields
+#             clear_attachment_fields(beneficiary_name)
+
+#             # Update status and workflow state
+#             frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+#             frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
+#             frappe.log_error("beneficiary_name", beneficiary_name)
+
+        
+#     frappe.db.commit()
+#     frappe.log_error(".")
+
+
+
 def beneficiary_update_required_status():
     frappe.log_error("beneficiary_update_required_status")
     # Calculate the date thresholds
@@ -1399,80 +1486,53 @@ def beneficiary_update_required_status():
     six_months_ago = now_datetime() - relativedelta(months=6)
     one_week_ago = now_datetime() - relativedelta(weeks=1)
 
-    # First Query: Find Beneficiary Requests that require status update
-    query = """
-        SELECT 
-            beneficiaries
-        FROM 
-            `tabBeneficiary Request` 
-        WHERE 
-            (status IN ('Rejected', 'Rejected by Supervisor') AND rejected_date <= %s)
-            OR 
-            (status = 'Approved For Aid' AND approved_for_aid_date <= %s)
-    """
+    beneficiary_list = frappe.get_all(
+        "Beneficiaries Registration",
+        filters={"status": 'Accepted', "workflow_state": 'Accepted'},
+        fields=["name", "registration_acceptance_date"]
+    )
+    frappe.log_error("beneficiary_list", beneficiary_list)
 
-    result = frappe.db.sql(query, (three_months_ago, six_months_ago), as_dict=True)
-    frappe.log_error("result", result)
+    for beneficiary in beneficiary_list:
+        try:
+            last_request = frappe.get_last_doc('Beneficiary Request', filters={"beneficiaries": beneficiary.get("name")})
+        except frappe.DoesNotExistError:
+            last_request = None
+            frappe.log_error("No last request")
 
-    # First Query: Find Beneficiaries with Requests that were Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
-    for res in result:
-        beneficiary_name = res.get("beneficiaries")
+        if last_request:
+            # Check if Request was Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
+            is_rejected_and_old = (
+                last_request.status in ["Rejected", "rejected_date"] 
+                and last_request.rejected_date <= three_months_ago
+            )
 
-        if beneficiary_name:
-            status = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "status")
-            workflow_state = frappe.db.get_value("Beneficiaries Registration", beneficiary_name, "workflow_state")
-            if status != "Update Required" and workflow_state != "Update Required":
-                # Delete associated files
-                frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+            is_approved_and_old = (
+                last_request.status == "Approved For Aid" 
+                and last_request.approved_for_aid_date <= six_months_ago
+            )
 
-                # Clear attachment fields
-                clear_attachment_fields(beneficiary_name)
+            if is_rejected_and_old or is_approved_and_old:
+                frappe.log_error("is_rejected_and_old or is_approved_and_old")
+                clear_attachments_and_update_status(beneficiary.get("name"))
 
-                # Update Beneficiary status and workflow state
-                frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
-                frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
-                frappe.log_error("beneficiary_name", beneficiary_name)
-
-
-    # Second Query: Find Beneficiaries Registered 1 Week Ago or Earlier, Without Any Requests
-    query_beneficiary_registrations = """
-        SELECT 
-            br.name 
-        FROM 
-            `tabBeneficiaries Registration` br
-        LEFT JOIN 
-            `tabBeneficiary Request` brq 
-        ON 
-            br.name = brq.beneficiaries
-        WHERE 
-            br.creation <= %s 
-            AND brq.name IS NULL 
-            AND br.status = 'Accepted' 
-            AND br.workflow_state = 'Accepted' 
-    """
-
-    second_query_result = frappe.db.sql(query_beneficiary_registrations, (one_week_ago,), as_dict=True)
-    frappe.log_error("second_query_result", second_query_result)
-
-    # Process Beneficiaries Without Requests
-    for res in second_query_result:
-        beneficiary_name = res.get("name")
-
-        if beneficiary_name:
-            # Delete attached files
-            frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
-
-            # Clear attachment fields
-            clear_attachment_fields(beneficiary_name)
-
-            # Update status and workflow state
-            frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
-            frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
-            frappe.log_error("beneficiary_name", beneficiary_name)
-
+        elif beneficiary.get("registration_acceptance_date") <= one_week_ago:
+            frappe.log_error("registration_acceptance_date <= one_week_ago")
+            clear_attachments_and_update_status(beneficiary.get("name"))
         
-    frappe.db.commit()
     frappe.log_error(".")
+
+
+def clear_attachments_and_update_status(beneficiary_name):
+    # Delete associated files
+    frappe.db.sql("""DELETE FROM `tabFile` WHERE attached_to_name = %s""", (beneficiary_name,))
+
+    # Clear attachment fields
+    clear_attachment_fields(beneficiary_name)
+
+    # Update Beneficiary status and workflow state
+    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
 
 
 def clear_attachment_fields(beneficiary_name):
@@ -1583,3 +1643,21 @@ def set_date_fields(doc, method):
     
     elif doc.workflow_state in ["Rejected", "Rejected by Supervisor"] and not doc.rejected_date:
         frappe.db.set_value("Beneficiary Request", doc.name, "rejected_date", now_datetime())
+
+
+
+
+
+def set_registration_acceptance_date():
+    beneficiary_list = frappe.get_all(
+        "Beneficiaries Registration",
+        filters={"status": 'Accepted', "workflow_state": 'Accepted'},
+        fields=["name", "registration_acceptance_date"]
+    )
+
+    for beneficiary in beneficiary_list:
+        if not beneficiary.get("registration_acceptance_date"):
+            comment_content = frappe.db.get_value("Comment", {"reference_doctype": "Beneficiaries Registration", "reference_name": beneficiary.get("name")}, "content")
+            if comment_content == "Accepted" or comment_content == "تسجيل تم قبوله":
+                accepted_date = frappe.db.get_value("Comment", {"reference_doctype": "Beneficiaries Registration", "reference_name": beneficiary.get("name")}, "creation")
+                frappe.db.set_value("Beneficiaries Registration", beneficiary.get("name"), "registration_acceptance_date", accepted_date)
