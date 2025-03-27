@@ -1400,7 +1400,7 @@ def beneficiary_update_required_status():
     # Calculate the date thresholds
     three_months_ago = now_datetime() - relativedelta(months=3)
     six_months_ago = now_datetime() - relativedelta(months=6)
-    one_week_ago = now_datetime() - relativedelta(weeks=1)
+    ten_days_ago = now_datetime() - relativedelta(days=10)
 
     beneficiary_list = frappe.get_all(
         "Beneficiaries Registration",
@@ -1434,8 +1434,8 @@ def beneficiary_update_required_status():
                 frappe.log_error("is_rejected_and_old or is_approved_and_old")
                 clear_attachments_and_update_status(beneficiary.get("name"))
 
-        elif beneficiary.get("registration_acceptance_date") <= one_week_ago:
-            frappe.log_error("registration_acceptance_date <= one_week_ago")
+        elif beneficiary.get("registration_acceptance_date") <= ten_days_ago:
+            frappe.log_error("registration_acceptance_date <= ten_days_ago")
             clear_attachments_and_update_status(beneficiary.get("name"))
         
     frappe.log_error(".")
