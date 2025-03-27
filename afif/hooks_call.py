@@ -1251,6 +1251,9 @@ def new_aid_request(doc, method):
                     msg = f"Aid response fail: {response_aid.json()}"
                     frappe.log_error("aid response", msg)
 
+                    message = response_aid.json().get('ms')
+                    frappe.msgprint(message, indicator="red", title="Aid Request Failed")
+
             else:
                 msg = f"Validate response fail: {response_val.json()}"
                 frappe.log_error("validate response", msg)

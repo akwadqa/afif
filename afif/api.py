@@ -3,7 +3,7 @@ import frappe
 def update_suggested_amount():
     aids = frappe.get_all(
         "Beneficiary Aid",
-        filters={"approval_date": (">=", "2025-01-01")},
+        filters={"approval_date": (">=", "2025-01-01"), "name": ("not in", ["Ben-Aid-1908", "Ben-Aid-1888", "Ben-Aid-1785"])},
         fields=["name", "aid_amount"]
     )
     frappe.log_error("AIDS", aids)
