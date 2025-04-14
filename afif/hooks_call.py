@@ -655,6 +655,7 @@ def before_insert_request(doc, method):
         # set request ben id
         doc.beneficiaries = beneficiary
         doc.request_date = now_datetime()
+        frappe.db.set_value("Beneficiaries Registration", beneficiary, "update_required", 0)
 
     else:
         frappe.throw("Beneficiary is Not Accepted. Refer to your email and update your registration.")
@@ -1408,7 +1409,7 @@ def beneficiary_update_required_status():
     beneficiary_list = frappe.get_all(
         "Beneficiaries Registration",
         filters={"status": 'Accepted', "workflow_state": 'Accepted'},
-        fields=["name", "registration_acceptance_date"]
+        fields=["name", "registration_acceptance_date", "update_required"]
     )
     frappe.log_error("beneficiary_list", beneficiary_list)
 
@@ -1419,7 +1420,7 @@ def beneficiary_update_required_status():
             last_request = None
             frappe.log_error("No last request")
 
-        if last_request:
+        if last_request and not beneficiary.get("update_required"):
             # Check if Request was Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
             is_rejected_and_old = (
                 last_request.status in ["Rejected", "Rejected by Supervisor"]
@@ -1454,6 +1455,7 @@ def clear_attachments_and_update_status(beneficiary_name):
     # Update Beneficiary status and workflow state
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
+    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "update_required", 1)
 
 
 def clear_attachment_fields(beneficiary_name):
