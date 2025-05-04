@@ -1435,11 +1435,11 @@ def beneficiary_update_required_status():
             )
 
             if is_rejected_and_old or is_approved_and_old:
-                frappe.log_error("is_rejected_and_old or is_approved_and_old")
+                frappe.log_error("is_rejected_and_old or is_approved_and_old", last_request.name)
                 clear_attachments_and_update_status(beneficiary.get("name"))
 
         elif beneficiary.get("registration_acceptance_date") <= ten_days_ago:
-            frappe.log_error("registration_acceptance_date <= ten_days_ago")
+            frappe.log_error("registration_acceptance_date <= ten_days_ago", beneficiary.get("name"))
             clear_attachments_and_update_status(beneficiary.get("name"))
         
     frappe.log_error(".")
@@ -1454,6 +1454,7 @@ def clear_attachments_and_update_status(beneficiary_name):
 
     # Update Beneficiary status and workflow state
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
+    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "last_required_update_date", now_datetime)
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "update_required", 1)
 
