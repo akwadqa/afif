@@ -153,7 +153,6 @@ doc_events = {
     "User": {
         "after_insert": "afif.hooks_call.set_new_user_role_and_lang"
     }
-    
 }
 
 # Scheduled Tasks
@@ -193,9 +192,10 @@ scheduler_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "afif.event.get_events"
-# }
+override_whitelisted_methods = {
+	# "frappe.desk.doctype.event.event.get_events": "afif.event.get_events"
+    "frappe.integrations.oauth2_logins.custom": "afif.override.oauth2_logins.custom"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
