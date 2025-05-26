@@ -193,6 +193,27 @@ def update_oauth_user(user: str, data: dict, provider: str):
             user.add_roles(default_role)
 
         user.save()
+
+        # Beneficiaries Registration
+
+        frappe.log_error("data", data)
+        frappe.log_error("user.name", user.name)
+        
+        if not frappe.db.exists("Beneficiaries Registration", {"user": user}):
+            frappe.get_doc({
+                "doctype": "Beneficiaries Registration",
+                "user": user.name,
+                "en_name": f"{data.get("firstNameEn")} {data.get("middleNameEn")} {data.get("lastNameEn")}",
+                "ar_name": f"{data.get("firstNameAr")} {data.get("middleNameAr")} {data.get("lastNameAr")}",
+                "date_of_birth": data.get("birthdate"),
+                "ben_nationality": frappe.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
+                "phone_number": data.get("mobileNumber"),
+                "ben_primary_idnumber": data.get("UserQid"),
+                "passport_number": data.get("passportNumber"),
+                "card_expiry_date": data.get("cardExpiryDate"),
+                "passport_expiry_date": data.get("passportExpiryDate")
+            }).insert(ignore_permissions=True)
+            
         
 
 
@@ -215,6 +236,7 @@ def get_user_record(user: str, data: dict) -> "User":
             "doctype": "User",
             "first_name": get_first_name(data),
             "last_name": get_last_name(data),
+            "middle_name": get_middle_name(data),
             "email": get_email(data),
             "gender": gender,
             "enabled": 1,
@@ -236,3 +258,8 @@ def get_first_name(data: dict) -> str:
 
 def get_last_name(data: dict) -> str:
     return data.get("last_name") or data.get("family_name") or data.get("lastNameEn")
+
+
+
+def get_middle_name(data: dict) -> str:
+    return data.get("middleNameEn")
