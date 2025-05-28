@@ -199,12 +199,12 @@ def update_oauth_user(user: str, data: dict, provider: str):
         frappe.log_error("data", data)
         frappe.log_error("user.name", user.name)
         
-        if not frappe.db.exists("Beneficiaries Registration", {"user": user}):
+        if not frappe.db.exists("Beneficiaries Registration", {"user": user.name}):
             frappe.get_doc({
                 "doctype": "Beneficiaries Registration",
                 "user": user.name,
-                "en_name": f"{data.get("firstNameEn")} {data.get("middleNameEn")} {data.get("lastNameEn")}",
-                "ar_name": f"{data.get("firstNameAr")} {data.get("middleNameAr")} {data.get("lastNameAr")}",
+                "en_name": f"{data.get('firstNameEn')} {data.get('middleNameEn')} {data.get('lastNameEn')}",
+                "ar_name": f"{data.get('firstNameAr')} {data.get('middleNameAr')} {data.get('lastNameAr')}",
                 "date_of_birth": data.get("birthdate"),
                 "ben_nationality": frappe.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
                 "phone_number": data.get("mobileNumber"),
@@ -212,7 +212,7 @@ def update_oauth_user(user: str, data: dict, provider: str):
                 "passport_number": data.get("passportNumber"),
                 "card_expiry_date": data.get("cardExpiryDate"),
                 "passport_expiry_date": data.get("passportExpiryDate")
-            }).insert(ignore_permissions=True)
+            }).insert(ignore_permissions=True, ignore_mandatory=True)
             
         
 
