@@ -208,14 +208,14 @@ def update_oauth_user(user: str, data: dict, provider: str):
                 "date_of_birth": data.get("birthdate"),
                 "ben_nationality": frappe.db.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
                 "phone_number": data.get("mobileNumber"),
+                # "ben_primary_idtype": data.get("cardDocumentType"),
                 "ben_primary_idnumber": data.get("UserQid"),
-                "passport_number": data.get("passportNumber"),
                 "card_expiry_date": data.get("cardExpiryDate"),
+                "passport_number": data.get("passportNumber"),
                 "passport_expiry_date": data.get("passportExpiryDate")
             }).insert(ignore_permissions=True, ignore_mandatory=True)
             
         
-
 
 def get_user_record(user: str, data: dict) -> "User":
     try:

@@ -68,8 +68,9 @@ def set_new_user_role_and_lang(doc, method):
 
 def link_user(doc, method):
     frappe.log_error("link user")
-    doc.user = frappe.session.user
-    doc.save(ignore_permissions=True)
+    if not doc.user:
+        doc.user = frappe.session.user
+        doc.save(ignore_permissions=True)
 
 
 # def enqueue_create_new_beneficiary(doc, method):
@@ -1318,44 +1319,91 @@ def set_approval_date(doc, method):
 #     else:
 #         return None
 
-@frappe.whitelist()
-def get_existing_doc(id, dir):
-    if frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": id}):
-        user_id = frappe.get_value("Beneficiaries Registration", {"ben_primary_idnumber": id}, "user")
+# @frappe.whitelist()
+# def get_existing_doc(id, dir):
+#     if frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": id}):
+#         user_id = frappe.get_value("Beneficiaries Registration", {"ben_primary_idnumber": id}, "user")
 
-        # split the user_id
+#         # split the user_id
+#         user, domain = user_id.split("@")
+        
+#         # hide the middle part of the user with asterisks
+#         if len(user) > 2:
+#             hidden_user = user[0] + "*" * (len(user) - 2) + user[-1]
+#         else:
+#             hidden_user = user[0] + "*"
+        
+#         # hide the middle part of the domain with asterisks
+#         domain_name, domain_extension = domain.split(".")
+#         if len(domain_name) > 2:
+#             hidden_domain_name = domain_name[0] + "*" * (len(domain_name) - 2) + domain_name[-1]
+#         else:
+#             hidden_domain_name = domain_name[0] + "*"
+        
+
+#         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
+        
+#         if dir == "rtl":
+#             msg = f"{id} مرتبط بالفعل بالحساب {hidden_user_id}"
+#         else:
+#             msg = f"{id} is already associated with {hidden_user_id}"
+#         return msg
+
+#     else:
+#         return None
+
+@frappe.whitelist()
+def get_existing_doc(user, id, dir):
+    existing = frappe.get_all(
+        "Beneficiaries Registration",
+        filters={
+            "ben_primary_idnumber": id,
+            "user": ["!=", user]
+        },
+        fields=["user"],
+        limit=1
+    )
+
+    if existing:
+        user_id = existing[0].user
+
+        # Split and mask the user_id for privacy
         user, domain = user_id.split("@")
-        
-        # hide the middle part of the user with asterisks
-        if len(user) > 2:
-            hidden_user = user[0] + "*" * (len(user) - 2) + user[-1]
-        else:
-            hidden_user = user[0] + "*"
-        
-        # hide the middle part of the domain with asterisks
+        hidden_user = user[0] + "*" * (len(user) - 2) + user[-1] if len(user) > 2 else user[0] + "*"
+
         domain_name, domain_extension = domain.split(".")
-        if len(domain_name) > 2:
-            hidden_domain_name = domain_name[0] + "*" * (len(domain_name) - 2) + domain_name[-1]
-        else:
-            hidden_domain_name = domain_name[0] + "*"
-        
+        hidden_domain_name = domain_name[0] + "*" * (len(domain_name) - 2) + domain_name[-1] if len(domain_name) > 2 else domain_name[0] + "*"
 
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
-        
+
         if dir == "rtl":
             msg = f"{id} مرتبط بالفعل بالحساب {hidden_user_id}"
         else:
             msg = f"{id} is already associated with {hidden_user_id}"
         return msg
 
-    else:
-        return None
+    return None
+
 
 
 
 @frappe.whitelist()
-def get_full_name(user):
-    return frappe.get_value("User", user, "full_name")
+def get_field_values(user):
+    data = None
+    
+    if frappe.db.exists("Beneficiaries Registration", {"user": user}):
+        data = frappe.db.get_value(
+            "Beneficiaries Registration", 
+            {"user": user}, 
+            [
+                "en_name", "ar_name", "date_of_birth", "ben_nationality", "phone_number", "ben_primary_idtype", 
+                "ben_primary_idnumber", "card_expiry_date", "passport_number", "passport_expiry_date"
+            ], 
+            as_dict=True
+        )
+
+    return data
+    # return frappe.get_value("User", user, "full_name")
 
 
 
