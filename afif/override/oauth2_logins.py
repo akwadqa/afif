@@ -206,7 +206,7 @@ def update_oauth_user(user: str, data: dict, provider: str):
                 "en_name": f"{data.get('firstNameEn')} {data.get('middleNameEn')} {data.get('lastNameEn')}",
                 "ar_name": f"{data.get('firstNameAr')} {data.get('middleNameAr')} {data.get('lastNameAr')}",
                 "date_of_birth": data.get("birthdate"),
-                "ben_nationality": frappe.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
+                "ben_nationality": frappe.db.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
                 "phone_number": data.get("mobileNumber"),
                 "ben_primary_idnumber": data.get("UserQid"),
                 "passport_number": data.get("passportNumber"),
