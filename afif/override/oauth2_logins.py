@@ -194,26 +194,45 @@ def update_oauth_user(user: str, data: dict, provider: str):
 
         user.save()
 
-        # Beneficiaries Registration
+    # Beneficiaries Registration
 
-        frappe.log_error("data", data)
-        frappe.log_error("user.name", user.name)
-        
-        if not frappe.db.exists("Beneficiaries Registration", {"user": user.name}):
-            frappe.get_doc({
-                "doctype": "Beneficiaries Registration",
-                "user": user.name,
-                "en_name": f"{data.get('firstNameEn')} {data.get('middleNameEn')} {data.get('lastNameEn')}",
-                "ar_name": f"{data.get('firstNameAr')} {data.get('middleNameAr')} {data.get('lastNameAr')}",
-                "date_of_birth": data.get("birthdate"),
-                "ben_nationality": frappe.db.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
-                "phone_number": data.get("mobileNumber"),
-                # "ben_primary_idtype": data.get("cardDocumentType"),
-                "ben_primary_idnumber": data.get("UserQid"),
-                "card_expiry_date": data.get("cardExpiryDate"),
-                "passport_number": data.get("passportNumber"),
-                "passport_expiry_date": data.get("passportExpiryDate")
-            }).insert(ignore_permissions=True, ignore_mandatory=True)
+    frappe.log_error("data", data)
+    frappe.log_error("user.name", user.name)
+    
+    # if not frappe.db.exists("Beneficiaries Registration", {"user": user.name}):
+    if not frappe.db.exists("Beneficiaries Registration", {"ben_primary_idnumber": data.get("UserQid")}):
+        frappe.get_doc({
+            "doctype": "Beneficiaries Registration",
+            "user": user.name,
+            "en_name": f"{data.get('firstNameEn')} {data.get('middleNameEn')} {data.get('lastNameEn')}",
+            "ar_name": f"{data.get('firstNameAr')} {data.get('middleNameAr')} {data.get('lastNameAr')}",
+            "date_of_birth": data.get("birthdate"),
+            "ben_nationality": frappe.db.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name"),
+            "phone_number": data.get("mobileNumber"),
+            # "ben_primary_idtype": data.get("cardDocumentType"),
+            "ben_primary_idnumber": data.get("UserQid"),
+            "card_expiry_date": data.get("cardExpiryDate"),
+            "passport_number": data.get("passportNumber"),
+            "passport_expiry_date": data.get("passportExpiryDate")
+        }).insert(ignore_permissions=True, ignore_mandatory=True)
+    
+    else:
+        beneficiaries_registration_doc = frappe.get_doc("Beneficiaries Registration", {"ben_primary_idnumber": data.get("UserQid")})
+
+        beneficiaries_registration_doc.user = user.name
+        beneficiaries_registration_doc.en_name = f"{data.get('firstNameEn')} {data.get('middleNameEn')} {data.get('lastNameEn')}"
+        beneficiaries_registration_doc.ar_name = f"{data.get('firstNameAr')} {data.get('middleNameAr')} {data.get('lastNameAr')}"
+        beneficiaries_registration_doc.date_of_birth = data.get("birthdate")
+        beneficiaries_registration_doc.ben_nationality = frappe.db.get_value("Country", {"custom_qatarpass_code": data.get("nationality")}, "name")
+        beneficiaries_registration_doc.phone_number = data.get("mobileNumber")
+        # beneficiaries_registration_doc.ben_primary_idtype = data.get("cardDocumentType")
+        beneficiaries_registration_doc.ben_primary_idnumber = data.get("UserQid")
+        beneficiaries_registration_doc.card_expiry_date = data.get("cardExpiryDate")
+        beneficiaries_registration_doc.passport_number = data.get("passportNumber")
+        beneficiaries_registration_doc.passport_expiry_date = data.get("passportExpiryDate")
+
+        beneficiaries_registration_doc.updated_by_qatar_pass = 1
+        beneficiaries_registration_doc.save(ignore_permissions=True)
             
         
 

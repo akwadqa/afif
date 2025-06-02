@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_events_in_timeline": 1,
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "SA-.####.-.YYYY",
@@ -14,6 +15,10 @@
   "beneficiary_section",
   "status",
   "ben_id",
+  "registration_acceptance_date",
+  "last_required_update_date",
+  "update_required",
+  "updated_by_qatar_pass",
   "personal_information_section",
   "en_name",
   "ar_name",
@@ -164,11 +169,6 @@
   "social_security_certificate",
   "partner_work_certificate",
   "employment_certificate",
-  "metrash_adress",
-  "additional_documents",
-  "documents_confirmation",
-  "verification_consent",
-  "cancellation_right",
   "vehicle_certificate",
   "iban_picture",
   "children_schooling_proof",
@@ -181,14 +181,26 @@
   "id_coresidents",
   "id_sponsored",
   "rejection_note",
+  "additional_documents",
+  "documents_confirmation",
+  "verification_consent",
+  "cancellation_right",
   "custom_notes",
-  "last_tab"
+  "metrash_adress",
+  "last_tab",
+  "card_expiry_date",
+  "passport_expiry_date"
  ],
  "fields": [
   {
-   "fieldname": "personal_information_section",
-   "fieldtype": "Section Break",
+   "fieldname": "beneficiary_information_tab",
+   "fieldtype": "Tab Break",
    "label": "Personal Information"
+  },
+  {
+   "fieldname": "beneficiary_section",
+   "fieldtype": "Section Break",
+   "label": "Beneficiary"
   },
   {
    "default": "New Registration",
@@ -198,8 +210,18 @@
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "New Registration\nNot Accepted\nAccepted\nUpdated",
+   "options": "New Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required",
    "read_only": 1
+  },
+  {
+   "fieldname": "ben_id",
+   "fieldtype": "Data",
+   "label": "Beneficiary Id"
+  },
+  {
+   "fieldname": "personal_information_section",
+   "fieldtype": "Section Break",
+   "label": "Personal Information"
   },
   {
    "fieldname": "en_name",
@@ -221,17 +243,77 @@
    "options": "User"
   },
   {
-   "fieldname": "ben_id",
+   "fetch_from": "user.language",
+   "fieldname": "user_language",
    "fieldtype": "Data",
-   "label": "Beneficiary Id"
+   "label": "User Language"
   },
   {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "default": "Residence",
    "depends_on": "eval:doc.ben_nationality!=\"Qatar\"",
    "fieldname": "visa_type",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Visa Type",
    "options": "\nResidence\nVisit"
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "\nFemale\nMale"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date Of Birth"
+  },
+  {
+   "fieldname": "passport_number",
+   "fieldtype": "Data",
+   "label": "Passport Number"
+  },
+  {
+   "fieldname": "marital_status",
+   "fieldtype": "Select",
+   "label": "Marital Status",
+   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "ben_nationality",
+   "fieldtype": "Link",
+   "label": "Nationality",
+   "options": "Country"
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ben_primary_idtype",
+   "fieldtype": "Select",
+   "label": "Beneficiary Primary Id Type",
+   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number"
+  },
+  {
+   "fieldname": "ben_primary_idnumber",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Personal ID",
+   "unique": 1
   },
   {
    "fieldname": "ben_requestor_relationtype",
@@ -286,20 +368,6 @@
    "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)"
   },
   {
-   "fieldname": "ben_primary_idtype",
-   "fieldtype": "Select",
-   "label": "Beneficiary Primary Id Type",
-   "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number"
-  },
-  {
-   "fieldname": "ben_primary_idnumber",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Personal ID",
-   "unique": 1
-  },
-  {
    "fieldname": "ben_sec_idtype",
    "fieldtype": "Select",
    "label": "Beneficiary Secondary Id Type",
@@ -313,31 +381,16 @@
    "options": "Country"
   },
   {
+   "depends_on": "eval:doc.ben_sec_idtype === \"GCC Id\"",
+   "fieldname": "ben_sec_gulf_country",
+   "fieldtype": "Select",
+   "label": "Beneficiary Secondary Gulf Country",
+   "options": "\nNone\nSaudi Arabia\nOman\nKuwait\nUnited Arab Emirates\nBahrain"
+  },
+  {
    "fieldname": "ben_sec_idnumber",
    "fieldtype": "Data",
    "label": "Benificiary Secondary Id "
-  },
-  {
-   "fieldname": "passport_number",
-   "fieldtype": "Data",
-   "label": "Passport Number"
-  },
-  {
-   "fieldname": "gender",
-   "fieldtype": "Select",
-   "label": "Gender",
-   "options": "\nFemale\nMale"
-  },
-  {
-   "fieldname": "date_of_birth",
-   "fieldtype": "Date",
-   "label": "Date Of Birth"
-  },
-  {
-   "fieldname": "marital_status",
-   "fieldtype": "Select",
-   "label": "Marital Status",
-   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
@@ -354,12 +407,6 @@
    "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)"
   },
   {
-   "fieldname": "ben_nationality",
-   "fieldtype": "Link",
-   "label": "Nationality",
-   "options": "Country"
-  },
-  {
    "depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)",
    "fieldname": "other_nationality",
    "fieldtype": "Data",
@@ -371,18 +418,6 @@
    "fieldname": "residence_years",
    "fieldtype": "Data",
    "label": "Years of Residence"
-  },
-  {
-   "fieldname": "phone_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Phone Number"
-  },
-  {
-   "fieldname": "email",
-   "fieldtype": "Data",
-   "label": "Email"
   },
   {
    "depends_on": "eval:!in_list([\"Visit\", \"Akwad\"], doc.visa_type)",
@@ -439,14 +474,14 @@
    "label": "Monthly Icome"
   },
   {
-   "fieldname": "family_information",
-   "fieldtype": "Section Break",
+   "fieldname": "family_information_tab",
+   "fieldtype": "Tab Break",
    "label": "Family Information"
   },
   {
-   "fieldname": "ben_dependent_count",
-   "fieldtype": "Data",
-   "label": "Beneficiary Dependent Count"
+   "fieldname": "family_information",
+   "fieldtype": "Section Break",
+   "label": "Family Information"
   },
   {
    "fieldname": "family_size",
@@ -460,6 +495,11 @@
    "label": "Others Under Own Visa Besides Family",
    "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
    "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "ben_dependent_count",
+   "fieldtype": "Data",
+   "label": "Beneficiary Dependent Count"
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
@@ -524,6 +564,24 @@
    "fieldtype": "Data",
    "label": "Number of children in schools with their names and educational levels",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)"
+  },
+  {
+   "fieldname": "afif_charity_assistance",
+   "fieldtype": "Select",
+   "label": "Received Afif Charity Assistance Before",
+   "options": "\nYes\nNo"
+  },
+  {
+   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)",
+   "fieldname": "affif_assistance",
+   "fieldtype": "Data",
+   "label": "Amount and Year of Afif Assistance",
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)"
+  },
+  {
+   "fieldname": "income_obligation_tab",
+   "fieldtype": "Tab Break",
+   "label": "Income and Obligation"
   },
   {
    "fieldname": "beneficiary_income_section_section",
@@ -936,6 +994,11 @@
    "mandatory_depends_on": "eval:doc.debt_obligation==1"
   },
   {
+   "fieldname": "address_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address Information"
+  },
+  {
    "fieldname": "housing_information",
    "fieldtype": "Section Break",
    "label": "Housing Information"
@@ -950,6 +1013,10 @@
    "fieldname": "adress",
    "fieldtype": "Text",
    "label": "Address Description"
+  },
+  {
+   "fieldname": "column_br11",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "zone",
@@ -1012,6 +1079,13 @@
    "options": "\nYes\nNo"
   },
   {
+   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)",
+   "fieldname": "additional_information_text",
+   "fieldtype": "Text",
+   "label": "Kindly Write Your Additional Information",
+   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)"
+  },
+  {
    "fieldname": "coresidence",
    "fieldtype": "Select",
    "label": "Coresidence",
@@ -1029,6 +1103,11 @@
    "fieldname": "attachments_section",
    "fieldtype": "Section Break",
    "label": "Attachments Section"
+  },
+  {
+   "fieldname": "attachment_tab",
+   "fieldtype": "Tab Break",
+   "label": "Attachments"
   },
   {
    "fieldname": "qid",
@@ -1107,6 +1186,14 @@
    "print_hide": 1
   },
   {
+   "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "fieldname": "beneficiary_credit_certificate",
+   "fieldtype": "Attach",
+   "label": "Beneficiary Qatar Credit Certificate",
+   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "print_hide": 1
+  },
+  {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
    "fieldname": "children_bank_statement",
    "fieldtype": "Attach",
@@ -1145,39 +1232,6 @@
    "label": "Employment Certificate",
    "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "print_hide": 1
-  },
-  {
-   "fieldname": "metrash_adress",
-   "fieldtype": "Attach",
-   "label": "Metrash Address",
-   "print_hide": 1
-  },
-  {
-   "fieldname": "additional_documents",
-   "fieldtype": "Attach",
-   "label": "Additional Documents",
-   "print_hide": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "documents_confirmation",
-   "fieldtype": "Check",
-   "label": "Documents Confirmation",
-   "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "verification_consent",
-   "fieldtype": "Check",
-   "label": "Eligibility Verification Consent",
-   "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "cancellation_right",
-   "fieldtype": "Check",
-   "label": "Afif Cancellation Right",
-   "reqd": 1
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
@@ -1269,87 +1323,37 @@
    "print_hide": 1
   },
   {
-   "fieldname": "afif_charity_assistance",
-   "fieldtype": "Select",
-   "label": "Received Afif Charity Assistance Before",
-   "options": "\nYes\nNo"
-  },
-  {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)",
-   "fieldname": "affif_assistance",
-   "fieldtype": "Data",
-   "label": "Amount and Year of Afif Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)"
-  },
-  {
-   "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
-   "fieldname": "beneficiary_credit_certificate",
-   "fieldtype": "Attach",
-   "label": "Beneficiary Qatar Credit Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
-   "print_hide": 1
-  },
-  {
    "fieldname": "rejection_note",
    "fieldtype": "Text",
    "hidden": 1,
    "label": "Rejection Note"
   },
   {
-   "fieldname": "cb1",
-   "fieldtype": "Column Break"
+   "fieldname": "additional_documents",
+   "fieldtype": "Attach",
+   "label": "Additional Documents",
+   "print_hide": 1
   },
   {
-   "fieldname": "beneficiary_section",
-   "fieldtype": "Section Break",
-   "label": "Beneficiary"
+   "default": "0",
+   "fieldname": "documents_confirmation",
+   "fieldtype": "Check",
+   "label": "Documents Confirmation",
+   "reqd": 1
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)",
-   "fieldname": "additional_information_text",
-   "fieldtype": "Text",
-   "label": "Kindly Write Your Additional Information",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)"
+   "default": "0",
+   "fieldname": "verification_consent",
+   "fieldtype": "Check",
+   "label": "Eligibility Verification Consent",
+   "reqd": 1
   },
   {
-   "fetch_from": "user.language",
-   "fieldname": "user_language",
-   "fieldtype": "Data",
-   "label": "User Language"
-  },
-  {
-   "fieldname": "family_information_tab",
-   "fieldtype": "Tab Break",
-   "label": "Family Information"
-  },
-  {
-   "fieldname": "beneficiary_information_tab",
-   "fieldtype": "Tab Break",
-   "label": "Personal Information"
-  },
-  {
-   "fieldname": "last_tab",
-   "fieldtype": "Tab Break",
-   "label": "Last Tab"
-  },
-  {
-   "fieldname": "income_obligation_tab",
-   "fieldtype": "Tab Break",
-   "label": "Income and Obligation"
-  },
-  {
-   "fieldname": "address_information_tab",
-   "fieldtype": "Tab Break",
-   "label": "Address Information"
-  },
-  {
-   "fieldname": "attachment_tab",
-   "fieldtype": "Tab Break",
-   "label": "Attachments"
-  },
-  {
-   "fieldname": "column_br11",
-   "fieldtype": "Column Break"
+   "default": "0",
+   "fieldname": "cancellation_right",
+   "fieldtype": "Check",
+   "label": "Afif Cancellation Right",
+   "reqd": 1
   },
   {
    "fieldname": "custom_notes",
@@ -1357,11 +1361,47 @@
    "label": "Notes"
   },
   {
-   "depends_on": "eval:doc.ben_sec_idtype === \"GCC Id\"",
-   "fieldname": "ben_sec_gulf_country",
-   "fieldtype": "Select",
-   "label": "Beneficiary Secondary Gulf Country",
-   "options": "\nNone\nSaudi Arabia\nOman\nKuwait\nUnited Arab Emirates\nBahrain"
+   "fieldname": "metrash_adress",
+   "fieldtype": "Attach",
+   "label": "Metrash Address",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "last_tab",
+   "fieldtype": "Tab Break",
+   "label": "Last Tab"
+  },
+  {
+   "fieldname": "registration_acceptance_date",
+   "fieldtype": "Datetime",
+   "label": "Registration Acceptance Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "update_required",
+   "fieldtype": "Check",
+   "label": "Update Required"
+  },
+  {
+   "fieldname": "last_required_update_date",
+   "fieldtype": "Datetime",
+   "label": "Last Required Update Date"
+  },
+  {
+   "fieldname": "card_expiry_date",
+   "fieldtype": "Date",
+   "label": "Card Expiry Date"
+  },
+  {
+   "fieldname": "passport_expiry_date",
+   "fieldtype": "Date",
+   "label": "Passport Expiry Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "updated_by_qatar_pass",
+   "fieldtype": "Check",
+   "label": "Updated by Qatar Pass"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -1376,7 +1416,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2024-10-23 13:34:39.077744",
+ "modified": "2025-06-02 14:45:46.178446",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1431,5 +1471,6 @@
    "title": "Updated"
   }
  ],
- "title_field": "ar_name"
+ "title_field": "ar_name",
+ "track_changes": 1
 }

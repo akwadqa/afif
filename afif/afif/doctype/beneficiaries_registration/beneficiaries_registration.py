@@ -1,4 +1,4 @@
-# Copyright (c) 2023, Akwad and contributors
+# Copyright (c) 2025, Akwad and contributors
 # For license information, please see license.txt
 
 # import frappe
