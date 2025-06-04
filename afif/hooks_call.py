@@ -1468,7 +1468,8 @@ def beneficiary_update_required_status():
             last_request = None
             frappe.log_error("No last request")
 
-        if last_request and not beneficiary.get("update_required"):
+        update_required = int(beneficiary.get("update_required") or 0)
+        if last_request and not update_required:
             # Check if Request was Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
             is_rejected_and_old = (
                 last_request.status in ["Rejected", "Rejected by Supervisor"]
