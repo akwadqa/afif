@@ -1503,7 +1503,7 @@ def clear_attachments_and_update_status(beneficiary_name):
 
     # Update Beneficiary status and workflow state
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "status", "Update Required")
-    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "last_required_update_date", now_datetime)
+    frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "last_required_update_date", now_datetime())
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "workflow_state", "Update Required")
     frappe.db.set_value("Beneficiaries Registration", beneficiary_name, "update_required", 1)
 
