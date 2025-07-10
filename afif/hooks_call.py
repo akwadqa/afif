@@ -1450,20 +1450,30 @@ def get_field_values(user):
 def beneficiary_update_required_status():
     frappe.log_error("beneficiary_update_required_status")
     # Calculate the date thresholds
-    three_months_ago = now_datetime() - relativedelta(months=3)
-    six_months_ago = now_datetime() - relativedelta(months=6)
+    three_months_ago = now_datetime() - relativedelta(months=3) - timedelta(days=1)
+    six_months_ago = now_datetime() - relativedelta(months=6) - timedelta(days=1)
     ten_days_ago = now_datetime() - relativedelta(days=10)
 
     beneficiary_list = frappe.get_all(
         "Beneficiaries Registration",
         filters={"status": 'Accepted', "workflow_state": 'Accepted'},
-        fields=["name", "registration_acceptance_date", "update_required"]
+        fields=["name", "registration_acceptance_date", "update_required", "last_required_update_date"]
     )
     frappe.log_error("beneficiary_list", beneficiary_list)
 
     for beneficiary in beneficiary_list:
         try:
-            last_request = frappe.get_last_doc('Beneficiary Request', filters={"beneficiaries": beneficiary.get("name")})
+            last_required_update_date = beneficiary.get("last_required_update_date")
+    
+            filters = {
+                "beneficiaries": beneficiary.get("name")
+            }
+
+            if last_required_update_date:
+                filters["creation"] = [">", last_required_update_date]
+
+            last_request = frappe.get_last_doc("Beneficiary Request", filters=filters)
+
         except frappe.DoesNotExistError:
             last_request = None
             frappe.log_error("No last request")
