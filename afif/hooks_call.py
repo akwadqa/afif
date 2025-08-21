@@ -1397,7 +1397,7 @@ def get_field_values(user):
             {"user": user}, 
             [
                 "en_name", "ar_name", "date_of_birth", "ben_nationality", "phone_number", "ben_primary_idtype", 
-                "ben_primary_idnumber", "card_expiry_date", "passport_number", "passport_expiry_date"
+                "ben_primary_idnumber", "card_expiry_date", "passport_number", "passport_expiry_date", "status"
             ], 
             as_dict=True
         )
