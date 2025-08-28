@@ -1,4 +1,9 @@
-frappe.ready(function() {
+frappe.ready(function() {     
+
+    if (window.location.search === "?cmd=web_logout" || window.location.pathname === "/login" || window.location.hash === "#login") {
+        localStorage.removeItem("beneficiary_request_form");
+    }
+
     function overridePreviousButton() {
         let webForm = frappe.web_form;
         if (webForm && webForm.$previous_button) {
