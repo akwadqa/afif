@@ -31,6 +31,7 @@
   "passport_number",
   "marital_status",
   "phone_number",
+  "partners_phone_number",
   "ben_nationality",
   "cb1",
   "ben_primary_idtype",
@@ -1402,6 +1403,11 @@
    "fieldname": "updated_by_qatar_pass",
    "fieldtype": "Check",
    "label": "Updated by Qatar Pass"
+  },
+  {
+   "fieldname": "partners_phone_number",
+   "fieldtype": "Data",
+   "label": "Partner's phone number"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -1416,7 +1422,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2025-06-02 14:45:46.178446",
+ "modified": "2025-09-15 13:47:52.021735",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
