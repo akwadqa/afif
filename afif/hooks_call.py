@@ -84,7 +84,7 @@ def updated_status(doc, method):
     status = frappe.db.sql(query)
     if status:
         status = status[0][0]
-        if (doc.workflow_state == "Not Accepted" and status == "Not Accepted") or (doc.workflow_state == "Update Required" and status == "Update Required"):
+        if doc.workflow_state == "Not Accepted" and status == "Not Accepted":
             doc.status = "Updated"
             doc.workflow_state = "Updated"
             # query = f"""update `tabBeneficiaries Registration` set `status`="Updated"
@@ -92,7 +92,9 @@ def updated_status(doc, method):
             # frappe.db.sql(query)
             # frappe.db.commit()
             # doc.reload()
-    
+        elif doc.workflow_state == "Update Required" and status == "Update Required":
+            doc.status = "Updated beneficiary"
+            doc.workflow_state = "Updated beneficiary"    
     # # Not Accepted exception
     # query = f""" select workflow_state from `tabBeneficiaries Registration` where name="{doc.name}" """
     # workflow_state = frappe.db.sql(query)

@@ -208,10 +208,10 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "in_filter": 1,
-   "in_preview": 1,
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "New Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required",
+   "options": "New Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required\nUpdated beneficiary",
    "read_only": 1
   },
   {
@@ -1358,7 +1358,7 @@
   },
   {
    "fieldname": "custom_notes",
-   "fieldtype": "Small Text",
+   "fieldtype": "Text Editor",
    "label": "Notes"
   },
   {
@@ -1422,7 +1422,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2025-09-15 13:47:52.021735",
+ "modified": "2025-10-01 14:35:09.636922",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
