@@ -1452,8 +1452,8 @@ def get_field_values(user):
 def beneficiary_update_required_status():
     frappe.log_error("beneficiary_update_required_status")
     # Calculate the date thresholds
-    three_months_ago = now_datetime() - relativedelta(months=3) - timedelta(days=3)
-    six_months_ago = now_datetime() - relativedelta(months=6) - timedelta(days=6)
+    three_months_ago = now_datetime() - relativedelta(months=3) + timedelta(days=1)
+    six_months_ago = now_datetime() - relativedelta(months=6) + timedelta(days=1)
     ten_days_ago = now_datetime() - relativedelta(days=10)
 
     beneficiary_list = frappe.get_all(
