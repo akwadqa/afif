@@ -150,7 +150,6 @@ def rejection_note(doc, method):
 
 
 def create_new_beneficiary(doc, method):
-    frappe.log_error("create_new_beneficiary")
     if doc.workflow_state == "Accepted":
         # if doc.custom_notes:
         #     frappe.throw("The field 'Notes' must be empty to accept the registration.")
@@ -161,7 +160,6 @@ def create_new_beneficiary(doc, method):
         # )
 
         # update role to Beneficiary Accepted
-        frappe.log_error("update role")
         if doc.user != "Administrator":
             user_doc = frappe.get_doc("User", doc.user)
             user_doc.role_profile_name = "Beneficiary Accepted"
@@ -299,13 +297,11 @@ def create_new_beneficiary(doc, method):
                 }
 
                 if doc.ben_id:
+                    doc.ben_id = None
                     url = f"{BASE_URL}eservices/api/v2/sanadi/aids/beneficiary"
-                    body.update({"id": int(doc.ben_id)})
-                    response_ben = requests.put(url=url, headers=headers, data=json.dumps(body), verify=False)
-                else:
-                    response_ben = requests.post(url=url, headers=headers, data=json.dumps(body), verify=False)
+                    # body.update({"id": None})
                 
-                frappe.log_error("body", body)
+                response_ben = requests.post(url=url, headers=headers, data=json.dumps(body), verify=False)
                 
                 if response_ben.status_code == 200:
                     msg = f"Beneficiary response success: {response_ben.json()}"
@@ -395,7 +391,7 @@ def get_gender(doc):
         gender = 2
 
     return gender       
-	
+    
 
 def get_education_level(doc):
     if doc.education_level == "Ignorant":
@@ -1129,7 +1125,7 @@ def update_subvention_request_status(doc, method):
     #     )
 
 
-			
+            
 
 
 # def set_suggested_amount(doc, method):
