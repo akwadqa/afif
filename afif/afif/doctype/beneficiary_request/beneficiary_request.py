@@ -11,7 +11,7 @@ class BeneficiaryRequest(Document):
 
         beneficiary = frappe.get_doc("Beneficiaries Registration", self.beneficiaries)
         
-        if not beneficiary.ben_id:
+        if not beneficiary.ben_id or beneficiary.ben_id == "akwad":
             frappe.log_error(f"beneficiary {beneficiary.name} didn\'t get id from Sanadi")
             return {
                 "success": False,
