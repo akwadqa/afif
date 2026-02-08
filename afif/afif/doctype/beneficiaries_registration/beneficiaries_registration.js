@@ -2,7 +2,22 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Beneficiaries Registration', {
-	// refresh: function(frm) {
-
-	// }
+	refresh: function (frm) {
+		if (!frm.doc.update_required) {
+			frm.add_custom_button('Update Required', function () {
+				frappe.call({
+					method: 'afif.hooks_call.beneficiary_update_required_status_for_document',
+					args: {
+						beneficiary_name: frm.doc.name
+					},
+					callback: function (r) {
+						if (!r.exc) {
+							frappe.msgprint(r.message || 'Beneficiary status updated successfully.');
+							frm.reload_doc(); // refresh form to show updated status
+						}
+					}
+				});
+			});
+		}
+	}
 });

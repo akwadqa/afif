@@ -1642,3 +1642,15 @@ def set_registration_acceptance_date():
             if comment_content == "Accepted" or comment_content == "تسجيل تم قبوله":
                 accepted_date = frappe.db.get_value("Comment", {"reference_doctype": "Beneficiaries Registration", "reference_name": beneficiary.get("name")}, "creation")
                 frappe.db.set_value("Beneficiaries Registration", beneficiary.get("name"), "registration_acceptance_date", accepted_date)
+
+
+@frappe.whitelist()
+def beneficiary_update_required_status_for_document(beneficiary_name):
+    try:        
+        clear_attachments_and_update_status(beneficiary_name)
+
+        return {"status": "success", "message": f"Done successfully."}       
+
+    except Exception as e:
+        frappe.log_error(f"Error processing {beneficiary_name}: {str(e)}", "Beneficiary Update Error")
+        return {"status": "error", "message": f"An error occurred: {str(e)}"}
