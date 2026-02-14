@@ -640,16 +640,16 @@ def before_insert_request(doc, method):
                 three_months_later = last_created_request.rejected_date + relativedelta(months=3)
                 
                 # Compare with the current datetime
-                # if now_datetime() < three_months_later:
-                #     frappe.throw("Three months must pass since the last rejected request before a new one can be created.")
+                if now_datetime() < three_months_later:
+                    frappe.throw("Three months must pass since the last rejected request before a new one can be created.")
 
             elif last_created_request.approved_for_aid_date:
                 # Calculate the exact date 6 months after the approved_for_aid_date
                 six_months_later = last_created_request.approved_for_aid_date + relativedelta(months=6)
 
                 # Compare with the current datetime
-                # if now_datetime() < six_months_later:
-                #     frappe.throw("Six months must pass since the last approved request before a new one can be created.")
+                if now_datetime() < six_months_later:
+                    frappe.throw("Six months must pass since the last approved request before a new one can be created.")
 
         # set request ben id
         doc.beneficiaries = beneficiary
