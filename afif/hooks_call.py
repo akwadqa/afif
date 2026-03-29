@@ -305,7 +305,6 @@ def create_new_beneficiary(doc, method):
                 
                 if response_ben.status_code == 200:
                     msg = f"Beneficiary response success: {response_ben.json()}"
-                    frappe.log_error("beneficiary response", msg)
 
                     if not doc.ben_id and response_ben.json().get('rs').get('first') == 'SAVED':
                         ben_id = response_ben.json().get('rs').get('second').get('id')
@@ -713,12 +712,13 @@ def new_subvention_request(doc, method):
                 # one_day_ago = now - timedelta(days=1)
                 # # Format the date and time as a string in the desired format
                 # formatted_date_time = one_day_ago.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
-                formatted_date_time = now.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                # formatted_date_time = now.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                formatted_date = now.strftime("%Y-%m-%d")
 
                 aid_lookup_parent_id, aid_lookup_id = get_aid_lookup_parent_id(doc)
                 
                 body = {
-                    "creationDate": formatted_date_time,  
+                    "creationDate": formatted_date,  
                     "benId": frappe.get_value("Beneficiaries Registration", doc.beneficiaries, "ben_id"),
                     "requestChannel": 1, 
                     "requestedAidAmount": doc.requested_amount, 
@@ -727,13 +727,11 @@ def new_subvention_request(doc, method):
                     "aidLookupParentId": aid_lookup_parent_id
                 }
                 
-                frappe.log_error("body", body)
 
                 response_req = requests.post(url=url, headers=headers, data=json.dumps(body), verify=False)
 
                 if response_req.status_code == 200:
                     msg = f"Subvention response success: {response_req.json()}"
-                    frappe.log_error("subvention response", msg)
 
                     # subvention_request_id = response_req.json().get('rs').get('id')
                     # query = f"""update `tabBeneficiary Request` set `request_id`={subvention_request_id}
