@@ -161,8 +161,15 @@ def create_new_beneficiary(doc, method):
 
         # update role to Beneficiary Accepted
         if doc.user != "Administrator":
+            # user_doc = frappe.get_doc("User", doc.user)
+            # user_doc.role_profile_name = "Beneficiary Accepted"
+            # user_doc.save(ignore_permissions=True)
+
             user_doc = frappe.get_doc("User", doc.user)
-            user_doc.role_profile_name = "Beneficiary Accepted"
+            user_doc.role_profiles = []
+            user_doc.save(ignore_permissions=True)
+            user_doc.reload()
+            user_doc.append("role_profiles", {"role_profile": "Beneficiary Accepted"})
             user_doc.save(ignore_permissions=True)
 
         # set registration_acceptance_date
@@ -331,24 +338,46 @@ def create_new_beneficiary(doc, method):
         # update role to Beneficiary Not Accepted
         frappe.log_error("update role - Not Accepted")
         if doc.user != "Administrator":
+            # user_doc = frappe.get_doc("User", doc.user)
+            # user_doc.role_profile_name = "Beneficiary Not Accepted"
+            # user_doc.save(ignore_permissions=True)
+
             user_doc = frappe.get_doc("User", doc.user)
-            user_doc.role_profile_name = "Beneficiary Not Accepted"
+            user_doc.role_profiles = []
+            user_doc.save(ignore_permissions=True)
+            user_doc.reload()
+            user_doc.append("role_profiles", {"role_profile": "Beneficiary Not Accepted"})
             user_doc.save(ignore_permissions=True)
 
     elif doc.workflow_state == "New Registration":
         # update role to Beneficiary Submitted
         frappe.log_error("update role")
         if doc.user != "Administrator":
+
+            # user_doc = frappe.get_doc("User", doc.user)
+            # user_doc.role_profile_name = "Beneficiary New Registration"
+            # user_doc.save(ignore_permissions=True)
+
             user_doc = frappe.get_doc("User", doc.user)
-            user_doc.role_profile_name = "Beneficiary New Registration"
+            user_doc.role_profiles = []
+            user_doc.save(ignore_permissions=True)
+            user_doc.reload()
+            user_doc.append("role_profiles", {"role_profile": "Beneficiary New Registration"})
             user_doc.save(ignore_permissions=True)
         
     elif doc.workflow_state == "Updated":
         # update role to Beneficiary Updated
         frappe.log_error("update role")
         if doc.user != "Administrator":
+            # user_doc = frappe.get_doc("User", doc.user)
+            # user_doc.role_profile_name = "Beneficiary Updated"
+            # user_doc.save(ignore_permissions=True)
+
             user_doc = frappe.get_doc("User", doc.user)
-            user_doc.role_profile_name = "Beneficiary Updated"
+            user_doc.role_profiles = []
+            user_doc.save(ignore_permissions=True)
+            user_doc.reload()
+            user_doc.append("role_profiles", {"role_profile": "Beneficiary Updated"})
             user_doc.save(ignore_permissions=True)
 
     # elif doc.workflow_state == "Not Accepted" and doc.rejection_note:
