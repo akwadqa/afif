@@ -268,3 +268,10 @@ fixtures = [
   #      {"dt" : "Custom Field", "filters" : [["module","in", "Afif"]]},
    #     {"dt" : "Property Setter", "filters" : [["module","in", "Afif"]]}
 #]
+
+
+boot_session = "afif.override.apply_overrides"
+
+website_route_rules = [
+    {"from_route": "/frontend/<path:name>", "to_route": "frontend"},
+]

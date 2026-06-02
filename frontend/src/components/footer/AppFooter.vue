@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="w-full bg-white text-gray-700 py-12 px-6 md:px-16 border-t border-gray-100"
+    class="w-full bg-white py-12 px-6 md:px-16 border-t border-[#D3D3D3]"
     dir="rtl"
   >
     <div class="max-w-7xl mx-auto">
@@ -15,14 +15,14 @@
               class="h-full object-contain"
             />
           </div>
-          <p class="text-sm text-gray-500 leading-relaxed max-w-sm">
+          <p class="text-sm text-[#3E4850] leading-relaxed max-w-sm">
             مؤسسة قطرية خيرية رائدة في مجال التنمية المستدامة والتمكين الاجتماعي.
           </p>
         </div>
 
         <div class="flex flex-col space-y-3 text-right">
-          <h4 class="text-base font-bold text-gray-800 mb-1">من نحن</h4>
-          <ul class="space-y-2.5 text-sm text-gray-500">
+          <h4 class="text-base font-bold text-[#3E4850] mb-1">من نحن</h4>
+          <ul class="space-y-2.5 text-sm text-[#3E4850]">
             <li><a href="#" class="hover:text-sky-500 transition-colors">برامجنا</a></li>
             <li><a href="#" class="hover:text-sky-500 transition-colors">منحة الشيخ خالد بن ناصر</a></li>
             <li><a href="#" class="hover:text-sky-500 transition-colors">مبادراتنا</a></li>
@@ -31,25 +31,25 @@
         </div>
 
         <div class="flex flex-col space-y-4 text-right">
-          <h4 class="text-base font-bold text-gray-800 mb-1">تواصل معنا</h4>
+          <h4 class="text-base font-bold text-[#3E4850] mb-1">تواصل معنا</h4>
 
-          <div class="space-y-3 text-sm text-gray-500">
+          <div class="space-y-3 text-sm text-[#3E4850]">
             <a href="tel:8001111" class="flex items-center gap-2 hover:text-sky-500 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-[#3E4850] shrink-0">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25V16.19c0-.609-.372-1.155-.917-1.391L17.167 13.53a2.25 2.25 0 0 0-2.25.15c-.642.513-1.428.832-2.288.832-.86 0-1.646-.319-2.288-.832a2.25 2.25 0 0 0-2.25-.15L4.747 14.8c-.545.236-.917.782-.917 1.391v2.31c0 1.242 1.008 2.25 2.25 2.25h2.25Z" />
               </svg>
               <span>800 1111</span>
             </a>
 
             <a href="mailto:info@afif.org.qa" class="flex items-center gap-2 hover:text-sky-500 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-[#3E4850] shrink-0">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
               </svg>
               <span>info@afif.org.qa</span>
             </a>
           </div>
 
-          <div class="flex items-center gap-4 pt-2 text-gray-400">
+          <div class="flex items-center gap-4 pt-2 text-[#3E4850]">
             <a href="#" class="hover:text-sky-500 transition-colors" aria-label="X / Twitter">
               <svg fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             </a>
@@ -67,7 +67,7 @@
 
       </div>
 
-      <div class="border-t border-gray-100 pt-6 text-center text-xs text-gray-400">
+      <div class="border-t border-[#D3D3D3] pt-6 text-center text-xs text-[#3E4850]">
         © {{ currentYear }} مؤسسة عفيف الخيرية. جميع الحقوق محفوظة.
       </div>
     </div>

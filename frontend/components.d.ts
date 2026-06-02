@@ -8,8 +8,17 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdditionalDataCard: typeof import('./src/components/registration/AdditionalDataCard.vue')['default']
+    AdditionalInfoCard: typeof import('./src/components/registration/AdditionalInfoCard.vue')['default']
     AppFooter: typeof import('./src/components/footer/AppFooter.vue')['default']
     AppNavBar: typeof import('./src/components/navbar/AppNavBar.vue')['default']
+    AppSidebar: typeof import('./src/components/sidebar/AppSidebar.vue')['default']
+    BeneficiaryRegistration: typeof import('./src/components/registration/BeneficiaryRegistration.vue')['default']
+    FamilyDetailsCard: typeof import('./src/components/registration/FamilyDetailsCard.vue')['default']
+    FinancialObligationsCard: typeof import('./src/components/registration/FinancialObligationsCard.vue')['default']
+    FormActionsBar: typeof import('./src/components/registration/FormActionsBar.vue')['default']
+    FormStepsBar: typeof import('./src/components/registration/FormStepsBar.vue')['default']
+    IncomeDetailsCard: typeof import('./src/components/registration/IncomeDetailsCard.vue')['default']
     LanguageToggle: typeof import('./src/components/navbar/LanguageToggle.vue')['default']
     LoginFormPanel: typeof import('./src/components/auth/LoginFormPanel.vue')['default']
     LoginLeftPanel: typeof import('./src/components/auth/LoginLeftPanel.vue')['default']
@@ -17,7 +26,9 @@ declare module 'vue' {
     NavDropdown: typeof import('./src/components/navbar/NavDropdown.vue')['default']
     NavLinks: typeof import('./src/components/navbar/NavLinks.vue')['default']
     NavLogo: typeof import('./src/components/navbar/NavLogo.vue')['default']
+    PersonalInfoCard: typeof import('./src/components/registration/PersonalInfoCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    WelcomeCard: typeof import('./src/components/onboarding/WelcomeCard.vue')['default']
   }
 }

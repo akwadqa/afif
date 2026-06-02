@@ -1,6 +1,6 @@
 <template>
   <header class="relative z-50 w-full">
-    <nav class="bg-white border-b border-gray-100 shadow-sm h-[127px] pl-[50px] pr-[50px] md:pr-[100px] flex items-center justify-between">
+    <nav class="bg-white border-b border-gray-100 shadow-sm h-[110px] pl-[50px] pr-[50px] md:pr-[100px] flex items-center justify-between">
 
       <!-- Left: Logo + Language toggle -->
       <div class="flex items-center gap-6">

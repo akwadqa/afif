@@ -9,19 +9,40 @@ function getSessionUser() {
 const routes = [
   {
     path: '/login',
-    name: 'Login',
-    component: () => import('@/pages/Login.vue'),
-    meta: { public: true },
+    component: () => import('@/layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Login',
+        component: () => import('@/pages/Login.vue'),
+        meta: { public: true },
+      },
+    ],
   },
+
   {
     path: '/',
-    component: () => import('@/layouts/DefaultLayout.vue'),
+    component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
         path: '',
+        redirect: '/home',
+      },
+      {
+        path: 'home',
         name: 'Home',
         component: () => import('@/pages/Home.vue'),
+      },
+      {
+        path: 'request',
+        name: 'Request',
+        component: () => import('@/pages/Request.vue'),
+      },
+      {
+        path: 'account',
+        name: 'Account',
+        component: () => import('@/pages/Account.vue'),
       },
     ],
   },
