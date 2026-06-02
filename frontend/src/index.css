@@ -1,0 +1,8 @@
+@import "./assets/Inter/inter.css";
+@import "frappe-ui/style.css";
+
+/* Use system Arabic fonts when the document is in RTL mode */
+:lang(ar),
+[dir='rtl'] {
+  font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
+}
