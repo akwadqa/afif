@@ -1,0 +1,16 @@
+/* Doctype form input fields */
+.form-page .frappe-control input:not([type="checkbox"]):not([type="radio"]),
+.form-page .frappe-control textarea,
+.form-page .frappe-control select,
+.form-page .frappe-control .form-control,
+.form-page .frappe-control .input-with-feedback,
+.form-page .frappe-control .like-disabled-input {
+    background-color: var(--blue-100) !important;
+}
+
+/* Link and Attach field text color */
+.form-page .frappe-control[data-fieldtype="Attach"] .like-disabled-input,
+.form-page .frappe-control[data-fieldtype="Attach"] .like-disabled-input a,
+.form-page .frappe-control[data-fieldtype="Attach"] .attached-file-link {
+    color: var(--blue-500) !important;
+}

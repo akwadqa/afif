@@ -11,7 +11,7 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/afif/css/afif.css"
+app_include_css = "/assets/afif/css/afif.css"
 # app_include_js = "/assets/afif/js/afif.js"
 # app_include_js = "afif.bundle.js"
 # app_include_js = "/assets/afif/afif.bundle.js"
