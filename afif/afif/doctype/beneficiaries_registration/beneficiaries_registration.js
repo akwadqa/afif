@@ -3,6 +3,15 @@
 
 frappe.ui.form.on('Beneficiaries Registration', {
 	refresh: function (frm) {
+		frm.page.sidebar.hide();
+
+		if (!frm.is_new()) {
+			let $btn = frm.add_custom_button(__('Print'), function () {
+				frm.print_doc();
+			});
+			$btn.html(frappe.utils.icon('printer', 'sm') + ' ' + __('Print'));
+		}
+
 		if (!frm.doc.update_required) {
 			frm.add_custom_button('Update Required', function () {
 				frappe.call({
