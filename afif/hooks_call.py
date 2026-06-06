@@ -1506,6 +1506,11 @@ def beneficiary_update_required_status():
         update_required = int(beneficiary.get("update_required") or 0)
         if last_request and not update_required:
             # Check if Request was Rejected 3+ Months Ago or Approved for Aid 6+ Months Ago
+            acceptance_date = beneficiary.get("registration_acceptance_date")
+            if acceptance_date and acceptance_date >= ten_days_ago:
+                frappe.log_error("Acceptance date is within the last 10 days", beneficiary.get("name"))
+                continue
+
             is_rejected_and_old = (
                 last_request.status in ["Rejected", "Rejected by Supervisor"]
                 and last_request.rejected_date
