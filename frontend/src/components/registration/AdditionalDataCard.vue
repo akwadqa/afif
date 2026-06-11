@@ -22,9 +22,10 @@
             class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
           >
             <option value="">{{ t('registration.additionalData.housingTypePlaceholder') }}</option>
-            <option value="Owned">{{ t('registration.additionalData.owned') }}</option>
-            <option value="Rented">{{ t('registration.additionalData.rented') }}</option>
-            <option value="Other">{{ t('registration.additionalData.other') }}</option>
+            <option value="Private Ownership">{{ t('registration.additionalData.owned') }}</option>
+            <option value="Rental">{{ t('registration.additionalData.rented') }}</option>
+            <option value="Government">{{ t('registration.additionalData.government') }}</option>
+            <option value="Endowment">{{ t('registration.additionalData.endowment') }}</option>
           </select>
         </div>
 

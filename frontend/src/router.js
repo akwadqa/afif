@@ -21,6 +21,19 @@ const routes = [
   },
 
   {
+    path: '/register',
+    component: () => import('@/layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Register',
+        component: () => import('@/pages/Register.vue'),
+        meta: { public: true },
+      },
+    ],
+  },
+
+  {
     path: '/',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },
@@ -58,7 +71,7 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !isLoggedIn) {
     next({ name: 'Login' })
-  } else if (to.name === 'Login' && isLoggedIn) {
+  } else if ((to.name === 'Login' || to.name === 'Register') && isLoggedIn) {
     next({ name: 'Home' })
   } else {
     next()

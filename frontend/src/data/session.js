@@ -23,6 +23,12 @@ export const session = reactive({
 			}
 		},
 		onSuccess(data) {
+			// Sync window.csrf_token with the new session's token so POST requests
+			// (e.g. logout) send the correct CSRF header after SPA login.
+			const cookies = new URLSearchParams(document.cookie.split('; ').join('&'))
+			const csrfToken = cookies.get('csrf_token')
+			if (csrfToken) window.csrf_token = csrfToken
+
 			userResource.reload()
 			session.user = sessionUser()
 			session.login.reset()

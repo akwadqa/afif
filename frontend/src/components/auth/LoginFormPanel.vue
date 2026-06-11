@@ -135,15 +135,16 @@
     <!-- Register link -->
     <div class="text-center text-sm text-gray-500">
       {{ t('login.noAccount') }}
-      <a href="#" class="text-sky-600 font-semibold hover:underline mx-1">
+      <RouterLink to="/register" class="text-sky-600 font-semibold hover:underline mx-1">
         {{ t('login.createAccount') }}
-      </a>
+      </RouterLink>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 
