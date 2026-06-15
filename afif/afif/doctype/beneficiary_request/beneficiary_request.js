@@ -2,6 +2,21 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Beneficiary Request', {
+	refresh(frm) {
+		if (!frm.is_new()) {
+			let $print = frm.add_custom_button(__('Print'), function () {
+				frm.print_doc();
+			});
+			$print.html(frappe.utils.icon('printer', 'sm') + ' ' + __('Print'));
+
+			if (cint(frm.doc.docstatus) != 1 && frappe.model.can_delete(frm.doctype)) {
+				frm.add_custom_button(__('Delete'), function () {
+					frm.savetrash();
+				});
+			}
+		}
+	},
+
 	before_workflow_action(frm) {
 		if (frm.selected_workflow_action !== "Approve") return;
 		return new Promise((resolve, reject) => {

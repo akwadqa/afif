@@ -4,10 +4,16 @@
 frappe.ui.form.on('Beneficiaries Registration', {
 	refresh: function (frm) {
 		if (!frm.is_new()) {
-			let $btn = frm.add_custom_button(__('Print'), function () {
+			let $print = frm.add_custom_button(__('Print'), function () {
 				frm.print_doc();
 			});
-			$btn.html(frappe.utils.icon('printer', 'sm') + ' ' + __('Print'));
+			$print.html(frappe.utils.icon('printer', 'sm') + ' ' + __('Print'));
+
+			if (cint(frm.doc.docstatus) != 1 && frappe.model.can_delete(frm.doctype)) {
+				frm.add_custom_button(__('Delete'), function () {
+					frm.savetrash();
+				});
+			}
 		}
 
 		if (!frm.doc.update_required) {
