@@ -9,6 +9,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <!-- Arabic Name -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.arName') }} <span class="text-red-500">*</span></label>
         <input
@@ -17,10 +18,12 @@
           @input="update('ar_name', $event.target.value)"
           :placeholder="t('registration.personalInfo.arNamePlaceholder')"
           dir="rtl"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('ar_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
       </div>
 
+      <!-- English Name -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.enName') }} <span class="text-red-500">*</span></label>
         <input
@@ -29,16 +32,19 @@
           @input="update('en_name', $event.target.value)"
           :placeholder="t('registration.personalInfo.enNamePlaceholder')"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('en_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
       </div>
 
+      <!-- Primary ID Type -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.primaryIdType') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.ben_primary_idtype"
           @change="update('ben_primary_idtype', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#34B0EE] outline-none text-sm text-gray-600 appearance-none"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] outline-none text-sm text-gray-600 appearance-none"
+          :class="isInvalid('ben_primary_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.personalInfo.primaryIdTypePlaceholder') }}</option>
           <option value="Qatari Id">{{ t('registration.personalInfo.qatariId') }}</option>
@@ -48,6 +54,7 @@
         </select>
       </div>
 
+      <!-- Primary ID Number -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.primaryIdNumber') }} <span class="text-red-500">*</span></label>
         <input
@@ -56,27 +63,48 @@
           @input="update('ben_primary_idnumber', $event.target.value)"
           placeholder="00000000000"
           dir="ltr"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('ben_primary_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+      </div>
+
+      <!-- Passport Number -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }}</label>
+        <input
+          type="text"
+          :value="modelValue.passport_number"
+          @input="update('passport_number', $event.target.value)"
+          placeholder="A00000000"
+          dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
         />
       </div>
 
+      <!-- Nationality + Gender -->
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.nationality') }} <span class="text-red-500">*</span></label>
           <input
             type="text"
+            list="country-list"
             :value="modelValue.ben_nationality"
             @input="update('ben_nationality', $event.target.value)"
             :placeholder="t('registration.personalInfo.nationalityPlaceholder')"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('ben_nationality') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <datalist id="country-list">
+            <option v-for="country in countries" :key="country" :value="country" />
+          </datalist>
         </div>
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.gender') }} <span class="text-red-500">*</span></label>
           <select
             :value="modelValue.gender"
             @change="update('gender', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('gender') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.personalInfo.genderPlaceholder') }}</option>
             <option value="Male">{{ t('registration.personalInfo.male') }}</option>
@@ -85,6 +113,7 @@
         </div>
       </div>
 
+      <!-- DOB + Phone -->
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.dob') }} <span class="text-red-500">*</span></label>
@@ -92,7 +121,8 @@
             type="date"
             :value="modelValue.date_of_birth"
             @input="update('date_of_birth', $event.target.value)"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('date_of_birth') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
             dir="ltr"
           />
         </div>
@@ -104,17 +134,20 @@
             @input="update('phone_number', $event.target.value)"
             placeholder="0097400000000"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
       </div>
 
+      <!-- Marital Status -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.maritalStatus') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.marital_status"
           @change="update('marital_status', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('marital_status') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.personalInfo.maritalStatusPlaceholder') }}</option>
           <option value="Single">{{ t('registration.personalInfo.single') }}</option>
@@ -125,30 +158,7 @@
         </select>
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
-        <select
-          :value="modelValue.visa_type"
-          @change="update('visa_type', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
-        >
-          <option value="">{{ t('registration.personalInfo.visaTypePlaceholder') }}</option>
-          <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
-          <option value="Visit">{{ t('registration.personalInfo.visit') }}</option>
-        </select>
-      </div>
-
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.residenceYears') }} <span class="text-red-500">*</span></label>
-        <input
-          type="text"
-          :value="modelValue.residence_years"
-          @input="update('residence_years', $event.target.value)"
-          :placeholder="t('registration.personalInfo.residenceYearsPlaceholder')"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
-        />
-      </div>
-
+      <!-- Partner Phone (always shown) -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }}</label>
         <input
@@ -161,19 +171,100 @@
         />
       </div>
 
+      <!-- Partner Name — shown when Married -->
+      <template v-if="modelValue.marital_status === 'Married'">
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerName') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="modelValue.partner_name"
+            @input="update('partner_name', $event.target.value)"
+            :placeholder="t('registration.personalInfo.partnerNamePlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('partner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+        </div>
+      </template>
+
+      <!-- Ex-Partner Name — shown when Divorced or Widowed -->
+      <template v-if="modelValue.marital_status === 'Divorced' || modelValue.marital_status === 'Widowed'">
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.exPartnerName') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="modelValue.expartner_name"
+            @input="update('expartner_name', $event.target.value)"
+            :placeholder="t('registration.personalInfo.exPartnerNamePlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('expartner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+        </div>
+      </template>
+
+      <!-- Visa Type — only when nationality is NOT Qatar -->
+      <template v-if="modelValue.ben_nationality && modelValue.ben_nationality !== 'Qatar'">
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
+          <select
+            :value="modelValue.visa_type"
+            @change="update('visa_type', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.personalInfo.visaTypePlaceholder') }}</option>
+            <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
+            <option value="Visit">{{ t('registration.personalInfo.visit') }}</option>
+          </select>
+        </div>
+
+        <!-- Years of Residence -->
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.residenceYears') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="modelValue.residence_years"
+            @input="update('residence_years', $event.target.value)"
+            :placeholder="t('registration.personalInfo.residenceYearsPlaceholder')"
+            dir="ltr"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('residence_years') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+        </div>
+      </template>
+
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
-const props = defineProps({ modelValue: { type: Object, required: true } })
+const props = defineProps({
+  modelValue: { type: Object, required: true },
+  invalidFields: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['update:modelValue'])
+
+const countries = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/resource/Country?fields=["name"]&limit=300&order_by=name%20asc')
+    const data = await res.json()
+    countries.value = (data.data || []).map(c => c.name)
+  } catch {
+    // silently fall back to free-text if the fetch fails
+  }
+})
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function isInvalid(field) {
+  return props.invalidFields.includes(field)
 }
 </script>
 

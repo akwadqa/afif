@@ -53,7 +53,8 @@
               <select
                 :value="modelValue[src.periodicField]"
                 @change="update(src.periodicField, $event.target.value)"
-                class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+                class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+                :class="isInvalid(src.periodicField) ? 'border-red-400 bg-red-50' : 'border-gray-100'"
               >
                 <option value="">{{ t('registration.incomeDetails.selectPeriod') }}</option>
                 <option value="Yearly">{{ t('registration.incomeDetails.yearly') }}</option>
@@ -72,7 +73,8 @@
                 @input="update(src.amountField, $event.target.value)"
                 :placeholder="t('registration.incomeDetails.amountPlaceholder')"
                 dir="ltr"
-                class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+                class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+                :class="isInvalid(src.amountField) ? 'border-red-400 bg-red-50' : 'border-gray-100'"
               />
             </div>
 
@@ -85,7 +87,8 @@
                 :value="modelValue[src.noteField]"
                 @input="update(src.noteField, $event.target.value)"
                 :placeholder="t('registration.incomeDetails.notesPlaceholder')"
-                class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+                class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+                :class="isInvalid(src.noteField) ? 'border-red-400 bg-red-50' : 'border-gray-100'"
               />
             </div>
           </div>
@@ -101,11 +104,18 @@ import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
-const props = defineProps({ modelValue: { type: Object, required: true } })
+const props = defineProps({
+  modelValue: { type: Object, required: true },
+  invalidFields: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['update:modelValue'])
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function isInvalid(field) {
+  return props.invalidFields.includes(field)
 }
 
 const incomeSources = computed(() => [

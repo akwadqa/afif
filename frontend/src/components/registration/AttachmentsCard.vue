@@ -12,21 +12,32 @@
 
       <div class="space-y-3">
         <div
-          v-for="doc in attachmentDefs"
+          v-for="doc in visibleAttachments"
           :key="doc.id"
-          class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50/50 hover:bg-gray-50/80 border border-gray-100/70 rounded-xl transition-all gap-4"
+          class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl transition-all gap-4"
+          :class="isInvalid('attach_' + doc.id)
+            ? 'bg-red-50/50 border-red-300'
+            : 'bg-gray-50/50 hover:bg-gray-50/80 border-gray-100/70'"
         >
           <!-- Label + file info -->
           <div class="space-y-1 flex-1 min-w-0">
             <div class="text-sm font-semibold text-gray-700">
-              {{ t(doc.labelKey) }} <span class="text-red-500">*</span>
+              {{ t(doc.labelKey) }}
+              <span v-if="doc.required" class="text-red-500">*</span>
             </div>
             <div
               v-if="modelValue.files[doc.id]"
               class="text-xs text-gray-400 font-mono truncate max-w-xs"
               dir="ltr"
             >
-              {{ modelValue.files[doc.id].name }}
+              <a
+                v-if="fileUrl(doc.id)"
+                :href="fileUrl(doc.id)"
+                target="_blank"
+                rel="noopener"
+                class="underline hover:text-sky-500"
+              >{{ fileLabel(doc.id) }}</a>
+              <span v-else>{{ fileLabel(doc.id) }}</span>
             </div>
           </div>
 
@@ -84,7 +95,10 @@
 
     <!-- Legal claims -->
     <div class="bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm space-y-4">
-      <label class="flex items-start gap-3 cursor-pointer select-none">
+      <label
+        class="flex items-start gap-3 cursor-pointer select-none rounded-xl p-2 -mx-2 transition-colors"
+        :class="isInvalid('claim_correctData') ? 'bg-red-50 ring-1 ring-red-300' : ''"
+      >
         <input
           type="checkbox"
           :checked="modelValue.legalClaims.correctData"
@@ -96,7 +110,10 @@
         </span>
       </label>
 
-      <label class="flex items-start gap-3 cursor-pointer select-none">
+      <label
+        class="flex items-start gap-3 cursor-pointer select-none rounded-xl p-2 -mx-2 transition-colors"
+        :class="isInvalid('claim_verificationRight') ? 'bg-red-50 ring-1 ring-red-300' : ''"
+      >
         <input
           type="checkbox"
           :checked="modelValue.legalClaims.verificationRight"
@@ -108,7 +125,10 @@
         </span>
       </label>
 
-      <label class="flex items-start gap-3 cursor-pointer select-none">
+      <label
+        class="flex items-start gap-3 cursor-pointer select-none rounded-xl p-2 -mx-2 transition-colors"
+        :class="isInvalid('claim_statusAwareness') ? 'bg-red-50 ring-1 ring-red-300' : ''"
+      >
         <input
           type="checkbox"
           :checked="modelValue.legalClaims.statusAwareness"
@@ -125,24 +145,94 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
-const props = defineProps({ modelValue: { type: Object, required: true } })
+const props = defineProps({
+  modelValue: { type: Object, required: true },
+  context: { type: Object, default: () => ({}) },
+  invalidFields: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['update:modelValue'])
 
-const attachmentDefs = [
-  { id: 'qid',              labelKey: 'registration.attachments.docs.qid' },
-  { id: 'passport',         labelKey: 'registration.attachments.docs.passport' },
-  { id: 'property',         labelKey: 'registration.attachments.docs.property' },
-  { id: 'bank_statement',   labelKey: 'registration.attachments.docs.bankStatement' },
-  { id: 'credit_bureau',    labelKey: 'registration.attachments.docs.creditBureau' },
-  { id: 'metrash_address',  labelKey: 'registration.attachments.docs.metrashAddress' },
-  { id: 'extra_attachments',labelKey: 'registration.attachments.docs.extraAttachments' },
-  { id: 'traffic_car',      labelKey: 'registration.attachments.docs.trafficCar' },
-  { id: 'iban_photo',       labelKey: 'registration.attachments.docs.ibanPhoto' },
-  { id: 'coresidents_id',   labelKey: 'registration.attachments.docs.coresidentsId' },
-]
+function isInvalid(field) {
+  return props.invalidFields.includes(field)
+}
+
+const visibleAttachments = computed(() => {
+  const pi = props.context.personalInfo || {}
+  const ai = props.context.additionalInfo || {}
+  const fd = props.context.familyDetails || {}
+  const ad = props.context.additionalData || {}
+
+  const isMarried       = pi.marital_status === 'Married'
+  const isDivorced      = pi.marital_status === 'Divorced'
+  const isWidowed       = pi.marital_status === 'Widowed'
+  const isResidence     = pi.visa_type === 'Residence'
+  const isQatari        = pi.ben_nationality === 'Qatar'
+  const hasChildren     = fd.have_children === 'Yes'
+  const childrenAbove18 = fd.children_above_eighteen === 'Yes'
+  const childrenSchool  = fd.children_in_school === 'Yes'
+  const childSpecial    = fd.children_special_needs === 'Yes'
+  const familyResidence = fd.family_visa_type === 'Residence'
+  const partnerWorking  = fd.partner_working === 'Yes'
+  const visaDependent   = fd.visa_dependent === 'Yes'
+  const working         = ai.currently_working === 'Yes'
+  const notWorking      = ai.currently_working === 'No'
+  const workedBefore    = ai.worked_before === 'Yes'
+  const hasHousemates   = ad.has_housemates === 'Yes'
+  const hasBankLoans    = ad.has_bank_loans === 'Yes'
+  const courtTried      = ad.court_tried === 'Yes'
+  const isRental        = ad.housing_type === 'Rental'
+  const isOwned         = ad.housing_type === 'Private Ownership'
+
+  const all = [
+    { id: 'qid',                            required: true,  labelKey: 'registration.attachments.docs.qid',                     show: true },
+    { id: 'passport',                        required: true,  labelKey: 'registration.attachments.docs.passport',                 show: true },
+    { id: 'wife_id',                         required: true,  labelKey: 'registration.attachments.docs.wifeId',                   show: isMarried },
+    { id: 'wife_passport',                   required: true,  labelKey: 'registration.attachments.docs.wifePassport',             show: isMarried },
+    { id: 'children_identification',         required: true,  labelKey: 'registration.attachments.docs.childrenId',              show: hasChildren },
+    { id: 'rent_contract',                   required: true,  labelKey: 'registration.attachments.docs.rentContract',            show: isRental },
+    { id: 'property_deed',                   required: true,  labelKey: 'registration.attachments.docs.property',                show: isOwned },
+    { id: 'bank_statement',                  required: true,  labelKey: 'registration.attachments.docs.bankStatement',           show: isResidence },
+    { id: 'wife_bank_statement',             required: true,  labelKey: 'registration.attachments.docs.wifeBankStatement',       show: isMarried && familyResidence },
+    { id: 'wife_credit_certificate',         required: true,  labelKey: 'registration.attachments.docs.wifeCredit',              show: isMarried && familyResidence },
+    { id: 'beneficiary_credit_certificate',  required: true,  labelKey: 'registration.attachments.docs.creditBureau',            show: isResidence },
+    { id: 'children_bank_statement',         required: true,  labelKey: 'registration.attachments.docs.childrenBankStatement',   show: familyResidence && childrenAbove18 },
+    { id: 'children_credit_information',     required: true,  labelKey: 'registration.attachments.docs.childrenCredit',          show: familyResidence && childrenAbove18 },
+    { id: 'social_security_certificate',     required: true,  labelKey: 'registration.attachments.docs.socialSecurityCert',      show: isQatari && notWorking },
+    { id: 'partner_work_certificate',        required: true,  labelKey: 'registration.attachments.docs.partnerWorkCert',         show: partnerWorking },
+    { id: 'employment_certificate',          required: true,  labelKey: 'registration.attachments.docs.employmentCert',          show: working },
+    { id: 'vehicle_certificate',             required: true,  labelKey: 'registration.attachments.docs.trafficCar',              show: isResidence },
+    { id: 'iban_picture',                    required: true,  labelKey: 'registration.attachments.docs.ibanPhoto',               show: isResidence },
+    { id: 'children_schooling_proof',        required: true,  labelKey: 'registration.attachments.docs.childrenSchoolProof',     show: childrenSchool },
+    { id: 'special_needs_certificate',       required: true,  labelKey: 'registration.attachments.docs.specialNeedsCert',        show: childSpecial },
+    { id: 'termination_letter',              required: true,  labelKey: 'registration.attachments.docs.terminationLetter',       show: notWorking && workedBefore },
+    { id: 'nonmarriage_proof',               required: true,  labelKey: 'registration.attachments.docs.nonmarriageProof',        show: isDivorced || isWidowed },
+    { id: 'divorce_paper',                   required: true,  labelKey: 'registration.attachments.docs.divorcePaper',            show: isDivorced },
+    { id: 'partner_death_certificate',       required: true,  labelKey: 'registration.attachments.docs.partnerDeathCert',        show: isWidowed },
+    { id: 'copy_of_court_judgment',          required: true,  labelKey: 'registration.attachments.docs.courtJudgment',           show: hasBankLoans && courtTried },
+    { id: 'id_coresidents',                  required: true,  labelKey: 'registration.attachments.docs.coresidentsId',           show: hasHousemates },
+    { id: 'id_sponsored',                    required: true,  labelKey: 'registration.attachments.docs.sponsoredId',             show: visaDependent },
+    { id: 'metrash_adress',                  required: false, labelKey: 'registration.attachments.docs.metrashAddress',          show: true },
+    { id: 'additional_documents',            required: false, labelKey: 'registration.attachments.docs.extraAttachments',        show: true },
+  ]
+
+  return all.filter(d => d.show)
+})
+
+function fileLabel(id) {
+  const value = props.modelValue.files[id]
+  if (value instanceof File) return value.name
+  if (typeof value === 'string') return value.split('/').pop()
+  return ''
+}
+
+function fileUrl(id) {
+  const value = props.modelValue.files[id]
+  return typeof value === 'string' ? value : null
+}
 
 function triggerFileInput(id) {
   document.getElementById(`attach-input-${id}`)?.click()
@@ -155,7 +245,6 @@ function handleFileSelected(event, id) {
     ...props.modelValue,
     files: { ...props.modelValue.files, [id]: file },
   })
-  // Reset so the same file can be reselected
   event.target.value = ''
 }
 

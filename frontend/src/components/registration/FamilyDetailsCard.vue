@@ -9,6 +9,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <!-- Family Size -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.familySize') }} <span class="text-red-500">*</span></label>
         <input
@@ -18,23 +19,12 @@
           @input="update('family_size', $event.target.value)"
           :placeholder="t('registration.familyDetails.familySizePlaceholder')"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+          :class="isInvalid('family_size') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.familyVisa') }} <span class="text-red-500">*</span></label>
-        <select
-          :value="modelValue.family_visa_type"
-          @change="update('family_visa_type', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
-        >
-          <option value="">{{ t('registration.familyDetails.visaTypePlaceholder') }}</option>
-          <option value="Residence">{{ t('registration.familyDetails.residence') }}</option>
-          <option value="Visit">{{ t('registration.familyDetails.visit') }}</option>
-        </select>
-      </div>
-
+      <!-- Beneficiary Dependent Count -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.dependentCount') }} <span class="text-red-500">*</span></label>
         <input
@@ -44,16 +34,65 @@
           @input="update('ben_dependent_count', $event.target.value)"
           placeholder="0"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+          :class="isInvalid('ben_dependent_count') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
       </div>
 
+      <!-- Family Visa Type -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.familyVisa') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="modelValue.family_visa_type"
+          @change="update('family_visa_type', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('family_visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.familyDetails.visaTypePlaceholder') }}</option>
+          <option value="Residence">{{ t('registration.familyDetails.residence') }}</option>
+          <option value="Visit">{{ t('registration.familyDetails.visit') }}</option>
+        </select>
+      </div>
+
+      <!-- Others Under Own Visa — only when visa_type = Residence -->
+      <div v-if="personalInfo.visa_type === 'Residence'" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.otherDependents') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="modelValue.visa_dependent"
+          @change="update('visa_dependent', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('visa_dependent') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
+          <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
+          <option value="No">{{ t('registration.familyDetails.no') }}</option>
+        </select>
+      </div>
+
+      <!-- Names and Relation to Sponsored — shown when visa_dependent = Yes -->
+      <div
+        v-if="personalInfo.visa_type === 'Residence' && modelValue.visa_dependent === 'Yes'"
+        class="space-y-1.5 md:col-span-2"
+      >
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.namesRelation') }} <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          :value="modelValue.names_and_relation_to_sponsored"
+          @input="update('names_and_relation_to_sponsored', $event.target.value)"
+          :placeholder="t('registration.familyDetails.namesRelationPlaceholder')"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('names_and_relation_to_sponsored') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+      </div>
+
+      <!-- Have Children -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.haveChildren') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.have_children"
           @change="update('have_children', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('have_children') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
           <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
@@ -61,12 +100,14 @@
         </select>
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.otherDependents') }} <span class="text-red-500">*</span></label>
+      <!-- Partner Working — shown when marital_status = Married -->
+      <div v-if="personalInfo.marital_status === 'Married'" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.partnerWorking') }} <span class="text-red-500">*</span></label>
         <select
-          :value="modelValue.visa_dependent"
-          @change="update('visa_dependent', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+          :value="modelValue.partner_working"
+          @change="update('partner_working', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('partner_working') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
           <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
@@ -74,17 +115,110 @@
         </select>
       </div>
 
+      <!-- Children conditional fields — shown when have_children = Yes -->
+      <template v-if="modelValue.have_children === 'Yes'">
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenAbove18') }} <span class="text-red-500">*</span></label>
+          <select
+            :value="modelValue.children_above_eighteen"
+            @change="update('children_above_eighteen', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('children_above_eighteen') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
+            <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
+            <option value="No">{{ t('registration.familyDetails.no') }}</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenInSchool') }} <span class="text-red-500">*</span></label>
+          <select
+            :value="modelValue.children_in_school"
+            @change="update('children_in_school', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('children_in_school') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
+            <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
+            <option value="No">{{ t('registration.familyDetails.no') }}</option>
+          </select>
+        </div>
+
+        <!-- Children in school sub-fields -->
+        <template v-if="modelValue.children_in_school === 'Yes'">
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenSchoolType') }} <span class="text-red-500">*</span></label>
+            <select
+              :value="modelValue.children_school"
+              @change="update('children_school', $event.target.value)"
+              class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+              :class="isInvalid('children_school') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+            >
+              <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
+              <option value="Private">{{ t('registration.familyDetails.privateSchool') }}</option>
+              <option value="Public">{{ t('registration.familyDetails.publicSchool') }}</option>
+            </select>
+          </div>
+
+          <div class="space-y-1.5 md:col-span-2">
+            <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenSchoolInfo') }} <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              :value="modelValue.children_school_information"
+              @input="update('children_school_information', $event.target.value)"
+              :placeholder="t('registration.familyDetails.childrenSchoolInfoPlaceholder')"
+              class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+              :class="isInvalid('children_school_information') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+            />
+          </div>
+
+        </template>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenSpecialNeeds') }} <span class="text-red-500">*</span></label>
+          <select
+            :value="modelValue.children_special_needs"
+            @change="update('children_special_needs', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('children_special_needs') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
+            <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
+            <option value="No">{{ t('registration.familyDetails.no') }}</option>
+          </select>
+        </div>
+
+      </template>
+
+      <!-- Received Afif Charity Assistance -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.afifAssistance') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.afif_charity_assistance"
           @change="update('afif_charity_assistance', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('afif_charity_assistance') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.familyDetails.yesNo') }}</option>
           <option value="Yes">{{ t('registration.familyDetails.yes') }}</option>
           <option value="No">{{ t('registration.familyDetails.no') }}</option>
         </select>
+      </div>
+
+      <!-- Afif assistance amount — shown when afif_charity_assistance = Yes -->
+      <div v-if="modelValue.afif_charity_assistance === 'Yes'" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.afifAssistanceAmount') }} <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          :value="modelValue.affif_assistance"
+          @input="update('affif_assistance', $event.target.value)"
+          :placeholder="t('registration.familyDetails.afifAssistancePlaceholder')"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('affif_assistance') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
       </div>
 
     </div>
@@ -95,11 +229,19 @@
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
-const props = defineProps({ modelValue: { type: Object, required: true } })
+const props = defineProps({
+  modelValue: { type: Object, required: true },
+  personalInfo: { type: Object, default: () => ({}) },
+  invalidFields: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['update:modelValue'])
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function isInvalid(field) {
+  return props.invalidFields.includes(field)
 }
 </script>
 

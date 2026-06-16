@@ -4,6 +4,17 @@ import { computed, reactive } from "vue"
 
 import { userResource } from "./user"
 
+// Frappe's template renderer replaces <!-- csrf_token --> in frontend.html with
+// <script>frappe.csrf_token = "TOKEN";</script> on every request.
+// frappe-ui's frappeRequest reads window.csrf_token for the X-Frappe-CSRF-Token header.
+// This copies the Frappe-injected token to the window key frappe-ui expects.
+function syncCsrfToken() {
+	if (window.frappe && window.frappe.csrf_token) {
+		window.csrf_token = window.frappe.csrf_token
+	}
+}
+syncCsrfToken()
+
 export function sessionUser() {
 	const cookies = new URLSearchParams(document.cookie.split("; ").join("&"))
 	let _sessionUser = cookies.get("user_id")
@@ -23,12 +34,7 @@ export const session = reactive({
 			}
 		},
 		onSuccess(data) {
-			// Sync window.csrf_token with the new session's token so POST requests
-			// (e.g. logout) send the correct CSRF header after SPA login.
-			const cookies = new URLSearchParams(document.cookie.split('; ').join('&'))
-			const csrfToken = cookies.get('csrf_token')
-			if (csrfToken) window.csrf_token = csrfToken
-
+			syncCsrfToken()
 			userResource.reload()
 			session.user = sessionUser()
 			session.login.reset()

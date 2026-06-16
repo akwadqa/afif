@@ -14,6 +14,7 @@
   "beneficiary_information_tab",
   "beneficiary_section",
   "status",
+  "current_step",
   "ben_id",
   "registration_acceptance_date",
   "last_required_update_date",
@@ -204,15 +205,22 @@
    "label": "Beneficiary"
   },
   {
-   "default": "New Registration",
+   "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_filter": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "New Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required\nUpdated beneficiary",
+   "options": "Draft\nNew Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required\nUpdated beneficiary",
    "read_only": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "current_step",
+   "fieldtype": "Int",
+   "label": "Current Step",
+   "non_negative": 1
   },
   {
    "fieldname": "ben_id",
@@ -327,14 +335,14 @@
    "fieldname": "requestor_name",
    "fieldtype": "Data",
    "label": "Requestor Name",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype))"
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
    "fieldname": "requestor_idtype",
    "fieldtype": "Select",
    "label": "Requestor ID Type",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype))",
    "options": "\nQatari Id\nPassport\nGCC Id\nVisa Number"
   },
   {
@@ -342,7 +350,7 @@
    "fieldname": "requestor_idnumber",
    "fieldtype": "Data",
    "label": "Requestor ID Number",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype))",
    "unique": 1
   },
   {
@@ -351,7 +359,7 @@
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
    "label": "Requestor Nationality",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype))",
    "options": "Country"
   },
   {
@@ -359,14 +367,14 @@
    "fieldname": "requestor_other_nationality",
    "fieldtype": "Data",
    "label": "Requestor Other Nationality",
-   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.requestor_nationality)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Other\", \"Akwad\"], doc.requestor_nationality))"
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",
    "fieldname": "requestor_number",
    "fieldtype": "Data",
    "label": "Requestor Number",
-   "mandatory_depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype))"
   },
   {
    "fieldname": "ben_sec_idtype",
@@ -398,21 +406,21 @@
    "fieldname": "partner_name",
    "fieldtype": "Data",
    "label": "Partner Name",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))"
   },
   {
    "depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
    "fieldname": "expartner_name",
    "fieldtype": "Data",
    "label": "ExPartner Name",
-   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Divorced\", \"Akwad\"], doc.marital_status) && in_list([\"Widowed\", \"Akwad\"], doc.marital_status))"
   },
   {
    "depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)",
    "fieldname": "other_nationality",
    "fieldtype": "Data",
    "label": "Other Nationality",
-   "mandatory_depends_on": "eval:in_list([\"Other\", \"Akwad\"], doc.nationality)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Other\", \"Akwad\"], doc.nationality))"
   },
   {
    "depends_on": "eval:doc.ben_nationality!=\"Qatar\"",
@@ -425,7 +433,7 @@
    "fieldname": "currently_working",
    "fieldtype": "Select",
    "label": "Currently Working",
-   "mandatory_depends_on": "eval:!in_list([\"Visit\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (!in_list([\"Visit\", \"Akwad\"], doc.visa_type))",
    "options": "\nYes\nNo"
   },
   {
@@ -433,28 +441,28 @@
    "fieldname": "employer_name",
    "fieldtype": "Data",
    "label": "Employer Name",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))"
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "employer_address",
    "fieldtype": "Data",
    "label": "Employer Address",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))"
   },
   {
    "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
    "fieldname": "occupation",
    "fieldtype": "Data",
    "label": "Occupation",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))"
   },
   {
    "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
    "fieldname": "worked_before",
    "fieldtype": "Select",
    "label": "Worked Before and Now Unemployed",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working))",
    "options": "\nYes\nNo"
   },
   {
@@ -494,7 +502,7 @@
    "fieldname": "visa_dependent",
    "fieldtype": "Select",
    "label": "Others Under Own Visa Besides Family",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "options": "\nYes\nNo"
   },
   {
@@ -507,7 +515,7 @@
    "fieldname": "names_and_relation_to_sponsored",
    "fieldtype": "Data",
    "label": "Names and Relation to Sponsored",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))"
   },
   {
    "fieldname": "family_visa_type",
@@ -532,7 +540,7 @@
    "fieldname": "children_above_eighteen",
    "fieldtype": "Select",
    "label": "Children Above Eighteen",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "options": "\nYes\nNo"
   },
   {
@@ -540,7 +548,7 @@
    "fieldname": "children_in_school",
    "fieldtype": "Select",
    "label": "Children In School",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "options": "\nYes\nNo"
   },
   {
@@ -548,7 +556,7 @@
    "fieldname": "children_school",
    "fieldtype": "Select",
    "label": "Children School Type",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
    "options": "\nPrivate\nPublic"
   },
   {
@@ -556,7 +564,7 @@
    "fieldname": "children_special_needs",
    "fieldtype": "Select",
    "label": "Special Needs Children",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "options": "\nYes\nNo"
   },
   {
@@ -564,7 +572,7 @@
    "fieldname": "children_school_information",
    "fieldtype": "Data",
    "label": "Number of children in schools with their names and educational levels",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))"
   },
   {
    "fieldname": "afif_charity_assistance",
@@ -577,7 +585,7 @@
    "fieldname": "affif_assistance",
    "fieldtype": "Data",
    "label": "Amount and Year of Afif Assistance",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance))"
   },
   {
    "fieldname": "income_obligation_tab",
@@ -650,7 +658,7 @@
    "fieldname": "family_periodic_type",
    "fieldtype": "Select",
    "label": "Family Periodic Income Type",
-   "mandatory_depends_on": "eval:doc.family_income==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_income==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -658,21 +666,21 @@
    "fieldname": "family_income_amount",
    "fieldtype": "Data",
    "label": "Family Income Amount",
-   "mandatory_depends_on": "eval:doc.family_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_income==1)"
   },
   {
    "depends_on": "eval:doc.family_income==1",
    "fieldname": "family_note",
    "fieldtype": "Data",
    "label": "Family Income Note",
-   "mandatory_depends_on": "eval:doc.family_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_income==1)"
   },
   {
    "depends_on": "eval:doc.ben_income==1",
    "fieldname": "ben_periodic_type",
    "fieldtype": "Select",
    "label": "Beneficiary Periodic Income Type",
-   "mandatory_depends_on": "eval:doc.ben_income==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.ben_income==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -680,21 +688,21 @@
    "fieldname": "salary_amount",
    "fieldtype": "Data",
    "label": "Beneficiary Salary",
-   "mandatory_depends_on": "eval:doc.ben_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.ben_income==1)"
   },
   {
    "depends_on": "eval:doc.ben_income==1",
    "fieldname": "benficiary_note",
    "fieldtype": "Data",
    "label": "Beneficiary Income Note",
-   "mandatory_depends_on": "eval:doc.ben_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.ben_income==1)"
   },
   {
    "depends_on": "eval:doc.children_income==1",
    "fieldname": "children_periodic_type",
    "fieldtype": "Select",
    "label": "Children Periodic Income Type",
-   "mandatory_depends_on": "eval:doc.children_income==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.children_income==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -702,21 +710,21 @@
    "fieldname": "family_children_salary",
    "fieldtype": "Data",
    "label": "Family Children Income",
-   "mandatory_depends_on": "eval:doc.children_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.children_income==1)"
   },
   {
    "depends_on": "eval:doc.children_income==1",
    "fieldname": "children_note",
    "fieldtype": "Data",
    "label": "Children Income Note",
-   "mandatory_depends_on": "eval:doc.children_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.children_income==1)"
   },
   {
    "depends_on": "eval:doc.private_income==1",
    "fieldname": "private_business_periodicity",
    "fieldtype": "Select",
    "label": "Private Business Income Periodicity",
-   "mandatory_depends_on": "eval:doc.private_income==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.private_income==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -724,21 +732,21 @@
    "fieldname": "private_business_amount",
    "fieldtype": "Data",
    "label": "Private Business Income Amount",
-   "mandatory_depends_on": "eval:doc.private_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.private_income==1)"
   },
   {
    "depends_on": "eval:doc.private_income==1",
    "fieldname": "private_note",
    "fieldtype": "Data",
    "label": "Private Business Income Note",
-   "mandatory_depends_on": "eval:doc.private_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.private_income==1)"
   },
   {
    "depends_on": "eval:doc.stock_income==1",
    "fieldname": "stock_market_periodicity",
    "fieldtype": "Select",
    "label": "Stock Market Income Periodicity",
-   "mandatory_depends_on": "eval:doc.stock_income==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.stock_income==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -746,21 +754,21 @@
    "fieldname": "stock_market_income",
    "fieldtype": "Data",
    "label": "Stock Market Profits",
-   "mandatory_depends_on": "eval:doc.stock_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.stock_income==1)"
   },
   {
    "depends_on": "eval:doc.stock_income==1",
    "fieldname": "stock_market_note",
    "fieldtype": "Data",
    "label": "Stock Market Profits Note",
-   "mandatory_depends_on": "eval:doc.stock_income==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.stock_income==1)"
   },
   {
    "depends_on": "eval:doc.family_extra==1",
    "fieldname": "extra_periodic_type",
    "fieldtype": "Select",
    "label": "Extra Work Periodic Type",
-   "mandatory_depends_on": "eval:doc.family_extra==1",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_extra==1)",
    "options": "\nYearly\nMonthly\nOthers"
   },
   {
@@ -768,14 +776,14 @@
    "fieldname": "family_extra_salary",
    "fieldtype": "Data",
    "label": "Family Extra Salary",
-   "mandatory_depends_on": "eval:doc.family_extra==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_extra==1)"
   },
   {
    "depends_on": "eval:doc.family_extra==1",
    "fieldname": "family_extra_note",
    "fieldtype": "Data",
    "label": "Family Extra Salary Note",
-   "mandatory_depends_on": "eval:doc.family_extra==1"
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_extra==1)"
   },
   {
    "depends_on": "eval:doc.rent_income==1",
@@ -854,14 +862,14 @@
    "fieldname": "family_obligations_installments_count",
    "fieldtype": "Data",
    "label": "Family Obligation Installment Count",
-   "mandatory_depends_on": "eval:doc.family_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.family_obligation==1)"
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
    "fieldname": "family_obligation_periodicity",
    "fieldtype": "Select",
    "label": "Family Obligation Periodicity",
-   "mandatory_depends_on": "eval:doc.family_obligation==1",
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.family_obligation==1)",
    "options": "\nMonthly\nOne Time"
   },
   {
@@ -869,21 +877,21 @@
    "fieldname": "family_expenses",
    "fieldtype": "Data",
    "label": "Family Obligation Amount",
-   "mandatory_depends_on": "eval:doc.family_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.family_obligation==1)"
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
    "fieldname": "family_obligations_note",
    "fieldtype": "Data",
    "label": "Family Obligations Note",
-   "mandatory_depends_on": "eval:doc.family_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.family_obligation==1)"
   },
   {
    "depends_on": "eval:doc.rent_obligation==1",
    "fieldname": "rent_obligation_periodicity",
    "fieldtype": "Select",
    "label": "Rent Obligation Periodicity",
-   "mandatory_depends_on": "eval:doc.rent_obligation==1",
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.rent_obligation==1)",
    "options": "\nMonthly\nOne Time"
   },
   {
@@ -891,28 +899,28 @@
    "fieldname": "rent_obligations_installments_count",
    "fieldtype": "Data",
    "label": "Rent Obligation Installments Count",
-   "mandatory_depends_on": "eval:doc.rent_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.rent_obligation==1)"
   },
   {
    "depends_on": "eval:doc.rent_obligation==1",
    "fieldname": "rent_amount",
    "fieldtype": "Data",
    "label": "Rent Obligation Amount",
-   "mandatory_depends_on": "eval:doc.rent_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.rent_obligation==1)"
   },
   {
    "depends_on": "eval:doc.rent_obligation==1",
    "fieldname": "rent_obligations_note",
    "fieldtype": "Data",
    "label": "Rent Obligations Note",
-   "mandatory_depends_on": "eval:doc.rent_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.rent_obligation==1)"
   },
   {
    "depends_on": "eval:doc.tuition_obligation==1",
    "fieldname": "tuition_obligation_periodicity",
    "fieldtype": "Select",
    "label": "Tuition Obligation Periodicity",
-   "mandatory_depends_on": "eval:doc.tuition_obligation==1",
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.tuition_obligation==1)",
    "options": "\nMonthly\nOne Time"
   },
   {
@@ -920,28 +928,28 @@
    "fieldname": "tuition_obligation_installments_count",
    "fieldtype": "Data",
    "label": "Tuition Obligations Installment Counts",
-   "mandatory_depends_on": "eval:doc.tuition_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.tuition_obligation==1)"
   },
   {
    "depends_on": "eval:doc.tuition_obligation==1",
    "fieldname": "tuition_obligations_note",
    "fieldtype": "Data",
    "label": "Tuition Obligations Note",
-   "mandatory_depends_on": "eval:doc.tuition_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.tuition_obligation==1)"
   },
   {
    "depends_on": "eval:doc.tuition_obligation==1",
    "fieldname": "tuition_amount",
    "fieldtype": "Data",
    "label": "Tuition Obligation Amount",
-   "mandatory_depends_on": "eval:doc.tuition_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.tuition_obligation==1)"
   },
   {
    "depends_on": "eval:doc.treatment_obligation==1",
    "fieldname": "treatment_obligation_periodicity",
    "fieldtype": "Select",
    "label": "Treatment Obligation Periodicity",
-   "mandatory_depends_on": "eval:doc.treatment_obligation==1",
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.treatment_obligation==1)",
    "options": "\nMonthly\nOne Time"
   },
   {
@@ -949,28 +957,28 @@
    "fieldname": "treatment_obligation_installments_count",
    "fieldtype": "Data",
    "label": "Treatment Obligation Installments count",
-   "mandatory_depends_on": "eval:doc.treatment_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.treatment_obligation==1)"
   },
   {
    "depends_on": "eval:doc.treatment_obligation==1",
    "fieldname": "treatment_obligations_note",
    "fieldtype": "Data",
    "label": "Treatment Obligation Note",
-   "mandatory_depends_on": "eval:doc.treatment_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.treatment_obligation==1)"
   },
   {
    "depends_on": "eval:doc.treatment_obligation==1",
    "fieldname": "treatment_amount",
    "fieldtype": "Data",
    "label": "Treatment Obligation Amount",
-   "mandatory_depends_on": "eval:doc.treatment_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.treatment_obligation==1)"
   },
   {
    "depends_on": "eval:doc.debt_obligation==1",
    "fieldname": "debt_obligation_periodicity",
    "fieldtype": "Select",
    "label": "Debt Obligation Periodicity",
-   "mandatory_depends_on": "eval:doc.debt_obligation==1",
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.debt_obligation==1)",
    "options": "\nMonthly\nOne Time"
   },
   {
@@ -978,21 +986,21 @@
    "fieldname": "debt_obligations_installments_count",
    "fieldtype": "Data",
    "label": "Debt Obligations Installments Count",
-   "mandatory_depends_on": "eval:doc.debt_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.debt_obligation==1)"
   },
   {
    "depends_on": "eval:doc.debt_obligation==1",
    "fieldname": "bank_payments_amount",
    "fieldtype": "Data",
    "label": "Debt Obligations Amount",
-   "mandatory_depends_on": "eval:doc.debt_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.debt_obligation==1)"
   },
   {
    "depends_on": "eval:doc.debt_obligation==1",
    "fieldname": "debt_obligations_note",
    "fieldtype": "Data",
    "label": "Debt Obligations Note",
-   "mandatory_depends_on": "eval:doc.debt_obligation==1"
+   "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.debt_obligation==1)"
   },
   {
    "fieldname": "address_information_tab",
@@ -1062,7 +1070,7 @@
    "fieldname": "court_tried",
    "fieldtype": "Select",
    "label": "Tried by a Court",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.bank_loans)",
+   "mandatory_depends_on": "eval: doc.current_step == 4 && (in_list([\"Yes\", \"Akwad\"], doc.bank_loans))",
    "options": "\nYes\nNo"
   },
   {
@@ -1070,7 +1078,7 @@
    "fieldname": "copy_of_court_judgment",
    "fieldtype": "Attach",
    "label": "Copy of Court Judgment",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.court_tried)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.court_tried))",
    "print_hide": 1
   },
   {
@@ -1084,7 +1092,7 @@
    "fieldname": "additional_information_text",
    "fieldtype": "Text",
    "label": "Kindly Write Your Additional Information",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.additional_information)"
+   "mandatory_depends_on": "eval: doc.current_step == 4 && (in_list([\"Yes\", \"Akwad\"], doc.additional_information))"
   },
   {
    "fieldname": "coresidence",
@@ -1097,7 +1105,7 @@
    "fieldname": "bank_loans",
    "fieldtype": "Select",
    "label": "Bank Loans or Debts",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 4 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "options": "\nYes\nNo"
   },
   {
@@ -1127,7 +1135,7 @@
    "fieldname": "wife_id",
    "fieldtype": "Attach",
    "label": "Wife QID",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1135,7 +1143,7 @@
    "fieldname": "wife_passport",
    "fieldtype": "Attach",
    "label": "Wife Passport ",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1143,7 +1151,7 @@
    "fieldname": "children_identification",
    "fieldtype": "Attach",
    "label": "Children IDs or Passport",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "print_hide": 1
   },
   {
@@ -1151,7 +1159,7 @@
    "fieldname": "rent_contract",
    "fieldtype": "Attach",
    "label": "Rent Contract",
-   "mandatory_depends_on": "eval:in_list([\"Rental\", \"Akwad\"], doc.housing_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Rental\", \"Akwad\"], doc.housing_type))",
    "print_hide": 1
   },
   {
@@ -1159,7 +1167,7 @@
    "fieldname": "property_deed",
    "fieldtype": "Attach",
    "label": "Property Deed",
-   "mandatory_depends_on": "eval:in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type))",
    "print_hide": 1
   },
   {
@@ -1167,7 +1175,7 @@
    "fieldname": "bank_statement",
    "fieldtype": "Attach",
    "label": "Bank Statement Form Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1175,7 +1183,7 @@
    "fieldname": "wife_bank_statement",
    "fieldtype": "Attach",
    "label": "Wife Bank Statement From The Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
    "print_hide": 1
   },
   {
@@ -1183,7 +1191,7 @@
    "fieldname": "wife_credit_certificate",
    "fieldtype": "Attach",
    "label": "Wife's Qatar Credit Information",
-   "mandatory_depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
    "print_hide": 1
   },
   {
@@ -1191,7 +1199,7 @@
    "fieldname": "beneficiary_credit_certificate",
    "fieldtype": "Attach",
    "label": "Beneficiary Qatar Credit Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1199,7 +1207,7 @@
    "fieldname": "children_bank_statement",
    "fieldtype": "Attach",
    "label": "Children Bank Statement from the Past 6 Months",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
    "print_hide": 1
   },
   {
@@ -1207,7 +1215,7 @@
    "fieldname": "children_credit_information",
    "fieldtype": "Attach",
    "label": "Credit Information for Children Above 18",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
    "print_hide": 1
   },
   {
@@ -1215,7 +1223,7 @@
    "fieldname": "social_security_certificate",
    "fieldtype": "Attach",
    "label": "Social Security Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working))",
    "print_hide": 1
   },
   {
@@ -1223,7 +1231,7 @@
    "fieldname": "partner_work_certificate",
    "fieldtype": "Attach",
    "label": "Partner Recent Work Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.partner_working)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.partner_working))",
    "print_hide": 1
   },
   {
@@ -1231,7 +1239,7 @@
    "fieldname": "employment_certificate",
    "fieldtype": "Attach",
    "label": "Employment Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.currently_working)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))",
    "print_hide": 1
   },
   {
@@ -1239,7 +1247,7 @@
    "fieldname": "vehicle_certificate",
    "fieldtype": "Attach",
    "label": "Vehicle Ownership Certificate  ",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1247,7 +1255,7 @@
    "fieldname": "iban_picture",
    "fieldtype": "Attach",
    "label": "IBAN Picture",
-   "mandatory_depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1255,7 +1263,7 @@
    "fieldname": "children_schooling_proof",
    "fieldtype": "Attach",
    "label": "Children Schooling Proof",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
    "print_hide": 1
   },
   {
@@ -1263,7 +1271,7 @@
    "fieldname": "special_needs_certificate",
    "fieldtype": "Attach",
    "label": "Certified medical report for children with special needs",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_special_needs)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_special_needs))",
    "print_hide": 1
   },
   {
@@ -1272,7 +1280,7 @@
    "fieldname": "removal_memorandum",
    "fieldtype": "Attach",
    "label": "Removal memorandum ",
-   "mandatory_depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Social Assistance\", \"Akwad\"], doc.request_category))",
    "print_hide": 1
   },
   {
@@ -1280,7 +1288,7 @@
    "fieldname": "termination_letter",
    "fieldtype": "Attach",
    "label": "Termination_letter",
-   "mandatory_depends_on": "eval:in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before))",
    "print_hide": 1
   },
   {
@@ -1288,7 +1296,7 @@
    "fieldname": "nonmarriage_proof",
    "fieldtype": "Attach",
    "label": "Proof of NonMarriage",
-   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1296,7 +1304,7 @@
    "fieldname": "divorce_paper",
    "fieldtype": "Attach",
    "label": "Divorce Paper",
-   "mandatory_depends_on": "eval:in_list([\"Divorced\", \"Akwad\"], doc.marital_status)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1304,7 +1312,7 @@
    "fieldname": "partner_death_certificate",
    "fieldtype": "Attach",
    "label": "Partner Death Certificate",
-   "mandatory_depends_on": "eval:in_list([\"Widowed\", \"Akwad\"], doc.marital_status)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1312,7 +1320,7 @@
    "fieldname": "id_coresidents",
    "fieldtype": "Attach",
    "label": "IDs or Visa of Coresidents ",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.coresidence)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.coresidence))",
    "print_hide": 1
   },
   {
@@ -1320,7 +1328,7 @@
    "fieldname": "id_sponsored",
    "fieldtype": "Attach",
    "label": "IDs or Visas of Sponsored ",
-   "mandatory_depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
+   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))",
    "print_hide": 1
   },
   {

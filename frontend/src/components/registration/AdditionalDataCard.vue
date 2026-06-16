@@ -19,7 +19,8 @@
           <select
             :value="modelValue.housing_type"
             @change="update('housing_type', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('housing_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.additionalData.housingTypePlaceholder') }}</option>
             <option value="Private Ownership">{{ t('registration.additionalData.owned') }}</option>
@@ -36,17 +37,18 @@
           <select
             :value="modelValue.housing_city"
             @change="update('housing_city', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('housing_city') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.additionalData.cityPlaceholder') }}</option>
             <option value="Doha">الدوحة</option>
-            <option value="Al Rayyan">الريان</option>
-            <option value="Al Wakrah">الوكرة</option>
-            <option value="Al Khor">الخور</option>
-            <option value="Al Shamal">الشمال</option>
+            <option value="Al Rayan">الريان</option>
+            <option value="Al Wakra">الوكرة</option>
+            <option value="AL Khoar">الخور</option>
+            <option value="Ash Shamal">الشمال</option>
             <option value="Al Daayen">الضعاين</option>
-            <option value="Umm Slal">أم صلال</option>
-            <option value="Al Sheehaniya">الشحانية</option>
+            <option value="Umm Salal">أم صلال</option>
+            <option value="AL Shehanyia">الشحانية</option>
           </select>
         </div>
 
@@ -60,7 +62,8 @@
             @input="update('zone_number', $event.target.value)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('zone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -74,7 +77,8 @@
             @input="update('street_number', $event.target.value)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('street_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -88,7 +92,8 @@
             @input="update('unit_number', $event.target.value)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('unit_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -102,7 +107,8 @@
             @input="update('building_number', $event.target.value)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            :class="isInvalid('building_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -114,7 +120,8 @@
             :value="modelValue.housing_description"
             @input="update('housing_description', $event.target.value)"
             rows="3"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-2xl outline-none text-sm resize-none min-h-[90px] focus:ring-2 focus:ring-[#34B0EE] focus:bg-white transition-all"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-2xl outline-none text-sm resize-none min-h-[90px] focus:ring-2 focus:ring-[#34B0EE] focus:bg-white transition-all"
+            :class="isInvalid('housing_description') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -139,22 +146,8 @@
           <select
             :value="modelValue.has_afif_employee_relation"
             @change="update('has_afif_employee_relation', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
-          >
-            <option value="">{{ t('registration.additionalData.yesNo') }}</option>
-            <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
-            <option value="No">{{ t('registration.additionalData.no') }}</option>
-          </select>
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-gray-700 block leading-relaxed">
-            {{ t('registration.additionalData.otherInfo') }} <span class="text-red-500">*</span>
-          </label>
-          <select
-            :value="modelValue.has_other_info"
-            @change="update('has_other_info', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('has_afif_employee_relation') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.additionalData.yesNo') }}</option>
             <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
@@ -169,7 +162,8 @@
           <select
             :value="modelValue.has_housemates"
             @change="update('has_housemates', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('has_housemates') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.additionalData.yesNo') }}</option>
             <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
@@ -184,7 +178,8 @@
           <select
             :value="modelValue.has_bank_loans"
             @change="update('has_bank_loans', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm text-gray-600 appearance-none"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('has_bank_loans') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
             <option value="">{{ t('registration.additionalData.yesNo') }}</option>
             <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
@@ -192,7 +187,41 @@
           </select>
         </div>
 
-        <div class="space-y-1.5 md:col-span-2">
+        <!-- Court Tried — shown when bank_loans = Yes -->
+        <div v-if="modelValue.has_bank_loans === 'Yes'" class="space-y-1.5">
+          <label class="text-xs font-semibold text-gray-700 block leading-relaxed">
+            {{ t('registration.additionalData.courtTried') }} <span class="text-red-500">*</span>
+          </label>
+          <select
+            :value="modelValue.court_tried"
+            @change="update('court_tried', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('court_tried') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.additionalData.yesNo') }}</option>
+            <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
+            <option value="No">{{ t('registration.additionalData.no') }}</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-semibold text-gray-700 block leading-relaxed">
+            {{ t('registration.additionalData.otherInfo') }} <span class="text-red-500">*</span>
+          </label>
+          <select
+            :value="modelValue.has_other_info"
+            @change="update('has_other_info', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('has_other_info') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.additionalData.yesNo') }}</option>
+            <option value="Yes">{{ t('registration.additionalData.yes') }}</option>
+            <option value="No">{{ t('registration.additionalData.no') }}</option>
+          </select>
+        </div>
+
+        <!-- Additional notes — shown when has_other_info = Yes -->
+        <div v-if="modelValue.has_other_info === 'Yes'" class="space-y-1.5 md:col-span-2">
           <label class="text-xs font-semibold text-gray-700 block">
             {{ t('registration.additionalData.additionalNotes') }} <span class="text-red-500">*</span>
           </label>
@@ -200,7 +229,9 @@
             :value="modelValue.additional_notes"
             @input="update('additional_notes', $event.target.value)"
             rows="3"
-            class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-2xl outline-none text-sm resize-none min-h-[90px] focus:ring-2 focus:ring-[#34B0EE] focus:bg-white transition-all"
+            :placeholder="t('registration.additionalData.additionalNotesPlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-2xl outline-none text-sm resize-none min-h-[90px] focus:ring-2 focus:ring-[#34B0EE] focus:bg-white transition-all"
+            :class="isInvalid('additional_notes') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
         </div>
 
@@ -214,11 +245,18 @@
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
-const props = defineProps({ modelValue: { type: Object, required: true } })
+const props = defineProps({
+  modelValue: { type: Object, required: true },
+  invalidFields: { type: Array, default: () => [] },
+})
 const emit = defineEmits(['update:modelValue'])
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function isInvalid(field) {
+  return props.invalidFields.includes(field)
 }
 </script>
 
