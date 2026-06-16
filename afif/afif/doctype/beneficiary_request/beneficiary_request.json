@@ -660,6 +660,7 @@
    "fieldtype": "Data",
    "in_standard_filter": 1,
    "label": "Phone Number",
+   "options": "Phone",
    "read_only": 1
   },
   {
@@ -726,7 +727,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2024-10-08 14:33:15.066043",
+ "modified": "2026-06-16 10:59:28.198682",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",
@@ -756,6 +757,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
