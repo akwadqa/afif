@@ -254,21 +254,6 @@ override_whitelisted_methods = {
 #	"afif.auth.validate"
 # ]
 
-fixtures = [
-    {"dt" : "Client Script", "filters" : [["module","in", "Afif"]]},
-    {"dt" : "Custom Field", "filters" : [["module","in", "Afif"]]},
-    {"dt" : "Property Setter", "filters" : [["module","in", "Afif"]]},
-    {"dt" : "Workflow", "filters" : [["name", "in", ["Beneficiary Aid", "Beneficiary Request", "Beneficiaries Registration"]]]},
-    {"dt" : "Notification", "filters" : [["module", "=", "Afif"]]}
-]
-
-
-#fixtures = [
- #       {"dt" : "Client Script", "filters" : [["module","in", "Afif"]]},
-  #      {"dt" : "Custom Field", "filters" : [["module","in", "Afif"]]},
-   #     {"dt" : "Property Setter", "filters" : [["module","in", "Afif"]]}
-#]
-
 
 boot_session = "afif.override.apply_overrides"
 
