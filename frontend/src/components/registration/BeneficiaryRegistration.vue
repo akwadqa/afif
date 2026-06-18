@@ -7,8 +7,8 @@
           <h1 class="text-2xl font-bold text-[#0570B6]">{{ t('registration.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">{{ t('registration.subtitle') }}</p>
         </div>
-        <span class="border border-sky-200 text-sky-600 bg-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap">
-          {{ t('registration.statusNew') }}
+        <span class="border px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" :class="statusClass">
+          {{ statusLabel }}
         </span>
       </div>
 
@@ -59,6 +59,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
+import { session } from '@/data/session'
 import FormStepsBar from './FormStepsBar.vue'
 import FormActionsBar from './FormActionsBar.vue'
 import PersonalInfoCard from './PersonalInfoCard.vue'
@@ -82,6 +83,7 @@ const subStep4 = ref(1)
 const submitting = ref(false)
 const error = ref('')
 const docName = ref(null)
+const docMeta = ref({})
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
 const invalidFields = ref([])
@@ -89,6 +91,25 @@ const invalidFields = ref([])
 const logicalCurrentStep = computed(() =>
   currentStep.value === 4 && subStep4.value === 2 ? 5 : currentStep.value
 )
+
+const STATUS_MAP = {
+  'Draft':            { key: 'statusDraft',       cls: 'border-gray-200 text-gray-600 bg-gray-50' },
+  'New Registration': { key: 'statusNew',         cls: 'border-sky-200 text-sky-600 bg-white' },
+  'Not Accepted':     { key: 'statusNotAccepted', cls: 'border-red-200 text-red-600 bg-red-50' },
+}
+
+const statusLabel = computed(() => {
+  const status = docMeta.value.status
+  const entry = STATUS_MAP[status]
+  if (entry) return t(`registration.${entry.key}`)
+  if (status) return status
+  return t('registration.statusDraft')
+})
+
+const statusClass = computed(() => {
+  const entry = STATUS_MAP[docMeta.value.status]
+  return entry?.cls || STATUS_MAP['Draft'].cls
+})
 
 const stepsList = computed(() => [
   { number: 1, label: t('registration.steps.personalData') },
@@ -166,6 +187,14 @@ const getDoc = createResource({
 
 function populateFromDoc(doc) {
   docName.value = doc.name
+  docMeta.value = {
+    owner: doc.owner,
+    modified: doc.modified,
+    creation: doc.creation,
+    docstatus: doc.docstatus,
+    workflow_state: doc.workflow_state,
+    status: doc.status,
+  }
 
   const step = doc.current_step || 1
   currentStep.value = step >= 4 ? 4 : step
@@ -176,6 +205,7 @@ function populateFromDoc(doc) {
     en_name: doc.en_name,
     ben_primary_idtype: doc.ben_primary_idtype,
     ben_primary_idnumber: doc.ben_primary_idnumber,
+    passport_number: doc.passport_number,
     ben_nationality: doc.ben_nationality,
     gender: doc.gender,
     date_of_birth: doc.date_of_birth,
@@ -359,16 +389,51 @@ function buildStepPayload(logicalStep) {
   }
 }
 
+function buildFullPayload() {
+  const ad = formData.value.additionalData || {}
+  const lc = formData.value.attachments.legalClaims
+  const payload = {
+    ...formData.value.personalInfo,
+    ...formData.value.additionalInfo,
+    ...formData.value.familyDetails,
+    ...formData.value.incomeDetails,
+    ...formData.value.financialObligations,
+    housing_type:                ad.housing_type,
+    city:                        ad.housing_city,
+    zone:                        ad.zone_number,
+    street_name:                 ad.street_number,
+    unit:                        ad.unit_number,
+    building_name:               ad.building_number,
+    adress:                      ad.housing_description,
+    afif_relationship:           ad.has_afif_employee_relation,
+    additional_information:      ad.has_other_info,
+    additional_information_text: ad.additional_notes,
+    coresidence:                 ad.has_housemates,
+    bank_loans:                  ad.has_bank_loans,
+    court_tried:                 ad.court_tried,
+    documents_confirmation: lc.correctData      ? 1 : 0,
+    verification_consent:   lc.verificationRight ? 1 : 0,
+    cancellation_right:     lc.statusAwareness   ? 1 : 0,
+  }
+  for (const field of ATTACHMENT_FIELDS) {
+    const val = formData.value.attachments.files[field]
+    if (typeof val === 'string') payload[field] = val
+  }
+  return payload
+}
+
 async function saveStep(logicalStep) {
   const doc = {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
     status: logicalStep >= 5 ? 'New Registration' : 'Draft',
-    ...buildStepPayload(logicalStep),
+    ...buildFullPayload(),
   }
 
   if (docName.value) {
     doc.name = docName.value
+    doc.user = session.user
+    Object.assign(doc, docMeta.value)
     return saveDoc.submit({ doc })
   }
   return insertDoc.submit({ doc })
@@ -398,10 +463,23 @@ function validateCurrentStep() {
     req(pi.en_name, 'en_name', t('registration.personalInfo.enName'))
     req(pi.ben_primary_idtype, 'ben_primary_idtype', t('registration.personalInfo.primaryIdType'))
     req(pi.ben_primary_idnumber, 'ben_primary_idnumber', t('registration.personalInfo.primaryIdNumber'))
+    if (pi.ben_primary_idnumber && pi.ben_primary_idnumber.length !== 11) {
+      errors.push(t('registration.validation.idMustBe11'))
+      fields.push('ben_primary_idnumber')
+    }
+    req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
+    if (pi.passport_number && !/^[A-Z]\d{8}$/.test(pi.passport_number)) {
+      errors.push(t('registration.validation.passportFormat'))
+      fields.push('passport_number')
+    }
     req(pi.ben_nationality, 'ben_nationality', t('registration.personalInfo.nationality'))
     req(pi.gender, 'gender', t('registration.personalInfo.gender'))
     req(pi.date_of_birth, 'date_of_birth', t('registration.personalInfo.dob'))
     req(pi.phone_number, 'phone_number', t('registration.personalInfo.phone'))
+    if (pi.phone_number && pi.phone_number.length !== 8) {
+      errors.push(t('registration.validation.phoneMustBe8'))
+      fields.push('phone_number')
+    }
     req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
     if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
     if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
@@ -415,8 +493,16 @@ function validateCurrentStep() {
       req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
       req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
       req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
+      if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
+        errors.push(t('registration.validation.idMustBe11'))
+        fields.push('requestor_idnumber')
+      }
       req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
       req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
+      if (ai.requestor_number && ai.requestor_number.length !== 8) {
+        errors.push(t('registration.validation.phoneMustBe8'))
+        fields.push('requestor_number')
+      }
     }
     req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
     if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
@@ -617,11 +703,28 @@ async function handleNext() {
     return
   }
   docName.value = data.name
+  docMeta.value = {
+    owner: data.owner,
+    modified: data.modified,
+    creation: data.creation,
+    docstatus: data.docstatus,
+    workflow_state: data.workflow_state,
+    status: data.status,
+  }
 
   if (isFinalStep) {
     try {
       await uploadAllFiles()
-      emit('submitted', data.name)
+      const finalData = await saveStep(logicalCurrentStep.value)
+      docMeta.value = {
+        owner: finalData.owner,
+        modified: finalData.modified,
+        creation: finalData.creation,
+        docstatus: finalData.docstatus,
+        workflow_state: finalData.workflow_state,
+        status: finalData.status,
+      }
+      emit('submitted', finalData.name)
     } catch (e) {
       error.value = e.message || t('registration.submitError')
     }
@@ -648,7 +751,10 @@ function prevStep() {
 
 async function uploadAllFiles() {
   for (const [fieldname, file] of Object.entries(formData.value.attachments.files)) {
-    if (file instanceof File) await uploadFile(file, docName.value, fieldname)
+    if (file instanceof File) {
+      const fileUrl = await uploadFile(file, docName.value, fieldname)
+      formData.value.attachments.files[fieldname] = fileUrl
+    }
   }
 }
 
@@ -668,6 +774,7 @@ async function uploadFile(file, docName, fieldname) {
 
   const res = await fetch('/api/method/upload_file', { method: 'POST', headers, body: fd })
   if (!res.ok) throw new Error(`${t('registration.submitError')}: ${file.name}`)
-  return res.json()
+  const data = await res.json()
+  return data.message.file_url
 }
 </script>

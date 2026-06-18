@@ -19,30 +19,16 @@
             ? 'bg-red-50/50 border-red-300'
             : 'bg-gray-50/50 hover:bg-gray-50/80 border-gray-100/70'"
         >
-          <!-- Label + file info -->
-          <div class="space-y-1 flex-1 min-w-0">
+          <!-- Label -->
+          <div class="flex-1 min-w-0">
             <div class="text-sm font-semibold text-gray-700">
               {{ t(doc.labelKey) }}
               <span v-if="doc.required" class="text-red-500">*</span>
             </div>
-            <div
-              v-if="modelValue.files[doc.id]"
-              class="text-xs text-gray-400 font-mono truncate max-w-xs"
-              dir="ltr"
-            >
-              <a
-                v-if="fileUrl(doc.id)"
-                :href="fileUrl(doc.id)"
-                target="_blank"
-                rel="noopener"
-                class="underline hover:text-sky-500"
-              >{{ fileLabel(doc.id) }}</a>
-              <span v-else>{{ fileLabel(doc.id) }}</span>
-            </div>
           </div>
 
-          <!-- Action buttons -->
-          <div class="flex items-center gap-2 self-end md:self-auto shrink-0">
+          <!-- Action buttons + file name -->
+          <div class="flex items-center gap-3 self-end md:self-auto shrink-0 rtl:flex-row-reverse">
 
             <!-- Upload (no file yet) -->
             <button
@@ -82,9 +68,25 @@
               </button>
             </template>
 
+            <span
+              v-if="modelValue.files[doc.id]"
+              class="text-xs text-gray-500 font-mono truncate max-w-[180px] inline-block align-middle"
+              dir="ltr"
+            >
+              <a
+                v-if="fileUrl(doc.id)"
+                :href="fileUrl(doc.id)"
+                target="_blank"
+                rel="noopener"
+                class="underline hover:text-sky-500"
+              >{{ fileLabel(doc.id) }}</a>
+              <span v-else>{{ fileLabel(doc.id) }}</span>
+            </span>
+
             <input
               :id="`attach-input-${doc.id}`"
               type="file"
+              accept=".jpg,.jpeg,.png,.ogg,.pdf, .webm"
               class="hidden"
               @change="handleFileSelected($event, doc.id)"
             />
@@ -238,9 +240,19 @@ function triggerFileInput(id) {
   document.getElementById(`attach-input-${id}`)?.click()
 }
 
+const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'ogg', 'webm']
+
 function handleFileSelected(event, id) {
   const file = event.target.files[0]
   if (!file) return
+
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+    alert(t('registration.attachments.invalidFileType'))
+    event.target.value = ''
+    return
+  }
+
   emit('update:modelValue', {
     ...props.modelValue,
     files: { ...props.modelValue.files, [id]: file },

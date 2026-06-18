@@ -609,49 +609,56 @@
    "fieldname": "ben_income",
    "fieldtype": "Check",
    "label": "Beneficiary Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "family_income",
    "fieldtype": "Check",
    "label": "Family Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "family_extra",
    "fieldtype": "Check",
    "label": "Family Extra Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "children_income",
    "fieldtype": "Check",
    "label": "Children Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "private_income",
    "fieldtype": "Check",
    "label": "Private Business Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "stock_income",
    "fieldtype": "Check",
    "label": "Stock Market Profits",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "default": "0",
    "fieldname": "rent_income",
    "fieldtype": "Check",
    "label": "Rent Income",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
    "depends_on": "eval:doc.family_income==1",
@@ -827,35 +834,40 @@
    "fieldname": "family_obligation",
    "fieldtype": "Check",
    "label": "Family Obligations",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 3"
   },
   {
    "default": "0",
    "fieldname": "rent_obligation",
    "fieldtype": "Check",
    "label": "Rent Obligations",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 3"
   },
   {
    "default": "0",
    "fieldname": "treatment_obligation",
    "fieldtype": "Check",
    "label": "Treatment Obligations",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 3"
   },
   {
    "default": "0",
    "fieldname": "debt_obligation",
    "fieldtype": "Check",
    "label": "Debt Obligations",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 3"
   },
   {
    "default": "0",
    "fieldname": "tuition_obligation",
    "fieldtype": "Check",
    "label": "Tuition Obligations",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 3"
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
@@ -1348,21 +1360,24 @@
    "fieldname": "documents_confirmation",
    "fieldtype": "Check",
    "label": "Documents Confirmation",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 5"
   },
   {
    "default": "0",
    "fieldname": "verification_consent",
    "fieldtype": "Check",
    "label": "Eligibility Verification Consent",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 5"
   },
   {
    "default": "0",
    "fieldname": "cancellation_right",
    "fieldtype": "Check",
    "label": "Afif Cancellation Right",
-   "reqd": 1
+   "reqd": 0,
+   "mandatory_depends_on": "eval:doc.current_step >= 5"
   },
   {
    "fieldname": "custom_notes",
@@ -1430,11 +1445,11 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2025-10-01 14:35:09.636922",
+ "modified": "2026-06-18 11:33:03.827654",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -1463,6 +1478,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

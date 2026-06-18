@@ -63,12 +63,16 @@
           <input
             type="text"
             :value="modelValue.requestor_idnumber"
-            @input="update('requestor_idnumber', $event.target.value)"
+            @input="onDigitsOnly('requestor_idnumber', $event, 11)"
+            maxlength="11"
             placeholder="00000000000"
             dir="ltr"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('requestor_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="modelValue.requestor_idnumber && modelValue.requestor_idnumber.length !== 11" class="text-xs text-red-500">
+            {{ t('registration.validation.idMustBe11') }}
+          </p>
         </div>
 
         <div class="space-y-1.5">
@@ -92,12 +96,16 @@
           <input
             type="tel"
             :value="modelValue.requestor_number"
-            @input="update('requestor_number', $event.target.value)"
-            :placeholder="t('registration.additionalInfo.requestorPhonePlaceholder')"
+            @input="onDigitsOnly('requestor_number', $event, 8)"
+            maxlength="8"
+            placeholder="00000000"
             dir="ltr"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('requestor_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="modelValue.requestor_number && modelValue.requestor_number.length !== 8" class="text-xs text-red-500">
+            {{ t('registration.validation.phoneMustBe8') }}
+          </p>
         </div>
 
       </template>
@@ -161,11 +169,15 @@
         <input
           type="text"
           :value="modelValue.ben_sec_idnumber"
-          @input="update('ben_sec_idnumber', $event.target.value)"
+          @input="onDigitsOnly('ben_sec_idnumber', $event, 11)"
+          maxlength="11"
           placeholder="00000000000"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
         />
+        <p v-if="modelValue.ben_sec_idnumber && modelValue.ben_sec_idnumber.length !== 11" class="text-xs text-red-500">
+          {{ t('registration.validation.idMustBe11') }}
+        </p>
       </div>
 
       <!-- Currently Working -->
@@ -304,6 +316,12 @@ onMounted(async () => {
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function onDigitsOnly(field, event, maxLen) {
+  const val = event.target.value.replace(/\D/g, '').slice(0, maxLen)
+  event.target.value = val
+  update(field, val)
 }
 
 function isInvalid(field) {

@@ -1,5 +1,5 @@
 <template>
-  <header class="relative z-50 w-full">
+  <header class="sticky top-0 z-50 w-full">
     <nav class="bg-white border-b border-gray-100 shadow-sm h-[110px] pl-[50px] pr-[50px] md:pr-[100px] flex items-center justify-between">
 
       <!-- Left: Logo + Language toggle -->

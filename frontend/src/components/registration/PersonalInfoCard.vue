@@ -60,25 +60,34 @@
         <input
           type="text"
           :value="modelValue.ben_primary_idnumber"
-          @input="update('ben_primary_idnumber', $event.target.value)"
+          @input="onDigitsOnly('ben_primary_idnumber', $event, 11)"
+          maxlength="11"
           placeholder="00000000000"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('ben_primary_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="modelValue.ben_primary_idnumber && modelValue.ben_primary_idnumber.length !== 11" class="text-xs text-red-500">
+          {{ t('registration.validation.idMustBe11') }}
+        </p>
       </div>
 
       <!-- Passport Number -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }}</label>
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
           :value="modelValue.passport_number"
-          @input="update('passport_number', $event.target.value)"
+          @input="onPassportInput($event)"
+          maxlength="9"
           placeholder="A00000000"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('passport_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="modelValue.passport_number && !isValidPassport(modelValue.passport_number)" class="text-xs text-red-500">
+          {{ t('registration.validation.passportFormat') }}
+        </p>
       </div>
 
       <!-- Nationality + Gender -->
@@ -131,12 +140,16 @@
           <input
             type="tel"
             :value="modelValue.phone_number"
-            @input="update('phone_number', $event.target.value)"
-            placeholder="0097400000000"
+            @input="onDigitsOnly('phone_number', $event, 8)"
+            maxlength="8"
+            placeholder="00000000"
             dir="ltr"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="modelValue.phone_number && modelValue.phone_number.length !== 8" class="text-xs text-red-500">
+            {{ t('registration.validation.phoneMustBe8') }}
+          </p>
         </div>
       </div>
 
@@ -164,11 +177,15 @@
         <input
           type="tel"
           :value="modelValue.partners_phone_number"
-          @input="update('partners_phone_number', $event.target.value)"
-          placeholder="55000000"
+          @input="onDigitsOnly('partners_phone_number', $event, 8)"
+          maxlength="8"
+          placeholder="00000000"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
         />
+        <p v-if="modelValue.partners_phone_number && modelValue.partners_phone_number.length !== 8" class="text-xs text-red-500">
+          {{ t('registration.validation.phoneMustBe8') }}
+        </p>
       </div>
 
       <!-- Partner Name — shown when Married -->
@@ -261,6 +278,25 @@ onMounted(async () => {
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function onDigitsOnly(field, event, maxLen) {
+  const val = event.target.value.replace(/\D/g, '').slice(0, maxLen)
+  event.target.value = val
+  update(field, val)
+}
+
+function onPassportInput(event) {
+  let val = event.target.value.toUpperCase()
+  const letter = val.charAt(0).replace(/[^A-Z]/g, '')
+  const digits = val.slice(1).replace(/\D/g, '').slice(0, 8)
+  val = letter + digits
+  event.target.value = val
+  update('passport_number', val)
+}
+
+function isValidPassport(val) {
+  return /^[A-Z]\d{8}$/.test(val)
 }
 
 function isInvalid(field) {
