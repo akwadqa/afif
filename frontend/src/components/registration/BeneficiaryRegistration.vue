@@ -14,30 +14,67 @@
 
       <FormStepsBar :current-step="currentStep" :steps="stepsList" />
 
-      <div v-if="currentStep === 1" class="space-y-6">
-        <PersonalInfoCard v-model="formData.personalInfo" :invalid-fields="invalidFields" />
-        <AdditionalInfoCard v-model="formData.additionalInfo" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
-        <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
-      </div>
+      <div :class="{ 'read-only-form': readOnly }">
+        <div v-if="currentStep === 1" class="space-y-6">
+          <PersonalInfoCard v-model="formData.personalInfo" :invalid-fields="invalidFields" />
+          <AdditionalInfoCard v-model="formData.additionalInfo" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
+          <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
+        </div>
 
-      <div v-else-if="currentStep === 2">
-        <IncomeDetailsCard v-model="formData.incomeDetails" :invalid-fields="invalidFields" />
-      </div>
+        <div v-else-if="currentStep === 2">
+          <IncomeDetailsCard v-model="formData.incomeDetails" :invalid-fields="invalidFields" />
+        </div>
 
-      <div v-else-if="currentStep === 3">
-        <FinancialObligationsCard v-model="formData.financialObligations" :invalid-fields="invalidFields" />
-      </div>
+        <div v-else-if="currentStep === 3">
+          <FinancialObligationsCard v-model="formData.financialObligations" :invalid-fields="invalidFields" />
+        </div>
 
-      <div v-else-if="currentStep === 4">
-        <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
-        <AttachmentsCard v-else-if="subStep4 === 2" v-model="formData.attachments" :context="formData" :invalid-fields="invalidFields" />
+        <div v-else-if="currentStep === 4">
+          <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
+          <AttachmentsCard v-else-if="subStep4 === 2" v-model="formData.attachments" :context="formData" :invalid-fields="invalidFields" />
+        </div>
       </div>
 
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-6 py-4 text-sm">
         {{ error }}
       </div>
 
+      <!-- Read-only: navigation only (no submit), with back-to-list button -->
+      <div v-if="readOnly"
+        class="bg-white rounded-[32px] px-4 md:px-6 py-4 border border-gray-100 shadow-sm flex items-center justify-between gap-2"
+        :dir="isRTL ? 'rtl' : 'ltr'"
+      >
+        <button
+          @click="readOnlyPrev"
+          :disabled="logicalCurrentStep === 1"
+          class="border border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 disabled:opacity-40 px-3 md:px-5 py-2.5 rounded-xl text-xs md:text-sm font-medium flex items-center gap-1 transition-all shrink-0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+          <span class="hidden sm:inline">{{ t('registration.back') }}</span>
+        </button>
+
+        <button
+          @click="$emit('back')"
+          class="border border-sky-200 text-sky-600 hover:bg-sky-50 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shrink-0"
+        >
+          {{ t('beneficiaryList.backToList') }}
+        </button>
+
+        <button
+          @click="readOnlyNext"
+          :disabled="logicalCurrentStep === 5"
+          class="text-white font-medium text-xs md:text-sm py-2.5 px-4 md:px-8 rounded-xl shadow-md transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-40 flex items-center gap-2 shrink-0"
+          style="background-color: #34B0EE;"
+        >
+          {{ t('registration.next') }}
+        </button>
+      </div>
+
+      <!-- Editable: normal form actions -->
       <FormActionsBar
+        v-else
         :current-step="logicalCurrentStep"
         :total-steps="5"
         :loading="submitting"
@@ -73,9 +110,10 @@ import ValidationErrorPopup from './ValidationErrorPopup.vue'
 
 const props = defineProps({
   registrationName: { type: String, default: null },
+  readOnly: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['submitted'])
+const emit = defineEmits(['submitted', 'back'])
 const { t, isRTL } = useLanguage()
 
 const currentStep = ref(1)
@@ -93,13 +131,19 @@ const logicalCurrentStep = computed(() =>
 )
 
 const STATUS_MAP = {
-  'Draft':            { key: 'statusDraft',       cls: 'border-gray-200 text-gray-600 bg-gray-50' },
-  'New Registration': { key: 'statusNew',         cls: 'border-sky-200 text-sky-600 bg-white' },
-  'Not Accepted':     { key: 'statusNotAccepted', cls: 'border-red-200 text-red-600 bg-red-50' },
+  'Draft':                { key: 'statusDraft',       cls: 'border-gray-200 text-gray-600 bg-gray-50' },
+  'New Registration':     { key: 'statusNew',         cls: 'border-sky-200 text-sky-600 bg-white' },
+  'Not Accepted':         { key: 'statusNotAccepted', cls: 'border-red-200 text-red-600 bg-red-50' },
+  'Accepted':             { key: 'statusNew',         cls: 'border-green-200 text-green-600 bg-green-50' },
+  'Updated':              { key: 'statusNew',         cls: 'border-blue-200 text-blue-600 bg-blue-50' },
+  'Update Required':      { key: 'statusNotAccepted', cls: 'border-amber-200 text-amber-600 bg-amber-50' },
+  'Updated beneficiary':  { key: 'statusNew',         cls: 'border-green-200 text-green-600 bg-green-50' },
 }
 
 const statusLabel = computed(() => {
   const status = docMeta.value.status
+  const translated = t(`statuses.registration.${status}`)
+  if (translated && translated !== `statuses.registration.${status}`) return translated
   const entry = STATUS_MAP[status]
   if (entry) return t(`registration.${entry.key}`)
   if (status) return status
@@ -346,6 +390,10 @@ onMounted(() => {
   if (props.registrationName) {
     getDoc.submit({ doctype: 'Beneficiaries Registration', name: props.registrationName })
   }
+  if (props.readOnly) {
+    currentStep.value = 1
+    subStep4.value = 1
+  }
 })
 
 function buildStepPayload(logicalStep) {
@@ -426,7 +474,6 @@ async function saveStep(logicalStep) {
   const doc = {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
-    status: logicalStep >= 5 ? 'New Registration' : 'Draft',
     ...buildFullPayload(),
   }
 
@@ -434,6 +481,10 @@ async function saveStep(logicalStep) {
     doc.name = docName.value
     doc.user = session.user
     Object.assign(doc, docMeta.value)
+  }
+  doc.status = logicalStep >= 5 ? 'New Registration' : 'Draft'
+
+  if (docName.value) {
     return saveDoc.submit({ doc })
   }
   return insertDoc.submit({ doc })
@@ -749,6 +800,22 @@ function prevStep() {
   if (currentStep.value > 1) currentStep.value--
 }
 
+function readOnlyNext() {
+  if (currentStep.value === 4 && subStep4.value === 1) {
+    subStep4.value = 2
+  } else if (currentStep.value < 4) {
+    currentStep.value++
+  }
+}
+
+function readOnlyPrev() {
+  if (currentStep.value === 4 && subStep4.value === 2) {
+    subStep4.value = 1
+  } else if (currentStep.value > 1) {
+    currentStep.value--
+  }
+}
+
 async function uploadAllFiles() {
   for (const [fieldname, file] of Object.entries(formData.value.attachments.files)) {
     if (file instanceof File) {
@@ -778,3 +845,20 @@ async function uploadFile(file, docName, fieldname) {
   return data.message.file_url
 }
 </script>
+
+<style scoped>
+.read-only-form :deep(input),
+.read-only-form :deep(select),
+.read-only-form :deep(textarea),
+.read-only-form :deep(input[type="checkbox"]),
+.read-only-form :deep(input[type="file"]) {
+  pointer-events: none;
+  opacity: 0.75;
+  background-color: #f9fafb;
+}
+
+.read-only-form :deep(button) {
+  pointer-events: none;
+  opacity: 0.5;
+}
+</style>

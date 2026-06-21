@@ -6,3 +6,28 @@
 [dir='rtl'] {
   font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
 }
+
+/* Form fields inherit direction from their container so placeholders follow the language */
+input:not([dir]),
+select:not([dir]),
+textarea:not([dir]) {
+  direction: inherit;
+  text-align: inherit;
+}
+
+input:not([dir])::placeholder,
+textarea:not([dir])::placeholder {
+  direction: inherit;
+  text-align: inherit;
+}
+
+/* Select dropdown arrow follows direction */
+[dir='ltr'] .select-field,
+[dir='ltr'] .custom-select {
+  background-position: right 16px center;
+}
+
+[dir='rtl'] .select-field,
+[dir='rtl'] .custom-select {
+  background-position: left 16px center;
+}
