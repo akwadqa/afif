@@ -21,6 +21,9 @@
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('ar_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="modelValue.ar_name && hasEnglishLetters(modelValue.ar_name)" class="text-xs text-red-500">
+          {{ t('registration.validation.arabicOnly') }}
+        </p>
       </div>
 
       <!-- English Name -->
@@ -35,6 +38,9 @@
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('en_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="modelValue.en_name && hasArabicLetters(modelValue.en_name)" class="text-xs text-red-500">
+          {{ t('registration.validation.englishOnly') }}
+        </p>
       </div>
 
       <!-- Primary ID Type -->
@@ -129,11 +135,14 @@
           <input
             type="date"
             :value="modelValue.date_of_birth"
-            @input="update('date_of_birth', $event.target.value)"
+            @input="onDobInput($event)"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('date_of_birth') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
             dir="ltr"
           />
+          <p v-if="modelValue.date_of_birth && !isAtLeast21(modelValue.date_of_birth)" class="text-xs text-red-500">
+            {{ t('registration.validation.minimumAge') }}
+          </p>
         </div>
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.phone') }} <span class="text-red-500">*</span></label>
@@ -277,6 +286,31 @@ onMounted(async () => {
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function hasEnglishLetters(val) {
+  return /[a-zA-Z]/.test(val)
+}
+
+function hasArabicLetters(val) {
+  return /[؀-ۿ]/.test(val)
+}
+
+
+function isAtLeast21(dob) {
+  if (!dob) return true
+  const today = new Date()
+  const birthDate = new Date(dob)
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  return age >= 21
+}
+
+function onDobInput(event) {
+  update('date_of_birth', event.target.value)
 }
 
 function onDigitsOnly(field, event, maxLen) {

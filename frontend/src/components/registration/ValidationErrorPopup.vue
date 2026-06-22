@@ -4,12 +4,6 @@
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 flex flex-col">
 
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </button>
-
         <div class="flex items-center space-x-2 space-x-reverse text-red-500">
           <span class="text-lg font-bold font-arabic">خطأ</span>
           <div class="bg-red-50 rounded-full p-0.5">
@@ -18,6 +12,12 @@
             </svg>
           </div>
         </div>
+
+        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <div class="px-8 py-6 text-right max-h-80 overflow-y-auto">
@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div class="px-6 py-4 bg-[#F0F7FC] border-t border-gray-50 flex items-center justify-start">
+      <div class="px-6 py-4 bg-[#F0F7FC] border-t border-gray-50 flex items-center justify-end">
         <button
           @click="$emit('close')"
           class="bg-[#34B0EE] text-white px-10 py-2 rounded-xl font-bold font-arabic text-sm shadow-md shadow-sky-100 hover:opacity-90 active:scale-95 transition-all"

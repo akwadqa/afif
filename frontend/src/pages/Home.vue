@@ -150,7 +150,7 @@ const myRegistrations = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
     if (!rows.length) {
-      view.value = 'welcome'
+      view.value = 'registration'
       return
     }
 

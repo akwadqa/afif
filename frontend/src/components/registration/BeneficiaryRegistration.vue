@@ -240,9 +240,15 @@ function populateFromDoc(doc) {
     status: doc.status,
   }
 
-  const step = doc.current_step || 1
-  currentStep.value = step >= 4 ? 4 : step
-  subStep4.value = step >= 5 ? 2 : 1
+  const step = doc.current_step || 0
+  if (step >= 5) {
+    currentStep.value = 1
+    subStep4.value = 1
+  } else {
+    const nextStep = step + 1
+    currentStep.value = nextStep >= 4 ? 4 : nextStep
+    subStep4.value = nextStep >= 5 ? 2 : 1
+  }
 
   formData.value.personalInfo = {
     ar_name: doc.ar_name,
@@ -511,7 +517,15 @@ function validateCurrentStep() {
 
   if (currentStep.value === 1) {
     req(pi.ar_name, 'ar_name', t('registration.personalInfo.arName'))
+    if (pi.ar_name && /[a-zA-Z]/.test(pi.ar_name)) {
+      errors.push(t('registration.validation.arabicOnly'))
+      fields.push('ar_name')
+    }
     req(pi.en_name, 'en_name', t('registration.personalInfo.enName'))
+    if (pi.en_name && /[؀-ۿ]/.test(pi.en_name)) {
+      errors.push(t('registration.validation.englishOnly'))
+      fields.push('en_name')
+    }
     req(pi.ben_primary_idtype, 'ben_primary_idtype', t('registration.personalInfo.primaryIdType'))
     req(pi.ben_primary_idnumber, 'ben_primary_idnumber', t('registration.personalInfo.primaryIdNumber'))
     if (pi.ben_primary_idnumber && pi.ben_primary_idnumber.length !== 11) {
@@ -526,6 +540,19 @@ function validateCurrentStep() {
     req(pi.ben_nationality, 'ben_nationality', t('registration.personalInfo.nationality'))
     req(pi.gender, 'gender', t('registration.personalInfo.gender'))
     req(pi.date_of_birth, 'date_of_birth', t('registration.personalInfo.dob'))
+    if (pi.date_of_birth) {
+      const today = new Date()
+      const birthDate = new Date(pi.date_of_birth)
+      let age = today.getFullYear() - birthDate.getFullYear()
+      const monthDiff = today.getMonth() - birthDate.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--
+      }
+      if (age < 21) {
+        errors.push(t('registration.validation.minimumAge'))
+        fields.push('date_of_birth')
+      }
+    }
     req(pi.phone_number, 'phone_number', t('registration.personalInfo.phone'))
     if (pi.phone_number && pi.phone_number.length !== 8) {
       errors.push(t('registration.validation.phoneMustBe8'))

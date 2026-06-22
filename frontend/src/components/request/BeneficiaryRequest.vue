@@ -529,6 +529,14 @@ const insertDoc = createResource({
   },
 })
 
+const setFieldValue = createResource({
+  url: 'frappe.client.set_value',
+  onError(err) {
+    error.value = extractError(err)
+    submitting.value = false
+  },
+})
+
 async function handleSubmit() {
   error.value = ''
 
@@ -563,7 +571,13 @@ async function handleSubmit() {
 
     for (const [fieldname, file] of Object.entries(files.value)) {
       if (file instanceof File) {
-        await uploadFile(file, docName, fieldname)
+        const fileUrl = await uploadFile(file, docName, fieldname)
+        await setFieldValue.submit({
+          doctype: 'Beneficiary Request',
+          name: docName,
+          fieldname,
+          value: fileUrl,
+        })
       }
     }
 

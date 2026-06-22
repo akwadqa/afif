@@ -4,14 +4,14 @@
     class="flex items-center gap-2 text-gray-700 hover:text-sky-700 transition-colors duration-200 text-sm font-medium"
   >
     <span>{{ t('nav.switchLang') }}</span>
-    <span class="flex items-center justify-center w-7 h-7 rounded-full bg-white shrink-0">
+    <span class="flex items-center justify-center w-9 h-9 rounded-full bg-white shrink-0">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="w-4 h-4 text-[#0570B6]"
+        class="w-6 h-6 text-[#0570B6]"
       >
         <path
           stroke-linecap="round"

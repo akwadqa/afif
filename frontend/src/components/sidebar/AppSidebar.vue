@@ -2,9 +2,9 @@
   <aside
     :dir="isRTL ? 'rtl' : 'ltr'"
     :class="[
-      'flex flex-col bg-white transition-transform duration-300 z-30',
-      'fixed top-[110px] bottom-0 right-0 shadow-2xl',
-      'w-full sm:w-80',
+      'hidden md:flex flex-col bg-white transition-transform duration-300 z-30',
+      'absolute top-0 bottom-0 right-0 shadow-2xl',
+      'w-80',
       sidebarOpen ? 'translate-x-0' : 'translate-x-full',
       isRTL ? 'border-l border-gray-100' : 'border-r border-gray-100',
     ]"
@@ -24,15 +24,6 @@
       </div>
       <!-- Name -->
       <h2 class="flex-1 text-base font-bold text-gray-800 truncate">{{ displayName }}</h2>
-      <!-- Close button -->
-      <button
-        class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors shrink-0"
-        @click="closeSidebar"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-        </svg>
-      </button>
     </div>
 
     <!-- Navigation -->
@@ -45,7 +36,7 @@
         v-slot="{ navigate, isActive }"
       >
         <button
-          @click="() => { navigate(); closeSidebar() }"
+          @click="navigate"
           :class="[
             'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative',
             isRTL ? 'flex-row' : 'flex-row-reverse',
@@ -125,11 +116,6 @@ const menuItems = [
     labelKey: 'sidebar.request',
     routeName: 'Request',
     svgPath: '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />',
-  },
-  {
-    labelKey: 'sidebar.myAccount',
-    routeName: 'Account',
-    svgPath: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />',
   },
 ]
 

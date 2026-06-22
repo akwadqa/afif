@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="w-full bg-white py-12 px-6 md:px-16 border-t border-[#D3D3D3]"
+    class="w-full bg-white py-12 px-6 md:px-16 border-t border-[#D3D3D3] relative z-40"
     dir="rtl"
   >
     <div class="max-w-7xl mx-auto">

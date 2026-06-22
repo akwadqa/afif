@@ -14,6 +14,9 @@ export default {
         idMustBe11: 'رقم الهوية يجب أن يكون 11 رقماً',
         phoneMustBe8: 'رقم الهاتف يجب أن يكون 8 أرقام',
         passportFormat: 'رقم جواز السفر يجب أن يكون حرف واحد متبوعاً بـ 8 أرقام',
+        arabicOnly: 'هذا الحقل يقبل الأحرف العربية فقط',
+        englishOnly: 'هذا الحقل يقبل الأحرف الإنجليزية فقط',
+        minimumAge: 'يجب أن يكون عمرك 21 سنة أو أكثر',
       },
       steps: {
         personalData: 'البيانات الشخصية',
@@ -550,6 +553,9 @@ export default {
         idMustBe11: 'ID number must be exactly 11 digits',
         phoneMustBe8: 'Phone number must be exactly 8 digits',
         passportFormat: 'Passport number must be 1 letter followed by 8 digits',
+        arabicOnly: 'This field accepts Arabic characters only',
+        englishOnly: 'This field accepts English characters only',
+        minimumAge: 'Must be 21 years of age or older',
       },
       steps: {
         personalData: 'Personal Data',

@@ -7,6 +7,59 @@
   font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
 }
 
+/*
+ * Responsive Arabic font sizing.
+ * Frappe-UI sets Tailwind text sizes in hard-coded px (xs=12, sm=13, base=14 …)
+ * so root font-size scaling has no effect.  Override each utility class directly.
+ *
+ * Default frappe-UI → ≥1024 Arabic → ≥1280 Arabic
+ * ──────────────────────────────────────────────────
+ * text-xs   12px      14px           16px
+ * text-sm   13px      15px           17px
+ * text-base 14px      16px           18px
+ * text-lg   16px      18px           20px
+ * text-xl   18px      20px           22px
+ * text-2xl  20px      23px           26px
+ * text-3xl  24px      27px           30px
+ */
+@media (min-width: 1024px) {
+  html:lang(ar) .text-xs  { font-size: 14px; }
+  html:lang(ar) .text-sm  { font-size: 15px; }
+  html:lang(ar) .text-base,
+  html:lang(ar) .text-md  { font-size: 16px; }
+  html:lang(ar) .text-lg  { font-size: 18px; }
+  html:lang(ar) .text-xl  { font-size: 20px; }
+  html:lang(ar) .text-2xl { font-size: 23px; }
+  html:lang(ar) .text-3xl { font-size: 27px; }
+
+  /* scoped @apply classes in BeneficiaryRequest */
+  html:lang(ar) .input-label   { font-size: 14px; }
+  html:lang(ar) .custom-input,
+  html:lang(ar) .custom-textarea,
+  html:lang(ar) .custom-select { font-size: 15px; }
+}
+@media (min-width: 1280px) {
+  html:lang(ar) .text-xs  { font-size: 16px; }
+  html:lang(ar) .text-sm  { font-size: 17px; }
+  html:lang(ar) .text-base,
+  html:lang(ar) .text-md  { font-size: 18px; }
+  html:lang(ar) .text-lg  { font-size: 20px; }
+  html:lang(ar) .text-xl  { font-size: 22px; }
+  html:lang(ar) .text-2xl { font-size: 26px; }
+  html:lang(ar) .text-3xl { font-size: 30px; }
+
+  html:lang(ar) .input-label   { font-size: 16px; }
+  html:lang(ar) .custom-input,
+  html:lang(ar) .custom-textarea,
+  html:lang(ar) .custom-select { font-size: 17px; }
+}
+
+/* Hide browser-native password reveal button (Edge / Chrome) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none;
+}
+
 /* Form fields inherit direction from their container so placeholders follow the language */
 input:not([dir]),
 select:not([dir]),
