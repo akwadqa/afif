@@ -219,6 +219,11 @@ const saveDoc = createResource({
   onError: onStepError,
 })
 
+const workflowAction = createResource({
+  url: 'frappe.model.workflow.apply_workflow',
+  onError: onStepError,
+})
+
 const getDoc = createResource({
   url: 'frappe.client.get',
   onSuccess(data) {
@@ -476,24 +481,62 @@ function buildFullPayload() {
   return payload
 }
 
+async function applyAction(action) {
+  const result = await workflowAction.submit({
+    doc: JSON.stringify({ doctype: 'Beneficiaries Registration', name: docName.value }),
+    action,
+  })
+  docMeta.value = {
+    owner: result.owner,
+    modified: result.modified,
+    creation: result.creation,
+    docstatus: result.docstatus,
+    workflow_state: result.workflow_state,
+    status: result.status,
+  }
+  return result
+}
+
 async function saveStep(logicalStep) {
   const doc = {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
+    email: session.user,
     ...buildFullPayload(),
   }
+
+  const currentState = docName.value ? docMeta.value.workflow_state : null
 
   if (docName.value) {
     doc.name = docName.value
     doc.user = session.user
-    Object.assign(doc, docMeta.value)
+    doc.owner = docMeta.value.owner
+    doc.modified = docMeta.value.modified
+    doc.creation = docMeta.value.creation
+    doc.docstatus = docMeta.value.docstatus
+    doc.workflow_state = currentState
+    doc.status = docMeta.value.status
   }
-  doc.status = logicalStep >= 5 ? 'New Registration' : 'Draft'
 
-  if (docName.value) {
+  if (currentState === 'Not Accepted') {
+    await applyAction('Review')
+    doc.modified = docMeta.value.modified
+    doc.workflow_state = docMeta.value.workflow_state
+    doc.status = docMeta.value.status
     return saveDoc.submit({ doc })
   }
-  return insertDoc.submit({ doc })
+
+  if (!docName.value) {
+    return insertDoc.submit({ doc })
+  }
+
+  const result = await saveDoc.submit({ doc })
+
+  if (logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
+    return applyAction('Submit')
+  }
+
+  return result
 }
 
 function validateCurrentStep() {
@@ -621,6 +664,10 @@ function validateCurrentStep() {
   }
 
   if (currentStep.value === 2) {
+    const incomeFields = ['ben_income', 'family_income', 'family_extra', 'children_income', 'private_income', 'stock_income', 'rent_income']
+    if (!incomeFields.some(f => id[f] == 1)) {
+      errors.push(t('registration.validation.atLeastOneIncome'))
+    }
     const incomeSources = [
       { field: 'ben_income',      periodicField: 'ben_periodic_type',           periodicLabel: t('registration.incomeDetails.benPeriodicLabel'),      amountField: 'salary_amount',           amountLabel: t('registration.incomeDetails.salaryAmount'),    noteField: 'benficiary_note',     noteLabel: t('registration.incomeDetails.benNoteLabel') },
       { field: 'family_income',   periodicField: 'family_periodic_type',        periodicLabel: t('registration.incomeDetails.familyPeriodicLabel'),   amountField: 'family_income_amount',    amountLabel: t('registration.incomeDetails.familyAmount'),    noteField: 'family_note',         noteLabel: t('registration.incomeDetails.familyNoteLabel') },
@@ -640,6 +687,10 @@ function validateCurrentStep() {
   }
 
   if (currentStep.value === 3) {
+    const obligationFields = ['family_obligation', 'rent_obligation', 'treatment_obligation', 'debt_obligation', 'tuition_obligation']
+    if (!obligationFields.some(f => fo[f] == 1)) {
+      errors.push(t('registration.validation.atLeastOneObligation'))
+    }
     const obligationSources = [
       { field: 'family_obligation',   subFields: [
         { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel') },

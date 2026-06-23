@@ -5,7 +5,7 @@
       <main
         :class="[
           'flex-1 overflow-y-auto transition-[margin] duration-300',
-          sidebarOpen ? 'sm:mr-80' : '',
+          sidebarOpen ? (isRTL ? 'sm:mr-80' : 'sm:ml-80') : '',
         ]"
       >
         <router-view />
@@ -23,6 +23,6 @@ import AppSidebar from '@/components/sidebar/AppSidebar.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { useSidebar } from '@/composables/useSidebar'
 
-useLanguage()
+const { isRTL } = useLanguage()
 const { sidebarOpen } = useSidebar()
 </script>

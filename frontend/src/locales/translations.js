@@ -17,6 +17,8 @@ export default {
         arabicOnly: 'هذا الحقل يقبل الأحرف العربية فقط',
         englishOnly: 'هذا الحقل يقبل الأحرف الإنجليزية فقط',
         minimumAge: 'يجب أن يكون عمرك 21 سنة أو أكثر',
+        atLeastOneIncome: 'يجب اختيار مصدر دخل واحد على الأقل',
+        atLeastOneObligation: 'يجب اختيار التزام مالي واحد على الأقل',
       },
       steps: {
         personalData: 'البيانات الشخصية',
@@ -556,6 +558,8 @@ export default {
         arabicOnly: 'This field accepts Arabic characters only',
         englishOnly: 'This field accepts English characters only',
         minimumAge: 'Must be 21 years of age or older',
+        atLeastOneIncome: 'At least one income source must be selected',
+        atLeastOneObligation: 'At least one financial obligation must be selected',
       },
       steps: {
         personalData: 'Personal Data',

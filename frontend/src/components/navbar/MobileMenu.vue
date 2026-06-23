@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white border-b border-gray-100 shadow-md md:hidden">
+  <div class="bg-white border-b border-gray-100 shadow-md md:hidden" :dir="isRTL ? 'rtl' : 'ltr'">
     <div class="px-4 py-2 flex flex-col">
 
       <!-- Nav links -->
@@ -103,12 +103,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { useBeneficiaryName } from '@/composables/useBeneficiaryName'
 import { navConfig } from '@/config/navConfig'
 import { session } from '@/data/session'
 
 defineEmits(['close'])
 
-const { t, toggleLanguage } = useLanguage()
+const { t, isRTL, toggleLanguage } = useLanguage()
+const { displayName } = useBeneficiaryName()
 
 const navItems = computed(() =>
   navConfig.map((item) => ({
@@ -121,11 +123,6 @@ const navItems = computed(() =>
   }))
 )
 
-const displayName = computed(() => {
-  const user = session.user
-  if (!user) return ''
-  return user.includes('@') ? user.split('@')[0] : user
-})
 
 const sidebarItems = [
   {

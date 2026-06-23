@@ -3,9 +3,10 @@
     :dir="isRTL ? 'rtl' : 'ltr'"
     :class="[
       'hidden md:flex flex-col bg-white transition-transform duration-300 z-30',
-      'absolute top-0 bottom-0 right-0 shadow-2xl',
+      'absolute top-0 bottom-0 shadow-2xl',
       'w-80',
-      sidebarOpen ? 'translate-x-0' : 'translate-x-full',
+      isRTL ? 'right-0' : 'left-0',
+      sidebarOpen ? 'translate-x-0' : (isRTL ? 'translate-x-full' : '-translate-x-full'),
       isRTL ? 'border-l border-gray-100' : 'border-r border-gray-100',
     ]"
   >
@@ -92,19 +93,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { useSidebar } from '@/composables/useSidebar'
+import { useBeneficiaryName } from '@/composables/useBeneficiaryName'
+import { session } from '@/data/session'
 
 const { t, isRTL } = useLanguage()
 const { sidebarOpen, closeSidebar } = useSidebar()
-
-const displayName = computed(() => {
-  const user = session.user
-  if (!user) return ''
-  return user.includes('@') ? user.split('@')[0] : user
-})
+const { displayName } = useBeneficiaryName()
 
 const menuItems = [
   {

@@ -112,7 +112,8 @@
       </button>
     </form>
 
-    <!-- Divider -->
+    <!-- Divider + Qatar Pass (commented out) -->
+    <!--
     <div class="relative my-6 text-center">
       <div class="absolute inset-0 flex items-center">
         <div class="w-full border-t border-gray-100" />
@@ -122,7 +123,6 @@
       </span>
     </div>
 
-    <!-- Qatar Pass -->
     <button
       type="button"
       class="w-full flex items-center justify-center border border-gray-200 rounded-xl py-3 px-4 hover:bg-gray-50 transition-colors shadow-sm mb-6 gap-2"
@@ -131,6 +131,7 @@
         {{ t('login.qatarPass') }}
       </span>
     </button>
+    -->
 
     <!-- Register link -->
     <div class="text-center text-sm text-gray-500">

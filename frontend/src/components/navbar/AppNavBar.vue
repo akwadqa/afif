@@ -1,19 +1,26 @@
 <template>
   <header class="sticky top-0 z-50 w-full">
-    <nav class="bg-white border-b border-gray-100 shadow-sm h-[110px] pl-[50px] pr-4 md:pr-6 flex items-center justify-between">
+    <nav
+      :dir="isRTL ? 'ltr' : 'rtl'"
+      :class="[
+        'bg-white border-b border-gray-100 shadow-sm h-[110px] flex items-center justify-between',
+        isRTL ? 'pr-[50px] pl-4 md:pl-6' : 'pl-[50px] pr-4 md:pr-6',
+      ]"
+    >
 
-      <!-- Left: Logo + Language toggle -->
+      <!-- Start: Logo + Language toggle -->
       <div class="flex items-center gap-6">
         <NavLogo />
-        <LanguageToggle class="hidden md:flex" />
+        <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
       </div>
 
-      <!-- Right: Nav links (desktop) + hamburger -->
+      <!-- End: Nav links (desktop) + hamburger -->
       <div class="flex items-center gap-2">
         <NavLinks class="hidden md:flex" />
 
         <!-- Hamburger: toggles sidebar on md+, toggles mobile menu on small -->
         <button
+          v-if="session.isLoggedIn"
           :class="[
             'p-2 rounded-lg transition-colors',
             isActive
@@ -48,7 +55,10 @@ import NavLinks from './NavLinks.vue'
 import LanguageToggle from './LanguageToggle.vue'
 import MobileMenu from './MobileMenu.vue'
 import { useSidebar } from '@/composables/useSidebar'
+import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
+
+const { isRTL } = useLanguage()
 
 const menuOpen = ref(false)
 const { sidebarOpen, toggleSidebar } = useSidebar()
