@@ -2,23 +2,23 @@
   <div class="min-h-screen bg-[#EBF4FF] py-10 px-4 md:px-8" :dir="isRTL ? 'rtl' : 'ltr'">
     <div class="max-w-5xl mx-auto space-y-6">
 
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold text-[#0570B6]">{{ t('registration.title') }}</h1>
-          <p class="text-sm text-gray-500 mt-1">{{ t('registration.subtitle') }}</p>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div class="min-w-0">
+          <h1 class="text-xl sm:text-2xl font-bold text-[#0570B6]">{{ t('registration.title') }}</h1>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t('registration.subtitle') }}</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             v-if="canEdit && !editing"
             @click="editing = true"
-            class="border border-sky-200 text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap"
+            class="border border-sky-200 text-sky-600 hover:bg-sky-50 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
             </svg>
             {{ t('registration.editButton') }}
           </button>
-          <span class="border px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap" :class="statusClass">
+          <span class="border px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap" :class="statusClass">
             {{ statusLabel }}
           </span>
         </div>
@@ -27,7 +27,9 @@
       <FormStepsBar :current-step="currentStep" :steps="stepsList" />
 
       <div :class="{ 'read-only-form': isReadOnly }">
+      <div :class="{ 'read-only-form': isReadOnly }">
         <div v-if="currentStep === 1" class="space-y-6">
+          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
           <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
           <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
         </div>
@@ -51,6 +53,7 @@
       </div>
 
       <!-- Read-only: navigation only (no submit), with back-to-list button -->
+      <div v-if="isReadOnly"
       <div v-if="isReadOnly"
         class="bg-white rounded-[32px] px-4 md:px-6 py-4 border border-gray-100 shadow-sm flex items-center justify-between gap-2"
         :dir="isRTL ? 'rtl' : 'ltr'"
@@ -128,6 +131,8 @@ const { t, isRTL } = useLanguage()
 
 const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
 
+const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
+
 const currentStep = ref(1)
 const subStep4 = ref(1)
 const submitting = ref(false)
@@ -137,6 +142,10 @@ const docMeta = ref({})
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
 const invalidFields = ref([])
+const editing = ref(false)
+
+const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
+const isReadOnly = computed(() => props.readOnly && !editing.value)
 const editing = ref(false)
 
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
@@ -179,6 +188,8 @@ const stepsList = computed(() => [
 ])
 
 const formData = ref({
+  personalInfo: { ben_primary_idtype: 'Qatari Id', id_expiry_date: '' },
+  additionalInfo: { ben_requestor_relationtype: 'The same subvention requestor', ben_sec_idtype: 'Passport' },
   personalInfo: { ben_primary_idtype: 'Qatari Id', id_expiry_date: '' },
   additionalInfo: { ben_requestor_relationtype: 'The same subvention requestor', ben_sec_idtype: 'Passport' },
   familyDetails: {},
@@ -275,7 +286,9 @@ function populateFromDoc(doc) {
     ar_name: doc.ar_name,
     en_name: doc.en_name,
     ben_primary_idtype: doc.ben_primary_idtype || 'Qatari Id',
+    ben_primary_idtype: doc.ben_primary_idtype || 'Qatari Id',
     ben_primary_idnumber: doc.ben_primary_idnumber,
+    id_expiry_date: doc.id_expiry_date,
     id_expiry_date: doc.id_expiry_date,
     passport_number: doc.passport_number,
     ben_nationality: doc.ben_nationality,
@@ -291,11 +304,13 @@ function populateFromDoc(doc) {
 
   formData.value.additionalInfo = {
     ben_requestor_relationtype: doc.ben_requestor_relationtype || 'The same subvention requestor',
+    ben_requestor_relationtype: doc.ben_requestor_relationtype || 'The same subvention requestor',
     requestor_name: doc.requestor_name,
     requestor_idtype: doc.requestor_idtype,
     requestor_idnumber: doc.requestor_idnumber,
     requestor_nationality: doc.requestor_nationality,
     requestor_number: doc.requestor_number,
+    ben_sec_idtype: doc.ben_sec_idtype || 'Passport',
     ben_sec_idtype: doc.ben_sec_idtype || 'Passport',
     ben_sec_nationality: doc.ben_sec_nationality,
     ben_sec_gulf_country: doc.ben_sec_gulf_country,
@@ -418,6 +433,7 @@ onMounted(() => {
   if (props.registrationName) {
     getDoc.submit({ doctype: 'Beneficiaries Registration', name: props.registrationName })
   }
+  if (props.readOnly && !editing.value) {
   if (props.readOnly && !editing.value) {
     currentStep.value = 1
     subStep4.value = 1
@@ -593,7 +609,9 @@ function validateCurrentStep() {
       fields.push('ben_primary_idnumber')
     }
     req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
+    req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
     req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
+    if (pi.passport_number && !/^[A-Z0-9]{1,9}$/.test(pi.passport_number)) {
     if (pi.passport_number && !/^[A-Z0-9]{1,9}$/.test(pi.passport_number)) {
       errors.push(t('registration.validation.passportFormat'))
       fields.push('passport_number')
@@ -943,18 +961,19 @@ async function uploadFile(file, docName, fieldname) {
 </script>
 
 <style scoped>
-.read-only-form :deep(input),
+.read-only-form {
+  pointer-events: none;
+}
+
+.read-only-form :deep(input:not([type="checkbox"])),
 .read-only-form :deep(select),
 .read-only-form :deep(textarea),
-.read-only-form :deep(input[type="checkbox"]),
 .read-only-form :deep(input[type="file"]) {
-  pointer-events: none;
   opacity: 0.75;
   background-color: #f9fafb;
 }
 
 .read-only-form :deep(button) {
-  pointer-events: none;
   opacity: 0.5;
 }
 </style>

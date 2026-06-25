@@ -1,10 +1,10 @@
 @import "./assets/Inter/inter.css";
 @import "frappe-ui/style.css";
 
-/* Use system Arabic fonts when the document is in RTL mode */
+/* Use Cairo as the standard Arabic font */
 :lang(ar),
 [dir='rtl'] {
-  font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-family: 'Cairo', sans-serif;
 }
 
 /*

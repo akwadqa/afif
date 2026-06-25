@@ -13,7 +13,7 @@ import { navConfig } from '@/config/navConfig'
 const { t } = useLanguage()
 
 const navItems = computed(() =>
-  navConfig.map((item) => ({
+  [...navConfig].reverse().map((item) => ({
     ...item,
     label: t(`nav.${item.key}`),
     children: item.children.map((child) => ({

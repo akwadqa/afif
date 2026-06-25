@@ -9,9 +9,15 @@
     >
 
       <!-- Start: Logo + Language toggle -->
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-4">
         <NavLogo />
         <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
+        <a
+          href="#"
+          class="bg-[#005979] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#004a66] transition-colors whitespace-nowrap"
+        >
+          {{ t('nav.donateNow') }}
+        </a>
       </div>
 
       <!-- End: Nav links (desktop) + hamburger -->
@@ -55,7 +61,7 @@ import { useSidebar } from '@/composables/useSidebar'
 import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
 
-const { isRTL } = useLanguage()
+const { isRTL, t } = useLanguage()
 
 const menuOpen = ref(false)
 const { sidebarOpen, toggleSidebar } = useSidebar()

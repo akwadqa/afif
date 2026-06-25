@@ -28,7 +28,7 @@
           </div>
 
           <!-- Action buttons + file name -->
-          <div class="flex items-center gap-3 self-end md:self-auto shrink-0 rtl:flex-row-reverse">
+          <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
 
             <!-- Upload (no file yet) -->
             <button
@@ -70,7 +70,7 @@
 
             <span
               v-if="modelValue.files[doc.id]"
-              class="text-xs text-gray-500 font-mono truncate max-w-[180px] inline-block align-middle"
+              class="text-xs text-gray-500 font-mono truncate max-w-[140px] md:max-w-[180px] inline-block align-middle"
               dir="ltr"
             >
               <a
