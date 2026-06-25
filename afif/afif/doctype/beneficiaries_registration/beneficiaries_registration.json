@@ -37,6 +37,7 @@
   "cb1",
   "ben_primary_idtype",
   "ben_primary_idnumber",
+  "id_expiry_date",
   "ben_requestor_relationtype",
   "requestor_name",
   "requestor_idtype",
@@ -323,6 +324,11 @@
    "in_standard_filter": 1,
    "label": "Personal ID",
    "unique": 1
+  },
+  {
+   "fieldname": "id_expiry_date",
+   "fieldtype": "Date",
+   "label": "ID Expiry Date"
   },
   {
    "fieldname": "ben_requestor_relationtype",

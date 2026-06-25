@@ -58,12 +58,16 @@
           </label>
           <input
             type="text"
+            inputmode="numeric"
             :value="modelValue.zone_number"
-            @input="update('zone_number', $event.target.value)"
+            @input="onNumberOnly('zone_number', $event)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('zone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="letterWarnings.has('zone_number')" class="text-xs text-red-500">
+            {{ t('registration.validation.noLetters') }}
+          </p>
         </div>
 
         <div class="space-y-1.5">
@@ -72,12 +76,16 @@
           </label>
           <input
             type="text"
+            inputmode="numeric"
             :value="modelValue.street_number"
-            @input="update('street_number', $event.target.value)"
+            @input="onNumberOnly('street_number', $event)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('street_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="letterWarnings.has('street_number')" class="text-xs text-red-500">
+            {{ t('registration.validation.noLetters') }}
+          </p>
         </div>
 
         <div class="space-y-1.5">
@@ -86,12 +94,16 @@
           </label>
           <input
             type="text"
+            inputmode="numeric"
             :value="modelValue.unit_number"
-            @input="update('unit_number', $event.target.value)"
+            @input="onNumberOnly('unit_number', $event)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('unit_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="letterWarnings.has('unit_number')" class="text-xs text-red-500">
+            {{ t('registration.validation.noLetters') }}
+          </p>
         </div>
 
         <div class="space-y-1.5">
@@ -100,12 +112,16 @@
           </label>
           <input
             type="text"
+            inputmode="numeric"
             :value="modelValue.building_number"
-            @input="update('building_number', $event.target.value)"
+            @input="onNumberOnly('building_number', $event)"
             :placeholder="t('registration.additionalData.numberPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('building_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="letterWarnings.has('building_number')" class="text-xs text-red-500">
+            {{ t('registration.validation.noLetters') }}
+          </p>
         </div>
 
         <div class="space-y-1.5 md:col-span-2">
@@ -238,7 +254,9 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
@@ -247,8 +265,19 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
+const letterWarnings = ref(new Set())
+
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function onNumberOnly(field, event) {
+  const raw = event.target.value
+  const val = arabicToWestern(raw).replace(/[^0-9]/g, '')
+  event.target.value = val
+  update(field, val)
+  if (raw !== val) letterWarnings.value.add(field)
+  else letterWarnings.value.delete(field)
 }
 
 function isInvalid(field) {

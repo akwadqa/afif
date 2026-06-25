@@ -3,13 +3,6 @@
 
     <!-- Checkbox selection card -->
     <div class="bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm">
-      <div class="flex items-center gap-2 border-b border-gray-50 pb-4 mb-6 text-[#0570B6]">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 shrink-0">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.75A.75.75 0 0 1 3 4.5h.75Zm0 0h.75a.75.75 0 0 1 .75.75V6a.75.75 0 0 1-.75.75h-.75A.75.75 0 0 1 1.5 6v-.75A.75.75 0 0 1 2.25 4.5Zm15 0h.75a.75.75 0 0 1 .75.75V6a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75a.75.75 0 0 1 .75-.75Zm-15 6h.75a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75a.75.75 0 0 1 .75-.75Zm15 0h.75a.75.75 0 0 1 .75.75v.75a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75a.75.75 0 0 1 .75-.75Z" />
-        </svg>
-        <h3 class="text-base font-bold">{{ t('registration.incomeDetails.title') }}</h3>
-      </div>
-
       <div class="space-y-3">
         <label
           v-for="src in incomeSources"
@@ -69,12 +62,16 @@
               </label>
               <input
                 type="text"
+                inputmode="numeric"
                 :value="modelValue[src.amountField]"
-                @input="update(src.amountField, $event.target.value)"
+                @input="onNumberOnly(src.amountField, $event)"
                 :placeholder="t('registration.incomeDetails.amountPlaceholder')"
                 class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
                 :class="isInvalid(src.amountField) ? 'border-red-400 bg-red-50' : 'border-gray-100'"
               />
+              <p v-if="letterWarnings.has(src.amountField)" class="text-xs text-red-500">
+                {{ t('registration.validation.noLetters') }}
+              </p>
             </div>
 
             <div class="space-y-1.5">
@@ -99,8 +96,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
@@ -109,8 +107,19 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
+const letterWarnings = ref(new Set())
+
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function onNumberOnly(field, event) {
+  const raw = event.target.value
+  const val = arabicToWestern(raw).replace(/[^0-9]/g, '')
+  event.target.value = val
+  update(field, val)
+  if (raw !== val) letterWarnings.value.add(field)
+  else letterWarnings.value.delete(field)
 }
 
 function isInvalid(field) {

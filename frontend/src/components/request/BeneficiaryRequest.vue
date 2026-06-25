@@ -64,12 +64,17 @@
               <label class="input-label">{{ t('request.details.requestedAmount') }} <span v-if="!readOnly" class="text-red-500">*</span></label>
               <input
                 type="text"
-                v-model="form.requested_amount"
+                inputmode="numeric"
+                :value="form.requested_amount"
+                @input="onAmountInput"
                 :placeholder="t('request.details.amountPlaceholder')"
                 class="custom-input font-sans"
                 :class="{ 'border-red-300 bg-red-50/30': isInvalid('requested_amount') }"
                 :disabled="readOnly"
               />
+              <p v-if="amountLetterWarning" class="text-xs text-red-500">
+                {{ t('registration.validation.noLetters') }}
+              </p>
             </div>
 
             <!-- 4) Request summary -->
@@ -240,6 +245,7 @@ const { t, isRTL } = useLanguage()
 
 const submitting = ref(false)
 const submitted = ref(false)
+const amountLetterWarning = ref(false)
 const error = ref('')
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
@@ -395,6 +401,14 @@ const subcategoryOptions = computed(() => {
 const currentSubcategory = computed(() => {
   return subcategoryField.value ? form.value[subcategoryField.value] : ''
 })
+
+function onAmountInput(event) {
+  const raw = event.target.value
+  const val = raw.replace(/[a-zA-Z؀-ۿ]/g, '')
+  event.target.value = val
+  form.value.requested_amount = val
+  amountLetterWarning.value = raw !== val
+}
 
 function onCategoryChange() {
   if (props.readOnly) return

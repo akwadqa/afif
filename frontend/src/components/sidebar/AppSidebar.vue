@@ -14,7 +14,7 @@
     <div
       :class="[
         'flex items-center gap-3 px-5 py-4 border-b border-gray-100',
-        isRTL ? 'flex-row' : 'flex-row-reverse',
+        'flex-row',
       ]"
     >
       <!-- Avatar -->
@@ -40,7 +40,7 @@
           @click="navigate"
           :class="[
             'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative',
-            isRTL ? 'flex-row' : 'flex-row-reverse',
+            'flex-row',
             isActive
               ? 'bg-sky-50 text-sky-600 font-semibold'
               : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
@@ -78,7 +78,7 @@
         :disabled="session.logout.loading"
         :class="[
           'w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-60',
-          isRTL ? 'flex-row' : 'flex-row-reverse',
+          'flex-row',
         ]"
       >
         <!-- Icon -->

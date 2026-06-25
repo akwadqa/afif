@@ -39,7 +39,7 @@
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
     <div class="max-w-5xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex justify-between items-center mb-10">
         <div>
           <h1 class="text-2xl font-bold text-sky-900">{{ t('myRequests.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">{{ t('myRequests.subtitle') }}</p>
@@ -133,9 +133,11 @@
     <img :src="bgImg" alt="" aria-hidden="true" fetchpriority="high"
       class="absolute inset-0 w-full h-full object-cover -z-10 select-none pointer-events-none" />
     <RegistrationSuccess
-      title="نجاح تسجيل الطلب"
-      message="طلبك الآن بإنتظار تقديم الاقرار. يجب زيارة موقع جمعية عفيف الخيرية خلال 3 ايام لتوقيع الاقرار المطلوب. في حال لم يتم زيارة الموقع خلال المدة هذه، سيتم الغاء الطلب."
+      title="تم تقديم طلبك بنجاح"
+      message="لاستكمال طلبك، يرجى زيارة موقع الجمعية لتوقيع الإقرار خلال 3 أيام كحد أقصى."
       button-text="الاطلاع على حالة طلباتي"
+      map-link="https://afif.qa/contact/"
+      map-link-text="موقعنا على الخريطة"
       :show-edit-answers="false"
       @view-status="onBackToList"
     />

@@ -34,6 +34,21 @@
       <span>{{ buttonText }}</span>
     </button>
 
+    <a
+      v-if="mapLink"
+      :href="mapLink"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="w-full sm:w-auto min-w-[240px] flex items-center justify-center gap-2 text-white py-3.5 px-6 rounded-xl font-medium shadow-md transition-all hover:opacity-90 active:scale-[0.99] mb-6 no-underline"
+      style="background-color: #34B0EE;"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 shrink-0">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+      </svg>
+      <span>{{ mapLinkText }}</span>
+    </a>
+
     <button
       v-if="showEditAnswers"
       @click="$emit('edit-answers')"
@@ -54,6 +69,8 @@ defineProps({
   message: { type: String, default: 'شكراً لتسجيلك، ستتلقى تحديثات حول حالة تسجيلك، يرجى التحقق من صندوق البريد الإلكتروني الخاص بك للحصول على تعليمات إضافية إذا كانت هناك.' },
   buttonText: { type: String, default: 'الاطلاع على حالة تسجيل الملف' },
   showEditAnswers: { type: Boolean, default: true },
+  mapLink: { type: String, default: '' },
+  mapLinkText: { type: String, default: 'موقعنا على الخريطة' },
 })
 defineEmits(['view-status', 'edit-answers'])
 </script>

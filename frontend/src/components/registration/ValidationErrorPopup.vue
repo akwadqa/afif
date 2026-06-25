@@ -60,7 +60,7 @@ defineEmits(['close'])
 
 <style scoped>
 .font-arabic {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Cairo', sans-serif;
 }
 .dir-rtl {
   direction: rtl;

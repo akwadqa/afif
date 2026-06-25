@@ -1,11 +1,5 @@
 <template>
   <div class="bg-white rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-sm" :dir="isRTL ? 'rtl' : 'ltr'">
-    <div class="flex items-center space-x-2 space-x-reverse border-b border-gray-50 pb-4 mb-6 text-[#0570B6]">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 shrink-0">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-      </svg>
-      <h3 class="text-base font-bold">{{ t('registration.personalInfo.title') }}</h3>
-    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -15,7 +9,7 @@
         <input
           type="text"
           :value="modelValue.ar_name"
-          @input="update('ar_name', $event.target.value)"
+          @input="onTextOnly('ar_name', $event)"
           :placeholder="t('registration.personalInfo.arNamePlaceholder')"
           dir="rtl"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
@@ -23,6 +17,9 @@
         />
         <p v-if="modelValue.ar_name && hasEnglishLetters(modelValue.ar_name)" class="text-xs text-red-500">
           {{ t('registration.validation.arabicOnly') }}
+        </p>
+        <p v-if="numberWarnings.has('ar_name')" class="text-xs text-red-500">
+          {{ t('registration.validation.noNumbers') }}
         </p>
       </div>
 
@@ -32,7 +29,7 @@
         <input
           type="text"
           :value="modelValue.en_name"
-          @input="update('en_name', $event.target.value)"
+          @input="onTextOnly('en_name', $event)"
           :placeholder="t('registration.personalInfo.enNamePlaceholder')"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
@@ -41,22 +38,21 @@
         <p v-if="modelValue.en_name && hasArabicLetters(modelValue.en_name)" class="text-xs text-red-500">
           {{ t('registration.validation.englishOnly') }}
         </p>
+        <p v-if="numberWarnings.has('en_name')" class="text-xs text-red-500">
+          {{ t('registration.validation.noNumbers') }}
+        </p>
       </div>
 
       <!-- Primary ID Type -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.primaryIdType') }} <span class="text-red-500">*</span></label>
         <select
-          :value="modelValue.ben_primary_idtype"
-          @change="update('ben_primary_idtype', $event.target.value)"
-          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] outline-none text-sm text-gray-600 appearance-none"
+          :value="modelValue.ben_primary_idtype || 'Qatari Id'"
+          disabled
+          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
           :class="isInvalid('ben_primary_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
-          <option value="">{{ t('registration.personalInfo.primaryIdTypePlaceholder') }}</option>
           <option value="Qatari Id">{{ t('registration.personalInfo.qatariId') }}</option>
-          <option value="Passport">{{ t('registration.personalInfo.passport') }}</option>
-          <option value="GCC Id">{{ t('registration.personalInfo.gccId') }}</option>
-          <option value="Visa Number">{{ t('registration.personalInfo.visaNumber') }}</option>
         </select>
       </div>
 
@@ -78,6 +74,34 @@
         </p>
       </div>
 
+      <!-- ID Expiry Date -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.idExpiryDate') }} <span class="text-red-500">*</span></label>
+        <DatePicker
+          :modelValue="modelValue.id_expiry_date"
+          @change="(val) => update('id_expiry_date', val)"
+          placeholder="YYYY-MM-DD"
+          :clearable="false"
+          class="w-full"
+        >
+          <template #target="{ togglePopover, inputValue }">
+            <div
+              @click="togglePopover"
+              class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all cursor-pointer flex items-center justify-between"
+              :class="isInvalid('id_expiry_date') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+              dir="ltr"
+            >
+              <span :class="(inputValue || modelValue.id_expiry_date) ? 'text-gray-900' : 'text-gray-400'">
+                {{ inputValue || modelValue.id_expiry_date || 'YYYY-MM-DD' }}
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+              </svg>
+            </div>
+          </template>
+        </DatePicker>
+      </div>
+
       <!-- Passport Number -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }} <span class="text-red-500">*</span></label>
@@ -86,7 +110,7 @@
           :value="modelValue.passport_number"
           @input="onPassportInput($event)"
           maxlength="9"
-          placeholder="A00000000"
+          placeholder="A12345678"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('passport_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
@@ -104,7 +128,7 @@
             type="text"
             list="country-list"
             :value="modelValue.ben_nationality"
-            @input="update('ben_nationality', $event.target.value)"
+            @input="onTextOnly('ben_nationality', $event)"
             :placeholder="t('registration.personalInfo.nationalityPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
             :class="isInvalid('ben_nationality') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
@@ -112,6 +136,9 @@
           <datalist id="country-list">
             <option v-for="country in countries" :key="country" :value="country" />
           </datalist>
+          <p v-if="numberWarnings.has('ben_nationality')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
         </div>
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.gender') }} <span class="text-red-500">*</span></label>
@@ -132,14 +159,29 @@
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.dob') }} <span class="text-red-500">*</span></label>
-          <input
-            type="date"
-            :value="modelValue.date_of_birth"
-            @input="onDobInput($event)"
-            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
-            :class="isInvalid('date_of_birth') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-            dir="ltr"
-          />
+          <DatePicker
+            :modelValue="modelValue.date_of_birth"
+            @change="(val) => update('date_of_birth', val)"
+            placeholder="YYYY-MM-DD"
+            :clearable="false"
+            class="w-full"
+          >
+            <template #target="{ togglePopover, inputValue }">
+              <div
+                @click="togglePopover"
+                class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all cursor-pointer flex items-center justify-between"
+                :class="isInvalid('date_of_birth') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+                dir="ltr"
+              >
+                <span :class="(inputValue || modelValue.date_of_birth) ? 'text-gray-900' : 'text-gray-400'">
+                  {{ inputValue || modelValue.date_of_birth || 'YYYY-MM-DD' }}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                </svg>
+              </div>
+            </template>
+          </DatePicker>
           <p v-if="modelValue.date_of_birth && !isAtLeast21(modelValue.date_of_birth)" class="text-xs text-red-500">
             {{ t('registration.validation.minimumAge') }}
           </p>
@@ -153,7 +195,7 @@
             maxlength="8"
             placeholder="00000000"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
           <p v-if="modelValue.phone_number && modelValue.phone_number.length !== 8" class="text-xs text-red-500">
@@ -204,11 +246,14 @@
           <input
             type="text"
             :value="modelValue.partner_name"
-            @input="update('partner_name', $event.target.value)"
+            @input="onTextOnly('partner_name', $event)"
             :placeholder="t('registration.personalInfo.partnerNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('partner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="numberWarnings.has('partner_name')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
         </div>
       </template>
 
@@ -219,11 +264,14 @@
           <input
             type="text"
             :value="modelValue.expartner_name"
-            @input="update('expartner_name', $event.target.value)"
+            @input="onTextOnly('expartner_name', $event)"
             :placeholder="t('registration.personalInfo.exPartnerNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('expartner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
+          <p v-if="numberWarnings.has('expartner_name')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
         </div>
       </template>
 
@@ -258,21 +306,318 @@
       </template>
 
     </div>
+
+    <!-- Additional Info section — starts on a new row -->
+    <div class="border-t border-gray-100 my-6"></div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Relation to Requestor -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorRelation') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.ben_requestor_relationtype || 'The same subvention requestor'"
+          disabled
+          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          :class="isInvalid('ben_requestor_relationtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="The same subvention requestor">{{ t('registration.additionalInfo.sameRequestor') }}</option>
+        </select>
+      </div>
+
+      <!-- Placeholder to keep grid aligned when requestor fields are hidden -->
+      <div v-if="additionalInfo.ben_requestor_relationtype !== 'Relative to the subvention requestor'" />
+
+      <!-- Requestor fields — shown when "Relative to the subvention requestor" -->
+      <template v-if="additionalInfo.ben_requestor_relationtype === 'Relative to the subvention requestor'">
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorName') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="additionalInfo.requestor_name"
+            @input="onTextOnlyAdditional('requestor_name', $event)"
+            :placeholder="t('registration.additionalInfo.requestorNamePlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('requestor_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <p v-if="numberWarnings.has('requestor_name')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorIdType') }} <span class="text-red-500">*</span></label>
+          <select
+            :value="additionalInfo.requestor_idtype"
+            @change="updateAdditional('requestor_idtype', $event.target.value)"
+            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :class="isInvalid('requestor_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          >
+            <option value="">{{ t('registration.personalInfo.primaryIdTypePlaceholder') }}</option>
+            <option value="Qatari Id">{{ t('registration.personalInfo.qatariId') }}</option>
+            <option value="Passport">{{ t('registration.personalInfo.passport') }}</option>
+            <option value="GCC Id">{{ t('registration.personalInfo.gccId') }}</option>
+            <option value="Visa Number">{{ t('registration.personalInfo.visaNumber') }}</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorIdNumber') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="additionalInfo.requestor_idnumber"
+            @input="onDigitsOnlyAdditional('requestor_idnumber', $event, 11)"
+            maxlength="11"
+            placeholder="00000000000"
+            dir="ltr"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('requestor_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <p v-if="additionalInfo.requestor_idnumber && additionalInfo.requestor_idnumber.length !== 11" class="text-xs text-red-500">
+            {{ t('registration.validation.idMustBe11') }}
+          </p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorNationality') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            list="requestor-country-list"
+            :value="additionalInfo.requestor_nationality"
+            @input="onTextOnlyAdditional('requestor_nationality', $event)"
+            :placeholder="t('registration.additionalInfo.requestorNationalityPlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('requestor_nationality') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <datalist id="requestor-country-list">
+            <option v-for="country in countries" :key="country" :value="country" />
+          </datalist>
+          <p v-if="numberWarnings.has('requestor_nationality')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorPhone') }} <span class="text-red-500">*</span></label>
+          <input
+            type="tel"
+            :value="additionalInfo.requestor_number"
+            @input="onDigitsOnlyAdditional('requestor_number', $event, 8)"
+            maxlength="8"
+            placeholder="00000000"
+            dir="ltr"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('requestor_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <p v-if="additionalInfo.requestor_number && additionalInfo.requestor_number.length !== 8" class="text-xs text-red-500">
+            {{ t('registration.validation.phoneMustBe8') }}
+          </p>
+        </div>
+
+      </template>
+
+      <!-- Secondary ID Type -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdType') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.ben_sec_idtype || 'Passport'"
+          disabled
+          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          :class="isInvalid('ben_sec_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="Passport">{{ t('registration.personalInfo.passport') }}</option>
+        </select>
+      </div>
+
+      <!-- Secondary Nationality — shown when secondary ID is Passport -->
+      <div v-if="additionalInfo.ben_sec_idtype === 'Passport'" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secNationality') }} <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          list="sec-country-list"
+          :value="additionalInfo.ben_sec_nationality"
+          @input="onTextOnlyAdditional('ben_sec_nationality', $event)"
+          :placeholder="t('registration.personalInfo.nationalityPlaceholder')"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('ben_sec_nationality') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+        <datalist id="sec-country-list">
+          <option v-for="country in countries" :key="country" :value="country" />
+        </datalist>
+        <p v-if="numberWarnings.has('ben_sec_nationality')" class="text-xs text-red-500">
+          {{ t('registration.validation.noNumbers') }}
+        </p>
+      </div>
+
+      <!-- Gulf Country — shown when secondary ID is GCC Id -->
+      <div v-if="additionalInfo.ben_sec_idtype === 'GCC Id'" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.gulfCountry') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.ben_sec_gulf_country"
+          @change="updateAdditional('ben_sec_gulf_country', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('ben_sec_gulf_country') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.additionalInfo.gulfCountryPlaceholder') }}</option>
+          <option value="Saudi Arabia">Saudi Arabia</option>
+          <option value="Oman">Oman</option>
+          <option value="Kuwait">Kuwait</option>
+          <option value="United Arab Emirates">United Arab Emirates</option>
+          <option value="Bahrain">Bahrain</option>
+        </select>
+      </div>
+
+      <!-- Secondary ID Number -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdNumber') }}</label>
+        <input
+          type="text"
+          :value="additionalInfo.ben_sec_idnumber"
+          @input="onAlphanumericOnly('ben_sec_idnumber', $event, 9)"
+          maxlength="9"
+          placeholder="A12345678"
+          dir="ltr"
+          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+        />
+      </div>
+
+      <!-- Currently Working -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.currentlyWorking') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.currently_working"
+          @change="updateAdditional('currently_working', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('currently_working') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.additionalInfo.yesNo') }}</option>
+          <option value="Yes">{{ t('registration.additionalInfo.yes') }}</option>
+          <option value="No">{{ t('registration.additionalInfo.no') }}</option>
+        </select>
+      </div>
+
+      <!-- Employment fields — shown when currently working = Yes -->
+      <template v-if="additionalInfo.currently_working === 'Yes'">
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.employerName') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="additionalInfo.employer_name"
+            @input="onTextOnlyAdditional('employer_name', $event)"
+            :placeholder="t('registration.additionalInfo.employerNamePlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('employer_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <p v-if="numberWarnings.has('employer_name')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.employerAddress') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="additionalInfo.employer_address"
+            @input="updateAdditional('employer_address', $event.target.value)"
+            :placeholder="t('registration.additionalInfo.employerAddressPlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('employer_address') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.occupation') }} <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            :value="additionalInfo.occupation"
+            @input="onTextOnlyAdditional('occupation', $event)"
+            :placeholder="t('registration.additionalInfo.occupationPlaceholder')"
+            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+            :class="isInvalid('occupation') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+          />
+          <p v-if="numberWarnings.has('occupation')" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
+        </div>
+
+      </template>
+
+      <!-- Worked Before — shown when visa=Residence AND currently_working=No -->
+      <div
+        v-if="modelValue.visa_type === 'Residence' && additionalInfo.currently_working === 'No'"
+        class="space-y-1.5"
+      >
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.workedBefore') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.worked_before"
+          @change="updateAdditional('worked_before', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('worked_before') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.additionalInfo.yesNo') }}</option>
+          <option value="Yes">{{ t('registration.additionalInfo.yes') }}</option>
+          <option value="No">{{ t('registration.additionalInfo.no') }}</option>
+        </select>
+      </div>
+
+      <!-- Education Level -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.educationLevel') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="additionalInfo.education_level"
+          @change="updateAdditional('education_level', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+          :class="isInvalid('education_level') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="">{{ t('registration.additionalInfo.educationLevelPlaceholder') }}</option>
+          <option value="Ignorant">{{ t('registration.additionalInfo.ignorant') }}</option>
+          <option value="Primary School Graduate">{{ t('registration.additionalInfo.primary') }}</option>
+          <option value="Industrial School">{{ t('registration.additionalInfo.industrial') }}</option>
+          <option value="Secondary School Graduate">{{ t('registration.additionalInfo.secondary') }}</option>
+          <option value="High Education Level">{{ t('registration.additionalInfo.high') }}</option>
+          <option value="Above High Education Level">{{ t('registration.additionalInfo.aboveHigh') }}</option>
+        </select>
+      </div>
+
+      <!-- Sponsor Name -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.sponsorName') }} <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          :value="additionalInfo.sponsor_name"
+          @input="onTextOnlyAdditional('sponsor_name', $event)"
+          :placeholder="t('registration.additionalInfo.sponsorNamePlaceholder')"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+          :class="isInvalid('sponsor_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+        <p v-if="numberWarnings.has('sponsor_name')" class="text-xs text-red-500">
+          {{ t('registration.validation.noNumbers') }}
+        </p>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { DatePicker } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
+import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
+
 const props = defineProps({
   modelValue: { type: Object, required: true },
+  additionalInfo: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'update:additionalInfo'])
 
 const countries = ref([])
+const numberWarnings = ref(new Set())
 
 onMounted(async () => {
   try {
@@ -288,6 +633,10 @@ function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
 
+function updateAdditional(field, value) {
+  emit('update:additionalInfo', { ...props.additionalInfo, [field]: value })
+}
+
 function hasEnglishLetters(val) {
   return /[a-zA-Z]/.test(val)
 }
@@ -296,6 +645,23 @@ function hasArabicLetters(val) {
   return /[؀-ۿ]/.test(val)
 }
 
+function onTextOnly(field, event) {
+  const raw = event.target.value
+  const val = raw.replace(/[0-9]/g, '')
+  event.target.value = val
+  update(field, val)
+  if (raw !== val) numberWarnings.value.add(field)
+  else numberWarnings.value.delete(field)
+}
+
+function onTextOnlyAdditional(field, event) {
+  const raw = event.target.value
+  const val = raw.replace(/[0-9]/g, '')
+  event.target.value = val
+  updateAdditional(field, val)
+  if (raw !== val) numberWarnings.value.add(field)
+  else numberWarnings.value.delete(field)
+}
 
 function isAtLeast21(dob) {
   if (!dob) return true
@@ -309,27 +675,32 @@ function isAtLeast21(dob) {
   return age >= 21
 }
 
-function onDobInput(event) {
-  update('date_of_birth', event.target.value)
-}
-
 function onDigitsOnly(field, event, maxLen) {
-  const val = event.target.value.replace(/\D/g, '').slice(0, maxLen)
+  const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
   event.target.value = val
   update(field, val)
 }
 
+function onDigitsOnlyAdditional(field, event, maxLen) {
+  const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
+  event.target.value = val
+  updateAdditional(field, val)
+}
+
+function onAlphanumericOnly(field, event, maxLen) {
+  const val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, maxLen)
+  event.target.value = val
+  updateAdditional(field, val)
+}
+
 function onPassportInput(event) {
-  let val = event.target.value.toUpperCase()
-  const letter = val.charAt(0).replace(/[^A-Z]/g, '')
-  const digits = val.slice(1).replace(/\D/g, '').slice(0, 8)
-  val = letter + digits
+  let val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9)
   event.target.value = val
   update('passport_number', val)
 }
 
 function isValidPassport(val) {
-  return /^[A-Z]\d{8}$/.test(val)
+  return /^[A-Z0-9]{1,9}$/.test(val)
 }
 
 function isInvalid(field) {

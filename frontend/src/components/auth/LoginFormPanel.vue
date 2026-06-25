@@ -85,12 +85,13 @@
         </div>
       </div>
 
-      <!-- Forgot password -->
+      <!-- Forgot password (commented out)
       <div :class="isRTL ? 'text-left' : 'text-right'">
         <a href="#" class="text-xs text-sky-600 hover:underline">
           {{ t('login.forgotPassword') }}
         </a>
       </div>
+      -->
 
       <!-- Error message -->
       <p v-if="errorMsg" class="text-sm text-red-500 text-center -mt-1">
@@ -134,7 +135,7 @@
     -->
 
     <!-- Register link -->
-    <div class="text-center text-sm text-gray-500">
+    <div class="mt-6 text-center text-sm text-gray-500">
       {{ t('login.noAccount') }}
       <RouterLink to="/register" class="text-sky-600 font-semibold hover:underline mx-1">
         {{ t('login.createAccount') }}

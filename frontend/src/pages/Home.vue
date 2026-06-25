@@ -73,8 +73,24 @@
     v-else-if="view === 'view'"
     :registration-name="registrationName"
     :read-only="true"
+    @submitted="onSubmitted"
     @back="onBackToList"
   />
+
+  <!-- Success after registration submission -->
+  <div
+    v-else-if="view === 'success'"
+    class="relative flex-1 flex items-center justify-center p-4 py-8 min-h-screen"
+    style="background: #EBF4FF;"
+  >
+    <RegistrationSuccess
+      title="تم التسجيل بنجاح"
+      message="تم استلام تسجيل بياناتك بنجاح. يرجى انتظار إشعار سيصلك عبر البريد الإلكتروني لاستكمال باقي الإجراءات."
+      button-text="الاطلاع على حالة تسجيل الملف"
+      :show-edit-answers="false"
+      @view-status="onBackToList"
+    />
+  </div>
 
 </template>
 
@@ -84,6 +100,7 @@ import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
+import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 
 const { t, isRTL } = useLanguage()
 
@@ -96,6 +113,11 @@ const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
+    if (view.value === 'success') {
+      registrations.value = rows
+      return
+    }
+
     if (!rows.length) {
       view.value = 'registration'
       return
@@ -107,7 +129,9 @@ const myRegistrations = createResource({
     view.value = 'list'
   },
   onError() {
-    view.value = 'registration'
+    if (view.value !== 'success') {
+      view.value = 'registration'
+    }
   },
 })
 
@@ -124,19 +148,17 @@ onMounted(fetchRegistrations)
 
 function openRegistration(reg) {
   registrationName.value = reg.name
-  if (EDITABLE_STATUSES.includes(reg.status)) {
-    view.value = 'registration'
-  } else {
-    view.value = 'view'
-  }
+  view.value = 'view'
 }
 
 function onSubmitted(name) {
   registrationName.value = name
+  view.value = 'success'
   fetchRegistrations()
 }
 
 function onBackToList() {
+  view.value = 'loading'
   fetchRegistrations()
 }
 

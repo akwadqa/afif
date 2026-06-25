@@ -41,7 +41,8 @@
           </label>
           <div class="relative">
             <input
-              v-model="fullName"
+              :value="fullName"
+              @input="onFullNameInput"
               type="text"
               :placeholder="t('register.fullNamePlaceholder')"
               autocomplete="name"
@@ -58,6 +59,9 @@
               </svg>
             </span>
           </div>
+          <p v-if="nameNumberWarning" class="text-xs text-red-500">
+            {{ t('registration.validation.noNumbers') }}
+          </p>
         </div>
 
         <!-- Email -->
@@ -128,6 +132,7 @@ const fullName = ref('')
 const email = ref('')
 const success = ref(false)
 const serverError = ref(null)
+const nameNumberWarning = ref(false)
 
 const signUp = createResource({
   url: 'frappe.core.doctype.user.user.sign_up',
@@ -149,6 +154,14 @@ const signUp = createResource({
 const loading = computed(() => signUp.loading)
 
 const errorMsg = computed(() => serverError.value)
+
+function onFullNameInput(event) {
+  const raw = event.target.value
+  const val = raw.replace(/[0-9]/g, '')
+  event.target.value = val
+  fullName.value = val
+  nameNumberWarning.value = raw !== val
+}
 
 function handleSubmit() {
   serverError.value = null

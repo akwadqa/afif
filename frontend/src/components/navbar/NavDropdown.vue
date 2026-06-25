@@ -1,8 +1,7 @@
 <template>
-  <div class="relative group">
+  <div class="relative group" :dir="isRTL ? 'rtl' : 'ltr'">
     <button
       class="flex items-center gap-1.5 text-gray-700 hover:text-sky-600 transition-colors duration-200 text-base font-medium py-2 px-1"
-      :class="isRTL ? 'flex-row-reverse' : 'flex-row'"
     >
       <span>{{ item.label }}</span>
       <svg
@@ -27,7 +26,7 @@
           v-for="child in item.children"
           :key="child.key"
           href="#"
-          class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors"
+          class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors text-start"
         >
           {{ child.label }}
         </a>

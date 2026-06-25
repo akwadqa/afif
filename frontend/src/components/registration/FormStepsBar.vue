@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex items-center justify-between relative overflow-hidden" :dir="isRTL ? 'rtl' : 'ltr'">
     <div v-for="(step, index) in steps" :key="step.number" class="flex-1 flex items-center relative z-10">
-      <div class="flex items-center space-x-3 space-x-reverse">
+      <div class="flex items-center gap-3 shrink-0">
         <div
           :class="[
             'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all',
@@ -26,7 +26,7 @@
       </div>
       <div
         v-if="index !== steps.length - 1"
-        class="flex-1 h-[2px] mx-4 min-w-[30px] transition-colors duration-300"
+        class="flex-1 h-[2px] mx-2 min-w-[20px] transition-colors duration-300"
         :class="currentStep > step.number ? 'bg-sky-400' : 'bg-gray-100'"
       ></div>
     </div>

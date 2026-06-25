@@ -13,28 +13,34 @@
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.familySize') }} <span class="text-red-500">*</span></label>
         <input
-          type="number"
-          min="1"
+          type="text"
+          inputmode="numeric"
           :value="modelValue.family_size"
-          @input="update('family_size', $event.target.value)"
+          @input="onNumberOnly('family_size', $event)"
           :placeholder="t('registration.familyDetails.familySizePlaceholder')"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
           :class="isInvalid('family_size') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="letterWarnings.has('family_size')" class="text-xs text-red-500">
+          {{ t('registration.validation.noLetters') }}
+        </p>
       </div>
 
       <!-- Beneficiary Dependent Count -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.dependentCount') }} <span class="text-red-500">*</span></label>
         <input
-          type="number"
-          min="0"
+          type="text"
+          inputmode="numeric"
           :value="modelValue.ben_dependent_count"
-          @input="update('ben_dependent_count', $event.target.value)"
+          @input="onNumberOnly('ben_dependent_count', $event)"
           placeholder="0"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
           :class="isInvalid('ben_dependent_count') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="letterWarnings.has('ben_dependent_count')" class="text-xs text-red-500">
+          {{ t('registration.validation.noLetters') }}
+        </p>
       </div>
 
       <!-- Family Visa Type -->
@@ -76,11 +82,14 @@
         <input
           type="text"
           :value="modelValue.names_and_relation_to_sponsored"
-          @input="update('names_and_relation_to_sponsored', $event.target.value)"
+          @input="onTextOnly('names_and_relation_to_sponsored', $event)"
           :placeholder="t('registration.familyDetails.namesRelationPlaceholder')"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('names_and_relation_to_sponsored') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
+        <p v-if="numberWarnings.has('names_and_relation_to_sponsored')" class="text-xs text-red-500">
+          {{ t('registration.validation.noNumbers') }}
+        </p>
       </div>
 
       <!-- Have Children -->
@@ -224,7 +233,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+
+import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
@@ -234,8 +246,29 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
+const numberWarnings = ref(new Set())
+const letterWarnings = ref(new Set())
+
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+function onTextOnly(field, event) {
+  const raw = event.target.value
+  const val = raw.replace(/[0-9]/g, '')
+  event.target.value = val
+  update(field, val)
+  if (raw !== val) numberWarnings.value.add(field)
+  else numberWarnings.value.delete(field)
+}
+
+function onNumberOnly(field, event) {
+  const raw = event.target.value
+  const val = arabicToWestern(raw).replace(/[^0-9]/g, '')
+  event.target.value = val
+  update(field, val)
+  if (raw !== val) letterWarnings.value.add(field)
+  else letterWarnings.value.delete(field)
 }
 
 function isInvalid(field) {
