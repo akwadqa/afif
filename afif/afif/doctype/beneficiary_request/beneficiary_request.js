@@ -14,6 +14,13 @@ frappe.ui.form.on('Beneficiary Request', {
 					frm.savetrash();
 				});
 			}
+
+			if (frm.doc.phone_number) {
+				let $sms = frm.add_custom_button(__('Send SMS'), function () {
+					send_visit_sms(frm);
+				});
+				$sms.html(frappe.utils.icon('message', 'sm') + ' ' + __('Send SMS'));
+			}
 		}
 	},
 
@@ -37,10 +44,22 @@ frappe.ui.form.on('Beneficiary Request', {
 
 					resolve();
 				},
-				error() {					
+				error() {
 					reject();
 				}
 			});
 		});
 	}
 });
+
+function send_visit_sms(frm) {
+	frappe.call({
+		method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+		args: {
+			receiver_list: [frm.doc.phone_number],
+			msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة \nمن الساعه 9ص-12م'
+		},
+		freeze: true,
+		freeze_message: __('Sending SMS...')
+	});
+}
