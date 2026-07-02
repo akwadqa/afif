@@ -53,13 +53,18 @@ frappe.ui.form.on('Beneficiary Request', {
 });
 
 function send_visit_sms(frm) {
-	frappe.call({
-		method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
-		args: {
-			receiver_list: [frm.doc.phone_number],
-			msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة \nمن الساعه 9ص-12م'
-		},
-		freeze: true,
-		freeze_message: __('Sending SMS...')
-	});
+	frappe.confirm(
+		__('Are you sure you want to send an SMS to {0}?', [frm.doc.phone_number]),
+		function () {
+			frappe.call({
+				method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+				args: {
+					receiver_list: [frm.doc.phone_number],
+					msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة \nمن الساعه 9ص-12م'
+				},
+				freeze: true,
+				freeze_message: __('Sending SMS...')
+			});
+		}
+	);
 }
