@@ -1,6 +1,6 @@
 <template>
   <div class="p-8">
-    <h1 class="text-2xl font-bold text-gray-800">{{ t('sidebar.myAccount') }}</h1>
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ t('sidebar.myAccount') }}</h1>
   </div>
 </template>
 

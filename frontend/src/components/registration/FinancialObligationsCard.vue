@@ -64,6 +64,7 @@
                 v-else
                 type="text"
                 :inputmode="fieldDef.numericOnly ? 'numeric' : undefined"
+                :maxlength="fieldDef.maxLength"
                 :value="modelValue[fieldDef.name]"
                 @input="fieldDef.numericOnly ? onNumberOnly(fieldDef.name, $event) : update(fieldDef.name, $event.target.value)"
                 :placeholder="fieldDef.placeholder"
@@ -73,6 +74,13 @@
               />
               <p v-if="fieldDef.numericOnly && letterWarnings.has(fieldDef.name)" class="text-xs text-red-500">
                 {{ t('registration.validation.noLetters') }}
+              </p>
+              <p
+                v-if="fieldDef.maxLength"
+                class="text-xs"
+                :class="(modelValue[fieldDef.name] || '').length >= fieldDef.maxLength ? 'text-red-500' : 'text-gray-400'"
+              >
+                {{ (modelValue[fieldDef.name] || '').length }} / {{ fieldDef.maxLength }} {{ t('registration.validation.maxCharsSuffix') }}
               </p>
             </div>
           </div>
@@ -123,7 +131,7 @@ const obligationSources = computed(() => [
       { name: 'family_obligations_installments_count', type: 'text', numericOnly: true, label: t('registration.financialObligations.familyInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
       { name: 'family_obligation_periodicity',         type: 'select', label: t('registration.financialObligations.familyPeriodicLabel') },
       { name: 'family_expenses',                       type: 'text', numericOnly: true, label: t('registration.financialObligations.familyAmountLabel'), placeholder: t('registration.financialObligations.amountPlaceholder') },
-      { name: 'family_obligations_note',               type: 'text',   label: t('registration.financialObligations.familyNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
+      { name: 'family_obligations_note',               type: 'text',   maxLength: 2000, label: t('registration.financialObligations.familyNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
     ],
   },
   {
@@ -134,7 +142,7 @@ const obligationSources = computed(() => [
       { name: 'rent_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.rentPeriodicLabel') },
       { name: 'rent_obligations_installments_count',  type: 'text', numericOnly: true, label: t('registration.financialObligations.rentInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
       { name: 'rent_amount',                          type: 'text', numericOnly: true, label: t('registration.financialObligations.rentAmountLabel'), placeholder: t('registration.financialObligations.amountPlaceholder') },
-      { name: 'rent_obligations_note',                type: 'text',   label: t('registration.financialObligations.rentNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
+      { name: 'rent_obligations_note',                type: 'text',   maxLength: 2000, label: t('registration.financialObligations.rentNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
     ],
   },
   {
@@ -145,7 +153,7 @@ const obligationSources = computed(() => [
       { name: 'treatment_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.treatmentPeriodicLabel') },
       { name: 'treatment_obligation_installments_count',   type: 'text', numericOnly: true, label: t('registration.financialObligations.treatmentInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
       { name: 'treatment_amount',                          type: 'text', numericOnly: true, label: t('registration.financialObligations.treatmentAmountLabel'), placeholder: t('registration.financialObligations.amountPlaceholder') },
-      { name: 'treatment_obligations_note',                type: 'text',   label: t('registration.financialObligations.treatmentNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
+      { name: 'treatment_obligations_note',                type: 'text',   maxLength: 2000, label: t('registration.financialObligations.treatmentNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
     ],
   },
   {
@@ -156,7 +164,7 @@ const obligationSources = computed(() => [
       { name: 'debt_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.debtPeriodicLabel') },
       { name: 'debt_obligations_installments_count',  type: 'text', numericOnly: true, label: t('registration.financialObligations.debtInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
       { name: 'bank_payments_amount',                 type: 'text', numericOnly: true, label: t('registration.financialObligations.debtAmountLabel'), placeholder: t('registration.financialObligations.amountPlaceholder') },
-      { name: 'debt_obligations_note',                type: 'text',   label: t('registration.financialObligations.debtNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
+      { name: 'debt_obligations_note',                type: 'text',   maxLength: 2000, label: t('registration.financialObligations.debtNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
     ],
   },
   {
@@ -166,7 +174,7 @@ const obligationSources = computed(() => [
     fields: [
       { name: 'tuition_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.tuitionPeriodicLabel') },
       { name: 'tuition_obligation_installments_count',   type: 'text', numericOnly: true, label: t('registration.financialObligations.tuitionInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
-      { name: 'tuition_obligations_note',                type: 'text',   label: t('registration.financialObligations.tuitionNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
+      { name: 'tuition_obligations_note',                type: 'text',   maxLength: 2000, label: t('registration.financialObligations.tuitionNoteLabel'), placeholder: t('registration.financialObligations.notesPlaceholder') },
       { name: 'tuition_amount',                          type: 'text', numericOnly: true, label: t('registration.financialObligations.tuitionAmountLabel'), placeholder: t('registration.financialObligations.amountPlaceholder') },
     ],
   },

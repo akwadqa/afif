@@ -80,12 +80,19 @@
               </label>
               <input
                 type="text"
+                maxlength="2000"
                 :value="modelValue[src.noteField]"
                 @input="update(src.noteField, $event.target.value)"
                 :placeholder="t('registration.incomeDetails.notesPlaceholder')"
                 class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
                 :class="isInvalid(src.noteField) ? 'border-red-400 bg-red-50' : 'border-gray-100'"
               />
+              <p
+                class="text-xs"
+                :class="(modelValue[src.noteField] || '').length >= 2000 ? 'text-red-500' : 'text-gray-400'"
+              >
+                {{ (modelValue[src.noteField] || '').length }} / 2000 {{ t('registration.validation.maxCharsSuffix') }}
+              </p>
             </div>
           </div>
         </div>

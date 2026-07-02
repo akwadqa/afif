@@ -779,7 +779,13 @@ function validateCurrentStep() {
     req(ad.has_bank_loans, 'has_bank_loans', t('registration.additionalData.bankLoans'))
     if (ad.has_bank_loans === 'Yes') req(ad.court_tried, 'court_tried', t('registration.additionalData.courtTried'))
     req(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
-    if (ad.has_other_info === 'Yes') req(ad.additional_notes, 'additional_notes', t('registration.additionalData.additionalNotes'))
+    if (ad.has_other_info === 'Yes') {
+      req(ad.additional_notes, 'additional_notes', t('registration.additionalData.additionalNotes'))
+      if (ad.additional_notes && ad.additional_notes.length < 120) {
+        errors.push(t('registration.validation.additionalInfoTooShort'))
+        fields.push('additional_notes')
+      }
+    }
   }
 
   if (currentStep.value === 4 && subStep4.value === 2) {
@@ -834,6 +840,7 @@ function validateCurrentStep() {
       { id: 'copy_of_court_judgment',         labelKey: 'registration.attachments.docs.courtJudgment',       show: hasBankLoans && courtTried },
       { id: 'id_coresidents',                 labelKey: 'registration.attachments.docs.coresidentsId',       show: hasHousemates },
       { id: 'id_sponsored',                   labelKey: 'registration.attachments.docs.sponsoredId',         show: visaDependent },
+      { id: 'metrash_adress',                 labelKey: 'registration.attachments.docs.metrashAddress',      show: true },
     ]
     for (const doc of requiredDocs.filter(d => d.show)) {
       if (!files[doc.id]) { errors.push(t(doc.labelKey)); fields.push(`attach_${doc.id}`) }

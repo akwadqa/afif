@@ -9,21 +9,14 @@
         <input
           type="text"
           :value="modelValue.ar_name"
-          @input="onTextOnly('ar_name', $event)"
-          @input="onTextOnly('ar_name', $event)"
+          @input="onArabicOnly('ar_name', $event)"
           :placeholder="t('registration.personalInfo.arNamePlaceholder')"
           dir="rtl"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('ar_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
-        <p v-if="modelValue.ar_name && hasEnglishLetters(modelValue.ar_name)" class="text-xs text-red-500">
+        <p v-if="numberWarnings.has('ar_name')" class="text-xs text-red-500">
           {{ t('registration.validation.arabicOnly') }}
-        </p>
-        <p v-if="numberWarnings.has('ar_name')" class="text-xs text-red-500">
-          {{ t('registration.validation.noNumbers') }}
-        </p>
-        <p v-if="numberWarnings.has('ar_name')" class="text-xs text-red-500">
-          {{ t('registration.validation.noNumbers') }}
         </p>
       </div>
 
@@ -157,6 +150,9 @@
         />
         <p v-if="modelValue.passport_number && !isValidPassport(modelValue.passport_number)" class="text-xs text-red-500">
           {{ t('registration.validation.passportFormat') }}
+        </p>
+        <p v-if="modelValue.passport_number && hasMultipleLetters(modelValue.passport_number)" class="text-xs text-amber-600">
+          {{ t('registration.validation.passportMultipleLetters') }}
         </p>
       </div>
 
@@ -354,14 +350,12 @@
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
           <select
-            :value="modelValue.visa_type"
-            @change="update('visa_type', $event.target.value)"
-            class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
+            :value="modelValue.visa_type || 'Residence'"
+            disabled
+            class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
             :class="isInvalid('visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           >
-            <option value="">{{ t('registration.personalInfo.visaTypePlaceholder') }}</option>
             <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
-            <option value="Visit">{{ t('registration.personalInfo.visit') }}</option>
           </select>
         </div>
 
@@ -680,7 +674,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker, Autocomplete } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
@@ -719,20 +713,22 @@ onMounted(async () => {
   }
 })
 
+watch(
+  () => props.modelValue.ben_nationality,
+  (nationality) => {
+    if (nationality && nationality !== 'Qatar' && props.modelValue.visa_type !== 'Residence') {
+      update('visa_type', 'Residence')
+    }
+  },
+  { immediate: true }
+)
+
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
 
 function updateAdditional(field, value) {
   emit('update:additionalInfo', { ...props.additionalInfo, [field]: value })
-}
-
-function updateAdditional(field, value) {
-  emit('update:additionalInfo', { ...props.additionalInfo, [field]: value })
-}
-
-function hasEnglishLetters(val) {
-  return /[a-zA-Z]/.test(val)
 }
 
 function hasArabicLetters(val) {
@@ -748,17 +744,9 @@ function onTextOnly(field, event) {
   else numberWarnings.value.delete(field)
 }
 
-function onTextOnlyAdditional(field, event) {
+function onArabicOnly(field, event) {
   const raw = event.target.value
-  const val = raw.replace(/[0-9]/g, '')
-  event.target.value = val
-  updateAdditional(field, val)
-  if (raw !== val) numberWarnings.value.add(field)
-  else numberWarnings.value.delete(field)
-}
-function onTextOnly(field, event) {
-  const raw = event.target.value
-  const val = raw.replace(/[0-9]/g, '')
+  const val = raw.replace(/[^ء-ي\s]/g, '')
   event.target.value = val
   update(field, val)
   if (raw !== val) numberWarnings.value.add(field)
@@ -826,6 +814,10 @@ function onPassportInput(event) {
 
 function isValidPassport(val) {
   return /^[A-Z0-9]{1,9}$/.test(val)
+}
+
+function hasMultipleLetters(val) {
+  return (val.match(/[A-Z]/g) || []).length > 1
 }
 
 function countryLabel(name) {

@@ -217,7 +217,7 @@ const visibleAttachments = computed(() => {
     { id: 'copy_of_court_judgment',          required: true,  labelKey: 'registration.attachments.docs.courtJudgment',           show: hasBankLoans && courtTried },
     { id: 'id_coresidents',                  required: true,  labelKey: 'registration.attachments.docs.coresidentsId',           show: hasHousemates },
     { id: 'id_sponsored',                    required: true,  labelKey: 'registration.attachments.docs.sponsoredId',             show: visaDependent },
-    { id: 'metrash_adress',                  required: false, labelKey: 'registration.attachments.docs.metrashAddress',          show: true },
+    { id: 'metrash_adress',                  required: true,  labelKey: 'registration.attachments.docs.metrashAddress',          show: true },
     { id: 'additional_documents',            required: false, labelKey: 'registration.attachments.docs.extraAttachments',        show: true },
   ]
 

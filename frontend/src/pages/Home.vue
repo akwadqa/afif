@@ -18,7 +18,7 @@
     <div class="max-w-5xl mx-auto">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-sky-900">{{ t('beneficiaryList.title') }}</h1>
+          <h1 class="text-2xl font-bold text-sky-900 mb-4">{{ t('beneficiaryList.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">{{ t('beneficiaryList.subtitle') }}</p>
         </div>
       </div>
