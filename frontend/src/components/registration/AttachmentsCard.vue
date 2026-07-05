@@ -92,6 +92,62 @@
             />
           </div>
         </div>
+
+        <!-- Additional attachments (multiple) -->
+        <div
+          v-for="(file, idx) in additionalAttachments"
+          :key="idx"
+          class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl gap-4 bg-gray-50/50 hover:bg-gray-50/80 border-gray-100/70"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-700">
+              {{ t('registration.attachments.docs.extraAttachments') }} #{{ idx + 1 }}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
+            <button
+              type="button"
+              @click="removeAdditionalAttachment(idx)"
+              class="flex items-center gap-1.5 px-3 py-2 border border-red-100 text-red-500 rounded-xl bg-red-50/30 hover:bg-red-50 transition-colors text-xs font-semibold"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>
+              <span>{{ t('registration.attachments.delete') }}</span>
+            </button>
+
+            <span class="text-xs text-gray-500 font-mono truncate max-w-[140px] md:max-w-[180px] inline-block align-middle" dir="ltr">
+              <a
+                v-if="typeof file === 'string'"
+                :href="file"
+                target="_blank"
+                rel="noopener"
+                class="underline hover:text-sky-500"
+              >{{ additionalAttachmentLabel(file) }}</a>
+              <span v-else>{{ additionalAttachmentLabel(file) }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Add another attachment -->
+        <button
+          type="button"
+          @click="triggerAdditionalFileInput"
+          class="flex items-center gap-1.5 px-4 py-2 border border-dashed border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm w-full justify-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          <span>{{ t('registration.attachments.addAnother') }}</span>
+        </button>
+        <input
+          id="additional-attachments-input"
+          type="file"
+          accept=".jpg,.jpeg,.png,.ogg,.pdf, .webm"
+          class="hidden"
+          @change="handleAdditionalFileSelected"
+        />
       </div>
     </div>
 
@@ -149,6 +205,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { isFileTooLarge } from '@/utils/fileValidation'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
@@ -218,7 +275,6 @@ const visibleAttachments = computed(() => {
     { id: 'id_coresidents',                  required: true,  labelKey: 'registration.attachments.docs.coresidentsId',           show: hasHousemates },
     { id: 'id_sponsored',                    required: true,  labelKey: 'registration.attachments.docs.sponsoredId',             show: visaDependent },
     { id: 'metrash_adress',                  required: true,  labelKey: 'registration.attachments.docs.metrashAddress',          show: true },
-    { id: 'additional_documents',            required: false, labelKey: 'registration.attachments.docs.extraAttachments',        show: true },
   ]
 
   return all.filter(d => d.show)
@@ -253,6 +309,12 @@ function handleFileSelected(event, id) {
     return
   }
 
+  if (isFileTooLarge(file)) {
+    alert(t('registration.attachments.fileTooLarge'))
+    event.target.value = ''
+    return
+  }
+
   emit('update:modelValue', {
     ...props.modelValue,
     files: { ...props.modelValue.files, [id]: file },
@@ -264,6 +326,51 @@ function deleteFile(id) {
   const files = { ...props.modelValue.files }
   delete files[id]
   emit('update:modelValue', { ...props.modelValue, files })
+}
+
+const additionalAttachments = computed(() => props.modelValue.files.additional_attachments || [])
+
+function additionalAttachmentLabel(value) {
+  if (value instanceof File) return value.name
+  if (typeof value === 'string') return value.split('/').pop()
+  return ''
+}
+
+function triggerAdditionalFileInput() {
+  document.getElementById('additional-attachments-input')?.click()
+}
+
+function handleAdditionalFileSelected(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+    alert(t('registration.attachments.invalidFileType'))
+    event.target.value = ''
+    return
+  }
+
+  if (isFileTooLarge(file)) {
+    alert(t('registration.attachments.fileTooLarge'))
+    event.target.value = ''
+    return
+  }
+
+  emit('update:modelValue', {
+    ...props.modelValue,
+    files: { ...props.modelValue.files, additional_attachments: [...additionalAttachments.value, file] },
+  })
+  event.target.value = ''
+}
+
+function removeAdditionalAttachment(idx) {
+  const list = [...additionalAttachments.value]
+  list.splice(idx, 1)
+  emit('update:modelValue', {
+    ...props.modelValue,
+    files: { ...props.modelValue.files, additional_attachments: list },
+  })
 }
 
 function updateClaim(key, value) {

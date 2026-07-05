@@ -27,7 +27,6 @@
           type="text"
           :value="modelValue.en_name"
           @input="onTextOnly('en_name', $event)"
-          @input="onTextOnly('en_name', $event)"
           :placeholder="t('registration.personalInfo.enNamePlaceholder')"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
@@ -39,18 +38,12 @@
         <p v-if="numberWarnings.has('en_name')" class="text-xs text-red-500">
           {{ t('registration.validation.noNumbers') }}
         </p>
-        <p v-if="numberWarnings.has('en_name')" class="text-xs text-red-500">
-          {{ t('registration.validation.noNumbers') }}
-        </p>
       </div>
 
       <!-- Primary ID Type -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.primaryIdType') }} <span class="text-red-500">*</span></label>
         <select
-          :value="modelValue.ben_primary_idtype || 'Qatari Id'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
           :value="modelValue.ben_primary_idtype || 'Qatari Id'"
           disabled
           class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
@@ -78,33 +71,6 @@
         </p>
       </div>
 
-      <!-- ID Expiry Date -->
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.idExpiryDate') }} <span class="text-red-500">*</span></label>
-        <DatePicker
-          :modelValue="modelValue.id_expiry_date"
-          @change="(val) => update('id_expiry_date', val)"
-          placeholder="YYYY-MM-DD"
-          :clearable="false"
-          class="w-full"
-        >
-          <template #target="{ togglePopover, inputValue }">
-            <div
-              @click="togglePopover"
-              class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all cursor-pointer flex items-center justify-between"
-              :class="isInvalid('id_expiry_date') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-              dir="ltr"
-            >
-              <span :class="(inputValue || modelValue.id_expiry_date) ? 'text-gray-900' : 'text-gray-400'">
-                {{ inputValue || modelValue.id_expiry_date || 'YYYY-MM-DD' }}
-              </span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-              </svg>
-            </div>
-          </template>
-        </DatePicker>
-      </div>
 
       <!-- ID Expiry Date -->
       <div class="space-y-1.5">
@@ -142,7 +108,6 @@
           :value="modelValue.passport_number"
           @input="onPassportInput($event)"
           maxlength="9"
-          placeholder="A12345678"
           placeholder="A12345678"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
@@ -220,29 +185,7 @@
               </div>
             </template>
           </DatePicker>
-          <DatePicker
-            :modelValue="modelValue.date_of_birth"
-            @change="(val) => update('date_of_birth', val)"
-            placeholder="YYYY-MM-DD"
-            :clearable="false"
-            class="w-full"
-          >
-            <template #target="{ togglePopover, inputValue }">
-              <div
-                @click="togglePopover"
-                class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all cursor-pointer flex items-center justify-between"
-                :class="isInvalid('date_of_birth') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-                dir="ltr"
-              >
-                <span :class="(inputValue || modelValue.date_of_birth) ? 'text-gray-900' : 'text-gray-400'">
-                  {{ inputValue || modelValue.date_of_birth || 'YYYY-MM-DD' }}
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                </svg>
-              </div>
-            </template>
-          </DatePicker>
+  
           <p v-if="modelValue.date_of_birth && !isAtLeast21(modelValue.date_of_birth)" class="text-xs text-red-500">
             {{ t('registration.validation.minimumAge') }}
           </p>
@@ -256,7 +199,6 @@
             maxlength="8"
             placeholder="00000000"
             dir="ltr"
-            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
@@ -309,14 +251,10 @@
             type="text"
             :value="modelValue.partner_name"
             @input="onTextOnly('partner_name', $event)"
-            @input="onTextOnly('partner_name', $event)"
             :placeholder="t('registration.personalInfo.partnerNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('partner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
-          <p v-if="numberWarnings.has('partner_name')" class="text-xs text-red-500">
-            {{ t('registration.validation.noNumbers') }}
-          </p>
           <p v-if="numberWarnings.has('partner_name')" class="text-xs text-red-500">
             {{ t('registration.validation.noNumbers') }}
           </p>
@@ -331,7 +269,6 @@
             type="text"
             :value="modelValue.expartner_name"
             @input="onTextOnly('expartner_name', $event)"
-            @input="onTextOnly('expartner_name', $event)"
             :placeholder="t('registration.personalInfo.exPartnerNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('expartner_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
@@ -339,39 +276,34 @@
           <p v-if="numberWarnings.has('expartner_name')" class="text-xs text-red-500">
             {{ t('registration.validation.noNumbers') }}
           </p>
-          <p v-if="numberWarnings.has('expartner_name')" class="text-xs text-red-500">
-            {{ t('registration.validation.noNumbers') }}
-          </p>
         </div>
       </template>
 
-      <!-- Visa Type — only when nationality is NOT Qatar -->
-      <template v-if="modelValue.ben_nationality && modelValue.ben_nationality !== 'Qatar'">
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
-          <select
-            :value="modelValue.visa_type || 'Residence'"
-            disabled
-            class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
-            :class="isInvalid('visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-          >
-            <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
-          </select>
-        </div>
+      <!-- Visa Type — fixed field, always shown -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
+        <select
+          :value="modelValue.visa_type || 'Residence'"
+          disabled
+          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          :class="isInvalid('visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        >
+          <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
+        </select>
+      </div>
 
-        <!-- Years of Residence -->
-        <div class="space-y-1.5">
-          <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.residenceYears') }} <span class="text-red-500">*</span></label>
-          <input
-            type="text"
-            :value="modelValue.residence_years"
-            @input="update('residence_years', $event.target.value)"
-            :placeholder="t('registration.personalInfo.residenceYearsPlaceholder')"
-            class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
-            :class="isInvalid('residence_years') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-          />
-        </div>
-      </template>
+      <!-- Years of Residence — depends on visa type = Residence, always shown -->
+      <div class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.residenceYears') }} <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          :value="modelValue.residence_years"
+          @input="update('residence_years', $event.target.value)"
+          :placeholder="t('registration.personalInfo.residenceYearsPlaceholder')"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
+          :class="isInvalid('residence_years') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+      </div>
 
     </div>
 
@@ -618,7 +550,7 @@
 
       <!-- Worked Before — shown when visa=Residence AND currently_working=No -->
       <div
-        v-if="modelValue.visa_type === 'Residence' && additionalInfo.currently_working === 'No'"
+        v-if="isResidence && additionalInfo.currently_working === 'No'"
         class="space-y-1.5"
       >
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.workedBefore') }} <span class="text-red-500">*</span></label>
@@ -678,7 +610,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker, Autocomplete } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
-import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
 
@@ -686,10 +617,8 @@ const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   additionalInfo: { type: Object, default: () => ({}) },
-  additionalInfo: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['update:modelValue', 'update:additionalInfo'])
 const emit = defineEmits(['update:modelValue', 'update:additionalInfo'])
 
 const countries = ref([])
@@ -703,7 +632,13 @@ const countryOptions = computed(() =>
   })
 )
 
+const isResidence = computed(() => (props.modelValue.visa_type || 'Residence') === 'Residence')
+
 onMounted(async () => {
+  if (!props.modelValue.visa_type) {
+    update('visa_type', 'Residence')
+  }
+
   try {
     const res = await fetch('/api/resource/Country?fields=["name"]&limit=300&order_by=name%20asc')
     const data = await res.json()
@@ -712,16 +647,6 @@ onMounted(async () => {
     // silently fall back to free-text if the fetch fails
   }
 })
-
-watch(
-  () => props.modelValue.ben_nationality,
-  (nationality) => {
-    if (nationality && nationality !== 'Qatar' && props.modelValue.visa_type !== 'Residence') {
-      update('visa_type', 'Residence')
-    }
-  },
-  { immediate: true }
-)
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
@@ -776,7 +701,6 @@ function isAtLeast21(dob) {
 
 function onDigitsOnly(field, event, maxLen) {
   const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
-  const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
   event.target.value = val
   update(field, val)
 }
@@ -793,20 +717,7 @@ function onAlphanumericOnly(field, event, maxLen) {
   updateAdditional(field, val)
 }
 
-function onDigitsOnlyAdditional(field, event, maxLen) {
-  const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
-  event.target.value = val
-  updateAdditional(field, val)
-}
-
-function onAlphanumericOnly(field, event, maxLen) {
-  const val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, maxLen)
-  event.target.value = val
-  updateAdditional(field, val)
-}
-
 function onPassportInput(event) {
-  let val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9)
   let val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9)
   event.target.value = val
   update('passport_number', val)

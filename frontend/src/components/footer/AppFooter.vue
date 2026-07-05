@@ -1,20 +1,24 @@
 <template>
   <footer
-    class="w-full bg-[#00AEEF] text-white pt-16 pb-0 px-6 md:px-16 select-none"
+    class="w-full bg-[#00AEEF] text-white pt-16 pb-0 ps-6 pe-6 md:ps-16 md:pe-6 select-none"
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
     <!-- Main 3-column layout: Links (start) | Sub-menu (middle) | Image (end) -->
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-4">
+    <div
+      class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end gap-6 md:gap-4"
+      @mouseleave="activeMenu = null"
+    >
 
       <!-- Column 1: Navigation Links + Social Icons -->
-      <div class="flex flex-col items-center md:items-start space-y-6 min-w-[180px] shrink-0">
+      <div class="flex flex-col items-center md:items-start md:self-center space-y-6 min-w-[180px] shrink-0">
         <nav class="flex flex-col items-center md:items-start space-y-3 text-lg font-medium w-full">
           <template v-for="item in navItems" :key="item.key">
-            <div v-if="item.children.length" class="w-full">
+            <div v-if="item.children.length" class="w-full flex flex-col items-center md:items-start">
               <button
                 @click="toggleMenu(item.key)"
-                class="flex items-center gap-2 hover:text-opacity-80 transition-opacity focus:outline-none"
-                :class="{ 'opacity-80 font-bold': activeMenu === item.key }"
+                @mouseenter="activeMenu = item.key"
+                class="flex items-center gap-2 px-3 py-1.5 rounded transition-colors focus:outline-none"
+                :class="{ 'bg-[#005979]': activeMenu === item.key }"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -32,16 +36,47 @@
               <Transition name="expand">
                 <div
                   v-if="activeMenu === item.key"
-                  class="md:hidden flex flex-col space-y-1 mt-2 ps-6"
+                  class="md:hidden flex flex-col items-center space-y-1 mt-2"
                 >
-                  <a
-                    v-for="child in item.children"
-                    :key="child.key"
-                    :href="child.route || '#'"
-                    class="hover:bg-white/10 px-3 py-2 text-sm font-medium rounded transition-colors"
-                  >
-                    {{ child.label }}
-                  </a>
+                  <template v-for="child in item.children" :key="child.key">
+                    <div v-if="child.children.length" class="flex flex-col items-center">
+                      <button
+                        @click="toggleSubMenu(child.key)"
+                        class="flex items-center gap-2 hover:bg-[#005979] active:bg-[#005979] px-3 py-2 text-sm font-medium rounded transition-colors"
+                        :class="{ 'bg-[#005979]': activeSubMenu === child.key }"
+                      >
+                        <span>{{ child.label }}</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          class="w-2.5 h-2.5 transition-transform duration-200"
+                          :class="{ 'rotate-180': activeSubMenu === child.key }"
+                        >
+                          <path d="M12 15l-6-6h12z" />
+                        </svg>
+                      </button>
+                      <Transition name="expand">
+                        <div v-if="activeSubMenu === child.key" class="flex flex-col items-center space-y-1 mt-1">
+                          <a
+                            v-for="grandchild in child.children"
+                            :key="grandchild.key"
+                            :href="grandchild.route || '#'"
+                            class="hover:bg-[#005979] active:bg-[#005979] px-5 py-2 text-sm font-medium rounded transition-colors"
+                          >
+                            {{ grandchild.label }}
+                          </a>
+                        </div>
+                      </Transition>
+                    </div>
+                    <a
+                      v-else
+                      :href="child.route || '#'"
+                      class="hover:bg-[#005979] active:bg-[#005979] px-3 py-2 text-sm font-medium rounded transition-colors"
+                    >
+                      {{ child.label }}
+                    </a>
+                  </template>
                 </div>
               </Transition>
             </div>
@@ -49,7 +84,7 @@
             <a
               v-else
               :href="item.route || '#'"
-              class="hover:text-opacity-80 transition-opacity ps-5"
+              class="hover:text-opacity-80 transition-opacity md:ps-5"
             >
               {{ item.label }}
             </a>
@@ -77,46 +112,71 @@
       </div>
 
       <!-- Column 2: Desktop sub-menu panel (middle) -->
-      <div class="hidden md:flex items-start justify-center flex-1 min-w-[200px]">
+      <div class="hidden md:flex self-center items-start justify-center min-w-[200px]">
         <template v-for="item in navItems" :key="item.key">
           <div
             v-if="activeMenu === item.key && item.children.length"
             class="flex flex-col space-y-1"
           >
-            <a
-              v-for="child in item.children"
-              :key="child.key"
-              :href="child.route || '#'"
-              class="hover:bg-white/10 px-4 py-2.5 font-medium text-sm rounded transition-colors"
-            >
-              {{ child.label }}
-            </a>
+            <template v-for="child in item.children" :key="child.key">
+              <div v-if="child.children.length" class="relative group/nested">
+                <span
+                  class="flex items-center justify-between gap-3 hover:bg-[#005979] px-4 py-2.5 text-sm font-medium rounded transition-colors cursor-default whitespace-nowrap"
+                >
+                  <span>{{ child.label }}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2.5"
+                    stroke="currentColor"
+                    class="w-3 h-3 shrink-0 -rotate-90 rtl:rotate-90"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </span>
+                <div
+                  class="absolute hidden group-hover/nested:flex flex-col start-full top-0 ps-1 min-w-[180px] z-50"
+                >
+                  <a
+                    v-for="grandchild in child.children"
+                    :key="grandchild.key"
+                    :href="grandchild.route || '#'"
+                    class="hover:bg-[#005979] px-4 py-2 text-sm font-medium rounded transition-colors whitespace-nowrap"
+                  >
+                    {{ grandchild.label }}
+                  </a>
+                </div>
+              </div>
+              <a
+                v-else
+                :href="child.route || '#'"
+                class="hover:bg-[#005979] px-4 py-2.5 font-medium text-sm rounded transition-colors"
+              >
+                {{ child.label }}
+              </a>
+            </template>
           </div>
         </template>
       </div>
 
       <!-- Column 3: Illustration image (end side, flush to bottom) -->
-      <div class="hidden md:flex items-end justify-end shrink-0">
+      <div class="hidden md:flex items-end justify-end shrink-0 self-end md:ms-auto">
         <img
           src="@/assets/images/image.png"
           alt=""
-          class="w-[500px] h-auto object-contain"
+          class="block w-[620px] h-auto object-contain"
         />
       </div>
 
     </div>
 
-    <!-- Copyright -->
-    <div class="max-w-7xl mx-auto border-t border-white/20 mt-12 pt-4 pb-4 text-center text-xs text-white/70">
-      © {{ currentYear }} مؤسسة عفيف الخيرية. جميع الحقوق محفوظة.
-    </div>
-
     <!-- Mobile image: flush to bottom -->
-    <div class="md:hidden flex justify-center mt-8">
+    <div class="md:hidden flex justify-center">
       <img
         src="@/assets/images/image.png"
         alt=""
-        class="w-full max-w-[400px] h-auto object-contain opacity-40"
+        class="block w-full max-w-[480px] h-auto object-contain opacity-40"
       />
     </div>
   </footer>
@@ -129,23 +189,26 @@ import { navConfig } from '@/config/navConfig'
 
 const { t, isRTL } = useLanguage()
 
-const currentYear = new Date().getFullYear()
-
-const navItems = computed(() =>
-  navConfig.map((item) => ({
+function withLabels(item) {
+  return {
     ...item,
     label: t(`nav.${item.key}`),
-    children: item.children.map((child) => ({
-      ...child,
-      label: t(`nav.${child.key}`),
-    })),
-  }))
-)
+    children: (item.children ?? []).map(withLabels),
+  }
+}
+
+const navItems = computed(() => navConfig.map(withLabels))
 
 const activeMenu = ref(null)
+const activeSubMenu = ref(null)
 
 const toggleMenu = (menuName) => {
   activeMenu.value = activeMenu.value === menuName ? null : menuName
+  activeSubMenu.value = null
+}
+
+const toggleSubMenu = (menuName) => {
+  activeSubMenu.value = activeSubMenu.value === menuName ? null : menuName
 }
 </script>
 

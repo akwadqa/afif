@@ -231,6 +231,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
+import { isFileTooLarge } from '@/utils/fileValidation'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
 
 const props = defineProps({
@@ -474,6 +475,10 @@ function onFileSelected(e) {
     alert(t('request.attachments.invalidFileType'))
     return
   }
+  if (isFileTooLarge(file)) {
+    alert(t('request.attachments.fileTooLarge'))
+    return
+  }
   files.value[activeFieldId.value] = file
 }
 
@@ -621,7 +626,10 @@ async function uploadFile(file, docName, fieldname) {
   }
 
   const res = await fetch('/api/method/upload_file', { method: 'POST', headers, body: fd })
-  if (!res.ok) throw new Error(`${t('request.submitError')}: ${file.name}`)
+  if (!res.ok) {
+    if (res.status === 413) throw new Error(`${t('request.attachments.fileTooLarge')}: ${file.name}`)
+    throw new Error(`${t('request.submitError')}: ${file.name}`)
+  }
   const data = await res.json()
   return data.message.file_url
 }

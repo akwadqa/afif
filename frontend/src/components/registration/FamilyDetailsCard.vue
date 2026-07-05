@@ -59,7 +59,7 @@
       </div>
 
       <!-- Others Under Own Visa — only when visa_type = Residence -->
-      <div v-if="personalInfo.visa_type === 'Residence'" class="space-y-1.5">
+      <div v-if="isResidence" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.otherDependents') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.visa_dependent"
@@ -75,7 +75,7 @@
 
       <!-- Names and Relation to Sponsored — shown when visa_dependent = Yes -->
       <div
-        v-if="personalInfo.visa_type === 'Residence' && modelValue.visa_dependent === 'Yes'"
+        v-if="isResidence && modelValue.visa_dependent === 'Yes'"
         class="space-y-1.5 md:col-span-2"
       >
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.namesRelation') }} <span class="text-red-500">*</span></label>
@@ -233,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 import { arabicToWestern } from '@/utils/inputHelpers'
@@ -248,6 +248,10 @@ const emit = defineEmits(['update:modelValue'])
 
 const numberWarnings = ref(new Set())
 const letterWarnings = ref(new Set())
+
+const isResidence = computed(() =>
+  Boolean(props.personalInfo.ben_nationality && props.personalInfo.ben_nationality !== 'Qatar')
+)
 
 function update(field, value) {
   emit('update:modelValue', { ...props.modelValue, [field]: value })

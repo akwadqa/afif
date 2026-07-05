@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-6">
     <NavDropdown v-for="item in navItems" :key="item.key" :item="item" />
   </div>
 </template>
@@ -12,14 +12,13 @@ import { navConfig } from '@/config/navConfig'
 
 const { t } = useLanguage()
 
-const navItems = computed(() =>
-  [...navConfig].reverse().map((item) => ({
+function withLabels(item) {
+  return {
     ...item,
     label: t(`nav.${item.key}`),
-    children: item.children.map((child) => ({
-      ...child,
-      label: t(`nav.${child.key}`),
-    })),
-  }))
-)
+    children: (item.children ?? []).map(withLabels),
+  }
+}
+
+const navItems = computed(() => [...navConfig].reverse().map(withLabels))
 </script>

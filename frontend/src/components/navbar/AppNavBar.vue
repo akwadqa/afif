@@ -9,12 +9,14 @@
     >
 
       <!-- Start: Logo + Language toggle -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 md:gap-4">
         <NavLogo />
         <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
         <a
-          href="#"
-          class="bg-[#005979] text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-[#004a66] transition-colors whitespace-nowrap"
+          :href="donateNowRoute"
+          target="_blank"
+          rel="noopener"
+          class="bg-[#005979] text-white px-3 py-1.5 text-xs md:px-5 md:py-2 md:text-sm rounded-lg font-semibold hover:bg-[#004a66] transition-colors whitespace-nowrap"
         >
           {{ t('nav.donateNow') }}
         </a>
@@ -28,7 +30,7 @@
         <button
           v-if="session.isLoggedIn"
           :class="[
-            'p-2 rounded-lg transition-colors',
+            'p-1 md:p-2 rounded-lg transition-colors',
             isActive
               ? 'text-sky-600 bg-sky-50'
               : 'text-gray-600 hover:text-sky-600 hover:bg-sky-50',
@@ -36,7 +38,7 @@
           aria-label="Toggle menu"
           @click="handleMenuToggle"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 md:w-7 md:h-7">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
@@ -60,6 +62,7 @@ import MobileMenu from './MobileMenu.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
+import { donateNowRoute } from '@/config/navConfig'
 
 const { isRTL, t } = useLanguage()
 

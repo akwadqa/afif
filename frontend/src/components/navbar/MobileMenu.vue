@@ -3,49 +3,12 @@
     <div class="px-4 py-2 flex flex-col">
 
       <!-- Nav links -->
-      <div v-for="item in navItems" :key="item.key">
-        <button
-          v-if="item.children?.length"
-          @click="toggle(item.key)"
-          class="w-full flex items-center justify-between py-3.5 text-gray-700 hover:text-sky-600 transition-colors font-medium text-sm"
-        >
-          <span>{{ item.label }}</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="w-4 h-4 transition-transform duration-200 text-gray-400"
-            :class="{ 'rotate-180': open.includes(item.key) }"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-          </svg>
-        </button>
-
-        <a
-          v-else
-          href="#"
-          @click.prevent="$emit('close')"
-          class="flex py-3.5 text-gray-700 hover:text-sky-600 transition-colors font-medium text-sm"
-        >
-          {{ item.label }}
-        </a>
-
-        <Transition name="expand">
-          <div v-if="item.children?.length && open.includes(item.key)" class="pb-2 ps-3 flex flex-col gap-0.5">
-            <a
-              v-for="child in item.children"
-              :key="child.key"
-              href="#"
-              @click.prevent="$emit('close')"
-              class="block py-2 px-3 text-sm text-gray-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
-            >
-              {{ child.label }}
-            </a>
-          </div>
-        </Transition>
-      </div>
+      <MobileMenuItem
+        v-for="item in navItems"
+        :key="item.key"
+        :item="item"
+        @close="$emit('close')"
+      />
 
       <!-- Language toggle -->
       <div class="py-3">
@@ -101,7 +64,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import MobileMenuItem from './MobileMenuItem.vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { useBeneficiaryName } from '@/composables/useBeneficiaryName'
 import { navConfig } from '@/config/navConfig'
@@ -112,16 +76,15 @@ defineEmits(['close'])
 const { t, isRTL, toggleLanguage } = useLanguage()
 const { displayName } = useBeneficiaryName()
 
-const navItems = computed(() =>
-  navConfig.map((item) => ({
+function withLabels(item) {
+  return {
     ...item,
     label: t(`nav.${item.key}`),
-    children: item.children.map((child) => ({
-      ...child,
-      label: t(`nav.${child.key}`),
-    })),
-  }))
-)
+    children: (item.children ?? []).map(withLabels),
+  }
+}
+
+const navItems = computed(() => navConfig.map(withLabels))
 
 
 const sidebarItems = [
@@ -137,28 +100,7 @@ const sidebarItems = [
   },
 ]
 
-const open = ref([])
-
-function toggle(key) {
-  const idx = open.value.indexOf(key)
-  idx === -1 ? open.value.push(key) : open.value.splice(idx, 1)
-}
-
 function handleLogout() {
   session.logout.submit()
 }
 </script>
-
-<style scoped>
-.expand-enter-active,
-.expand-leave-active {
-  transition: max-height 0.2s ease, opacity 0.15s ease;
-  max-height: 300px;
-  overflow: hidden;
-}
-.expand-enter-from,
-.expand-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-</style>

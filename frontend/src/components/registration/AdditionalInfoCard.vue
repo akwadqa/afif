@@ -16,9 +16,6 @@
           :value="modelValue.ben_requestor_relationtype || 'The same subvention requestor'"
           disabled
           class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
-          :value="modelValue.ben_requestor_relationtype || 'The same subvention requestor'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
           :class="isInvalid('ben_requestor_relationtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="The same subvention requestor">{{ t('registration.additionalInfo.sameRequestor') }}</option>
@@ -37,14 +34,10 @@
             type="text"
             :value="modelValue.requestor_name"
             @input="onTextOnly('requestor_name', $event)"
-            @input="onTextOnly('requestor_name', $event)"
             :placeholder="t('registration.additionalInfo.requestorNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('requestor_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
-          <p v-if="numberWarnings.has('requestor_name')" class="text-xs text-red-500">
-            {{ t('registration.validation.noNumbers') }}
-          </p>
           <p v-if="numberWarnings.has('requestor_name')" class="text-xs text-red-500">
             {{ t('registration.validation.noNumbers') }}
           </p>
@@ -130,9 +123,6 @@
           :value="modelValue.ben_sec_idtype || 'Passport'"
           disabled
           class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
-          :value="modelValue.ben_sec_idtype || 'Passport'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
           :class="isInvalid('ben_sec_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="Passport">{{ t('registration.personalInfo.passport') }}</option>
@@ -188,9 +178,6 @@
           @input="onAlphanumericOnly('ben_sec_idnumber', $event, 9)"
           maxlength="9"
           placeholder="A12345678"
-          @input="onAlphanumericOnly('ben_sec_idnumber', $event, 9)"
-          maxlength="9"
-          placeholder="A12345678"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
         />
@@ -220,14 +207,10 @@
             type="text"
             :value="modelValue.employer_name"
             @input="onTextOnly('employer_name', $event)"
-            @input="onTextOnly('employer_name', $event)"
             :placeholder="t('registration.additionalInfo.employerNamePlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('employer_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
-          <p v-if="numberWarnings.has('employer_name')" class="text-xs text-red-500">
-            {{ t('registration.validation.noNumbers') }}
-          </p>
           <p v-if="numberWarnings.has('employer_name')" class="text-xs text-red-500">
             {{ t('registration.validation.noNumbers') }}
           </p>
@@ -251,14 +234,10 @@
             type="text"
             :value="modelValue.occupation"
             @input="onTextOnly('occupation', $event)"
-            @input="onTextOnly('occupation', $event)"
             :placeholder="t('registration.additionalInfo.occupationPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
             :class="isInvalid('occupation') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
-          <p v-if="numberWarnings.has('occupation')" class="text-xs text-red-500">
-            {{ t('registration.validation.noNumbers') }}
-          </p>
           <p v-if="numberWarnings.has('occupation')" class="text-xs text-red-500">
             {{ t('registration.validation.noNumbers') }}
           </p>
@@ -310,14 +289,10 @@
           type="text"
           :value="modelValue.sponsor_name"
           @input="onTextOnly('sponsor_name', $event)"
-          @input="onTextOnly('sponsor_name', $event)"
           :placeholder="t('registration.additionalInfo.sponsorNamePlaceholder')"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm transition-all"
           :class="isInvalid('sponsor_name') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
-        <p v-if="numberWarnings.has('sponsor_name')" class="text-xs text-red-500">
-          {{ t('registration.validation.noNumbers') }}
-        </p>
         <p v-if="numberWarnings.has('sponsor_name')" class="text-xs text-red-500">
           {{ t('registration.validation.noNumbers') }}
         </p>
@@ -331,7 +306,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { Autocomplete } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
-import { arabicToWestern } from '@/utils/inputHelpers'
 import { arabicToWestern } from '@/utils/inputHelpers'
 
 const { t, isRTL } = useLanguage()
@@ -368,13 +342,6 @@ function update(field, value) {
 }
 
 function onDigitsOnly(field, event, maxLen) {
-  const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
-  event.target.value = val
-  update(field, val)
-}
-
-function onAlphanumericOnly(field, event, maxLen) {
-  const val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, maxLen)
   const val = arabicToWestern(event.target.value).replace(/\D/g, '').slice(0, maxLen)
   event.target.value = val
   update(field, val)

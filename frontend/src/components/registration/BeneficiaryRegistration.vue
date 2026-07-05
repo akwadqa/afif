@@ -27,9 +27,7 @@
       <FormStepsBar :current-step="currentStep" :steps="stepsList" />
 
       <div :class="{ 'read-only-form': isReadOnly }">
-      <div :class="{ 'read-only-form': isReadOnly }">
         <div v-if="currentStep === 1" class="space-y-6">
-          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
           <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
           <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
         </div>
@@ -53,7 +51,6 @@
       </div>
 
       <!-- Read-only: navigation only (no submit), with back-to-list button -->
-      <div v-if="isReadOnly"
       <div v-if="isReadOnly"
         class="bg-white rounded-[32px] px-4 md:px-6 py-4 border border-gray-100 shadow-sm flex items-center justify-between gap-2"
         :dir="isRTL ? 'rtl' : 'ltr'"
@@ -129,9 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['submitted', 'back'])
 const { t, isRTL } = useLanguage()
 
-const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
-
-const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
+const EDITABLE_STATUSES = ['Draft', 'Not Accepted', 'Update Required']
 
 const currentStep = ref(1)
 const subStep4 = ref(1)
@@ -142,10 +137,6 @@ const docMeta = ref({})
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
 const invalidFields = ref([])
-const editing = ref(false)
-
-const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
-const isReadOnly = computed(() => props.readOnly && !editing.value)
 const editing = ref(false)
 
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
@@ -190,8 +181,6 @@ const stepsList = computed(() => [
 const formData = ref({
   personalInfo: { ben_primary_idtype: 'Qatari Id', id_expiry_date: '' },
   additionalInfo: { ben_requestor_relationtype: 'The same subvention requestor', ben_sec_idtype: 'Passport' },
-  personalInfo: { ben_primary_idtype: 'Qatari Id', id_expiry_date: '' },
-  additionalInfo: { ben_requestor_relationtype: 'The same subvention requestor', ben_sec_idtype: 'Passport' },
   familyDetails: {},
   incomeDetails: {
     ben_income: 0,
@@ -211,7 +200,7 @@ const formData = ref({
   },
   additionalData: {},
   attachments: {
-    files: {},
+    files: { additional_attachments: [] },
     legalClaims: {
       correctData: false,
       verificationRight: false,
@@ -286,9 +275,7 @@ function populateFromDoc(doc) {
     ar_name: doc.ar_name,
     en_name: doc.en_name,
     ben_primary_idtype: doc.ben_primary_idtype || 'Qatari Id',
-    ben_primary_idtype: doc.ben_primary_idtype || 'Qatari Id',
     ben_primary_idnumber: doc.ben_primary_idnumber,
-    id_expiry_date: doc.id_expiry_date,
     id_expiry_date: doc.id_expiry_date,
     passport_number: doc.passport_number,
     ben_nationality: doc.ben_nationality,
@@ -304,13 +291,11 @@ function populateFromDoc(doc) {
 
   formData.value.additionalInfo = {
     ben_requestor_relationtype: doc.ben_requestor_relationtype || 'The same subvention requestor',
-    ben_requestor_relationtype: doc.ben_requestor_relationtype || 'The same subvention requestor',
     requestor_name: doc.requestor_name,
     requestor_idtype: doc.requestor_idtype,
     requestor_idnumber: doc.requestor_idnumber,
     requestor_nationality: doc.requestor_nationality,
     requestor_number: doc.requestor_number,
-    ben_sec_idtype: doc.ben_sec_idtype || 'Passport',
     ben_sec_idtype: doc.ben_sec_idtype || 'Passport',
     ben_sec_nationality: doc.ben_sec_nationality,
     ben_sec_gulf_country: doc.ben_sec_gulf_country,
@@ -426,6 +411,9 @@ function populateFromDoc(doc) {
   for (const field of ATTACHMENT_FIELDS) {
     if (doc[field]) existingFiles[field] = doc[field]
   }
+  existingFiles.additional_attachments = (doc.additional_attachments || [])
+    .map(row => row.attachment)
+    .filter(Boolean)
   formData.value.attachments.files = existingFiles
 }
 
@@ -433,7 +421,6 @@ onMounted(() => {
   if (props.registrationName) {
     getDoc.submit({ doctype: 'Beneficiaries Registration', name: props.registrationName })
   }
-  if (props.readOnly && !editing.value) {
   if (props.readOnly && !editing.value) {
     currentStep.value = 1
     subStep4.value = 1
@@ -511,6 +498,9 @@ function buildFullPayload() {
     const val = formData.value.attachments.files[field]
     if (typeof val === 'string') payload[field] = val
   }
+  payload.additional_attachments = (formData.value.attachments.files.additional_attachments || [])
+    .filter(val => typeof val === 'string')
+    .map(url => ({ attachment: url }))
   return payload
 }
 
@@ -592,6 +582,7 @@ function validateCurrentStep() {
   }
 
   if (currentStep.value === 1) {
+    const isResidence = Boolean(pi.ben_nationality && pi.ben_nationality !== 'Qatar')
     req(pi.ar_name, 'ar_name', t('registration.personalInfo.arName'))
     if (pi.ar_name && /[a-zA-Z]/.test(pi.ar_name)) {
       errors.push(t('registration.validation.arabicOnly'))
@@ -609,9 +600,7 @@ function validateCurrentStep() {
       fields.push('ben_primary_idnumber')
     }
     req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
-    req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
     req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
-    if (pi.passport_number && !/^[A-Z0-9]{1,9}$/.test(pi.passport_number)) {
     if (pi.passport_number && !/^[A-Z0-9]{1,9}$/.test(pi.passport_number)) {
       errors.push(t('registration.validation.passportFormat'))
       fields.push('passport_number')
@@ -640,10 +629,8 @@ function validateCurrentStep() {
     req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
     if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
     if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
-    if (pi.ben_nationality && pi.ben_nationality !== 'Qatar') {
-      req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
-      req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
-    }
+    req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
+    req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
 
     req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
     if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
@@ -670,7 +657,7 @@ function validateCurrentStep() {
       req(ai.employer_address, 'employer_address', t('registration.additionalInfo.employerAddress'))
       req(ai.occupation, 'occupation', t('registration.additionalInfo.occupation'))
     }
-    if (pi.visa_type === 'Residence' && ai.currently_working === 'No') req(ai.worked_before, 'worked_before', t('registration.additionalInfo.workedBefore'))
+    if (isResidence && ai.currently_working === 'No') req(ai.worked_before, 'worked_before', t('registration.additionalInfo.workedBefore'))
     req(ai.education_level, 'education_level', t('registration.additionalInfo.educationLevel'))
     req(ai.sponsor_name, 'sponsor_name', t('registration.additionalInfo.sponsorName'))
 
@@ -680,7 +667,7 @@ function validateCurrentStep() {
       fields.push('ben_dependent_count')
     }
     req(fd.family_visa_type, 'family_visa_type', t('registration.familyDetails.familyVisa'))
-    if (pi.visa_type === 'Residence') {
+    if (isResidence) {
       req(fd.visa_dependent, 'visa_dependent', t('registration.familyDetails.otherDependents'))
       if (fd.visa_dependent === 'Yes') req(fd.names_and_relation_to_sponsored, 'names_and_relation_to_sponsored', t('registration.familyDetails.namesRelation'))
     }
@@ -939,9 +926,17 @@ function readOnlyPrev() {
 
 async function uploadAllFiles() {
   for (const [fieldname, file] of Object.entries(formData.value.attachments.files)) {
+    if (fieldname === 'additional_attachments') continue
     if (file instanceof File) {
       const fileUrl = await uploadFile(file, docName.value, fieldname)
       formData.value.attachments.files[fieldname] = fileUrl
+    }
+  }
+
+  const extras = formData.value.attachments.files.additional_attachments || []
+  for (let i = 0; i < extras.length; i++) {
+    if (extras[i] instanceof File) {
+      extras[i] = await uploadFile(extras[i], docName.value, 'additional_attachments')
     }
   }
 }
@@ -961,7 +956,10 @@ async function uploadFile(file, docName, fieldname) {
   }
 
   const res = await fetch('/api/method/upload_file', { method: 'POST', headers, body: fd })
-  if (!res.ok) throw new Error(`${t('registration.submitError')}: ${file.name}`)
+  if (!res.ok) {
+    if (res.status === 413) throw new Error(`${t('registration.attachments.fileTooLarge')}: ${file.name}`)
+    throw new Error(`${t('registration.submitError')}: ${file.name}`)
+  }
   const data = await res.json()
   return data.message.file_url
 }
