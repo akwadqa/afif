@@ -1571,6 +1571,13 @@ def clear_attachment_fields(beneficiary_name):
     frappe.log_error("update_query", update_query)
     frappe.db.sql(update_query, (beneficiary_name,))
 
+    # Additional attachments live in a child table, not a column on the parent
+    frappe.db.delete("Beneficiary Additional Document", {
+        "parent": beneficiary_name,
+        "parenttype": "Beneficiaries Registration",
+        "parentfield": "additional_attachments",
+    })
+
 
 
 

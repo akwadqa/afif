@@ -185,6 +185,7 @@
   "id_sponsored",
   "rejection_note",
   "additional_documents",
+  "additional_attachments",
   "documents_confirmation",
   "verification_consent",
   "cancellation_right",
@@ -1359,6 +1360,13 @@
    "fieldname": "additional_documents",
    "fieldtype": "Attach",
    "label": "Additional Documents",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "additional_attachments",
+   "fieldtype": "Table",
+   "options": "Beneficiary Additional Document",
+   "label": "Additional Attachments",
    "print_hide": 1
   },
   {

@@ -25,6 +25,7 @@ declare module 'vue' {
     LoginFormPanel: typeof import('./src/components/auth/LoginFormPanel.vue')['default']
     LoginLeftPanel: typeof import('./src/components/auth/LoginLeftPanel.vue')['default']
     MobileMenu: typeof import('./src/components/navbar/MobileMenu.vue')['default']
+    MobileMenuItem: typeof import('./src/components/navbar/MobileMenuItem.vue')['default']
     NavDropdown: typeof import('./src/components/navbar/NavDropdown.vue')['default']
     NavLinks: typeof import('./src/components/navbar/NavLinks.vue')['default']
     NavLogo: typeof import('./src/components/navbar/NavLogo.vue')['default']
