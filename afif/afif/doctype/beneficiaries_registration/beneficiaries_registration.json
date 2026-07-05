@@ -684,7 +684,7 @@
   {
    "depends_on": "eval:doc.family_income==1",
    "fieldname": "family_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Family Income Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_income==1)"
   },
@@ -706,7 +706,7 @@
   {
    "depends_on": "eval:doc.ben_income==1",
    "fieldname": "benficiary_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Beneficiary Income Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.ben_income==1)"
   },
@@ -728,7 +728,7 @@
   {
    "depends_on": "eval:doc.children_income==1",
    "fieldname": "children_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Children Income Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.children_income==1)"
   },
@@ -750,7 +750,7 @@
   {
    "depends_on": "eval:doc.private_income==1",
    "fieldname": "private_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Private Business Income Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.private_income==1)"
   },
@@ -772,7 +772,7 @@
   {
    "depends_on": "eval:doc.stock_income==1",
    "fieldname": "stock_market_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Stock Market Profits Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.stock_income==1)"
   },
@@ -794,7 +794,7 @@
   {
    "depends_on": "eval:doc.family_extra==1",
    "fieldname": "family_extra_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Family Extra Salary Note",
    "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.family_extra==1)"
   },
@@ -814,7 +814,7 @@
   {
    "depends_on": "eval:doc.rent_income==1",
    "fieldname": "rent_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Rent Income Note"
   },
   {
@@ -900,7 +900,7 @@
   {
    "depends_on": "eval:doc.family_obligation==1",
    "fieldname": "family_obligations_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Family Obligations Note",
    "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.family_obligation==1)"
   },
@@ -929,7 +929,7 @@
   {
    "depends_on": "eval:doc.rent_obligation==1",
    "fieldname": "rent_obligations_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Rent Obligations Note",
    "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.rent_obligation==1)"
   },
@@ -951,7 +951,7 @@
   {
    "depends_on": "eval:doc.tuition_obligation==1",
    "fieldname": "tuition_obligations_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Tuition Obligations Note",
    "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.tuition_obligation==1)"
   },
@@ -980,7 +980,7 @@
   {
    "depends_on": "eval:doc.treatment_obligation==1",
    "fieldname": "treatment_obligations_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Treatment Obligation Note",
    "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.treatment_obligation==1)"
   },
@@ -1016,7 +1016,7 @@
   {
    "depends_on": "eval:doc.debt_obligation==1",
    "fieldname": "debt_obligations_note",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Debt Obligations Note",
    "mandatory_depends_on": "eval: doc.current_step == 3 && (doc.debt_obligation==1)"
   },
