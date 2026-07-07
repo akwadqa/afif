@@ -1,0 +1,105 @@
+{
+ "app": "afif",
+ "charts": [
+  {
+   "chart_name": "Beneficiaries Registration",
+   "label": "\u0627\u062d\u0635\u0627\u0626\u064a\u0627\u062a \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646"
+  },
+  {
+   "chart_name": "Beneficiaries Registration Progress",
+   "label": "\u062a\u0637\u0648\u0631 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646"
+  }
+ ],
+ "content": "[{\"id\":\"IUMvyWld4l\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646 \u0627\u0644\u0645\u0633\u062c\u0644\u064a\u0646\",\"col\":4}},{\"id\":\"CYdadNdWoz\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0637\u0644\u0628\u0627\u062a\",\"col\":4}},{\"id\":\"N8Jn7EVOLc\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0627\u062a\",\"col\":4}},{\"id\":\"vXm4xYn5Tr\",\"type\":\"chart\",\"data\":{\"chart_name\":\"\u0627\u062d\u0635\u0627\u0626\u064a\u0627\u062a \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646\",\"col\":6}},{\"id\":\"4kG3d736ou\",\"type\":\"chart\",\"data\":{\"chart_name\":\"\u062a\u0637\u0648\u0631 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646\",\"col\":6}},{\"id\":\"eMiyxAo2RY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Afif</span>\",\"col\":12}},{\"id\":\"q4ba26JP2k\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"\u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645\u064a\u0646\",\"col\":6}},{\"id\":\"0EkXN4yv4A\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Beneficiaries\",\"col\":6}},{\"id\":\"WtW3erSQKv\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"\u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0627\u062a\",\"col\":6}},{\"id\":\"2FRoOIIm36\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"\u0627\u0644\u0637\u0644\u0628\u0627\u062a\",\"col\":6}},{\"id\":\"tg925iNpmw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Categories\",\"col\":6}},{\"id\":\"bK5RTT2udG\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Aid Report\",\"col\":3}},{\"id\":\"K5mVeATpAQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Translation\",\"col\":6}}]",
+ "creation": "2026-06-16 12:56:15.883325",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "color-review-points",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Afif",
+ "link_type": "DocType",
+ "links": [],
+ "modified": "2026-06-16 13:08:38.385626",
+ "modified_by": "Administrator",
+ "module": "Afif",
+ "name": "Afif",
+ "number_cards": [
+  {
+   "label": "\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0627\u062a",
+   "number_card_name": "Total Aids"
+  },
+  {
+   "label": "\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0637\u0644\u0628\u0627\u062a",
+   "number_card_name": "Total Requests"
+  },
+  {
+   "label": "\u0627\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0633\u062a\u0641\u064a\u062f\u064a\u0646 \u0627\u0644\u0645\u0633\u062c\u0644\u064a\u0646",
+   "number_card_name": "Total Beneficiaries"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "Supervisor"
+  }
+ ],
+ "sequence_id": 0.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Beneficiaries",
+   "link_to": "Beneficiaries Registration",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "\u0627\u0644\u0637\u0644\u0628\u0627\u062a",
+   "link_to": "Beneficiary Request",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "\u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0627\u062a",
+   "link_to": "Beneficiary Aid",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Categories",
+   "link_to": "Categories",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Translation",
+   "link_to": "Translation",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "\u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645\u064a\u0646",
+   "link_to": "User",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Afif",
+ "type": "Workspace"
+}
