@@ -5,3 +5,5 @@
 tags
 afif/docs/current
 node_modules/
+afif/public/frontend/*
+afif/www/frontend.html
