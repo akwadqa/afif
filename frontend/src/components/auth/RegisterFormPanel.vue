@@ -12,7 +12,7 @@
       </div>
       <p class="text-sm text-gray-600">{{ t('register.successMsg') }}</p>
       <router-link
-        to="/login"
+        to="/signin"
         class="inline-block text-sm font-semibold hover:underline"
         style="color: #34B0EE;"
       >
@@ -113,7 +113,7 @@
       <!-- Login link -->
       <div class="text-center text-sm text-gray-500 mt-6">
         {{ t('register.hasAccount') }}
-        <router-link to="/login" class="font-semibold hover:underline mx-1" style="color: #34B0EE;">
+        <router-link to="/signin" class="font-semibold hover:underline mx-1" style="color: #34B0EE;">
           {{ t('register.loginLink') }}
         </router-link>
       </div>
@@ -168,7 +168,7 @@ function handleSubmit() {
   signUp.submit({
     email: email.value,
     full_name: fullName.value,
-    redirect_to: '/frontend/home',
+    redirect_to: '/beneficiary-profile',
   })
 }
 </script>

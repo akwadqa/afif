@@ -87,8 +87,9 @@
       title="تم التسجيل بنجاح"
       message="تم استلام تسجيل بياناتك بنجاح. يرجى انتظار إشعار سيصلك عبر البريد الإلكتروني لاستكمال باقي الإجراءات."
       button-text="الاطلاع على حالة تسجيل الملف"
-      :show-edit-answers="false"
+      :show-edit-answers="true"
       @view-status="onBackToList"
+      @edit-answers="onEditAnswers"
     />
   </div>
 
@@ -160,6 +161,10 @@ function onSubmitted(name) {
 function onBackToList() {
   view.value = 'loading'
   fetchRegistrations()
+}
+
+function onEditAnswers() {
+  view.value = 'registration'
 }
 
 function getRegStatusClass(status) {

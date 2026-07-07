@@ -241,12 +241,13 @@
             :value="modelValue.additional_notes"
             @input="update('additional_notes', $event.target.value)"
             rows="3"
+            maxlength="120"
             :placeholder="t('registration.additionalData.additionalNotesPlaceholder')"
             class="w-full px-4 py-3 bg-gray-50/60 border rounded-2xl outline-none text-sm resize-none min-h-[90px] focus:ring-2 focus:ring-[#34B0EE] focus:bg-white transition-all"
             :class="isInvalid('additional_notes') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
           />
-          <p class="text-xs" :class="(modelValue.additional_notes || '').length < 120 ? 'text-red-500' : 'text-gray-400'">
-            {{ (modelValue.additional_notes || '').length }} / 120 {{ t('registration.additionalData.minCharsSuffix') }}
+          <p class="text-xs" :class="(modelValue.additional_notes || '').length > 120 ? 'text-red-500' : 'text-gray-400'">
+            {{ (modelValue.additional_notes || '').length }} / 120 {{ t('registration.validation.maxCharsSuffix') }}
           </p>
         </div>
 

@@ -41,7 +41,7 @@
     <div class="max-w-5xl mx-auto">
       <div class="flex justify-between items-center mb-10">
         <div>
-          <h1 class="text-2xl font-bold text-sky-900">{{ t('myRequests.title') }}</h1>
+          <h1 class="text-2xl font-bold text-sky-900 mb-6">{{ t('myRequests.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">{{ t('myRequests.subtitle') }}</p>
         </div>
         <div class="relative group">

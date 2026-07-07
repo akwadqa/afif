@@ -24,7 +24,7 @@ export const navConfig = [
       { key: 'aiCourse', route: 'https://afif.qa/aicourse/' },
       { key: 'khaledGrant', route: 'https://afif.qa/scholarship-terms-conditions/' },
       { key: 'seasonalProjects', route: 'http://www.afif.qa/cpform' },
-      { key: 'helpRequest', route: 'https://erp.afif.qa/' },
+      { key: 'helpRequest', route: '/signin' },
     ],
   },
   {

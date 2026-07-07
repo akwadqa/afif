@@ -7,8 +7,8 @@
     <a
       v-if="!item.children?.length"
       :href="item.route || '#'"
-      target="_blank"
-      rel="noopener"
+      :target="isExternal(item.route) ? '_blank' : null"
+      :rel="isExternal(item.route) ? 'noopener' : null"
       class="flex items-center gap-1.5 text-gray-700 hover:text-[#005979] hover:underline transition-colors duration-200 text-base font-medium py-2 px-1"
     >
       {{ item.label }}
@@ -49,8 +49,8 @@
           <a
             v-else
             :href="child.route || '#'"
-            target="_blank"
-            rel="noopener"
+            :target="isExternal(child.route) ? '_blank' : null"
+            :rel="isExternal(child.route) ? 'noopener' : null"
             class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#005979] hover:text-white transition-colors text-start"
           >
             {{ child.label }}
@@ -76,4 +76,8 @@ defineProps({
 })
 
 const { isRTL } = useLanguage()
+
+function isExternal(route) {
+  return /^https?:\/\//.test(route || '')
+}
 </script>

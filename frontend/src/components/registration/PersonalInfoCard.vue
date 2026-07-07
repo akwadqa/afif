@@ -116,9 +116,6 @@
         <p v-if="modelValue.passport_number && !isValidPassport(modelValue.passport_number)" class="text-xs text-red-500">
           {{ t('registration.validation.passportFormat') }}
         </p>
-        <p v-if="modelValue.passport_number && hasMultipleLetters(modelValue.passport_number)" class="text-xs text-amber-600">
-          {{ t('registration.validation.passportMultipleLetters') }}
-        </p>
       </div>
 
       <!-- Nationality + Gender -->
@@ -725,10 +722,6 @@ function onPassportInput(event) {
 
 function isValidPassport(val) {
   return /^[A-Z0-9]{1,9}$/.test(val)
-}
-
-function hasMultipleLetters(val) {
-  return (val.match(/[A-Z]/g) || []).length > 1
 }
 
 function countryLabel(name) {

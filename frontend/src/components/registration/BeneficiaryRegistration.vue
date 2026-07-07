@@ -126,7 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['submitted', 'back'])
 const { t, isRTL } = useLanguage()
 
-const EDITABLE_STATUSES = ['Draft', 'Not Accepted', 'Update Required']
+const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
 
 const currentStep = ref(1)
 const subStep4 = ref(1)
@@ -768,8 +768,8 @@ function validateCurrentStep() {
     req(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
     if (ad.has_other_info === 'Yes') {
       req(ad.additional_notes, 'additional_notes', t('registration.additionalData.additionalNotes'))
-      if (ad.additional_notes && ad.additional_notes.length < 120) {
-        errors.push(t('registration.validation.additionalInfoTooShort'))
+      if (ad.additional_notes && ad.additional_notes.length > 120) {
+        errors.push(t('registration.validation.additionalInfoTooLong'))
         fields.push('additional_notes')
       }
     }

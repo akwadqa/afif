@@ -8,7 +8,7 @@ function getSessionUser() {
 
 const routes = [
   {
-    path: '/login',
+    path: '/signin',
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [
       {
@@ -40,10 +40,10 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/home',
+        redirect: '/beneficiary-profile',
       },
       {
-        path: 'home',
+        path: 'beneficiary-profile',
         name: 'Home',
         component: () => import('@/pages/Home.vue'),
       },
@@ -62,7 +62,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory('/frontend'),
+  history: createWebHistory('/'),
   routes,
 })
 

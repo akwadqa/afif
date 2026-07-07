@@ -258,5 +258,9 @@ override_whitelisted_methods = {
 boot_session = "afif.override.apply_overrides"
 
 website_route_rules = [
-    {"from_route": "/frontend/<path:name>", "to_route": "frontend"},
+    {"from_route": "/signin", "to_route": "frontend"},
+    {"from_route": "/register", "to_route": "frontend"},
+    {"from_route": "/beneficiary-profile", "to_route": "frontend"},
+    {"from_route": "/request", "to_route": "frontend"},
+    {"from_route": "/account", "to_route": "frontend"},
 ]
