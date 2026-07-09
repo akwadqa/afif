@@ -33,12 +33,20 @@ export const session = reactive({
 				pwd: password,
 			}
 		},
-		onSuccess(data) {
+		onSuccess() {
 			syncCsrfToken()
 			userResource.reload()
 			session.user = sessionUser()
 			session.login.reset()
-			router.replace(data.default_route || '/beneficiary-profile')
+			const cookies = new URLSearchParams(document.cookie.split("; ").join("&"))
+			if (cookies.get("system_user") === "yes") {
+				window.location.href = '/desk'
+			} else {
+				// Frappe's `home_page` from the login response can be hijacked by unrelated
+				// installed apps (get_default_path() picks up their add_to_apps_screen route),
+				// so Website Users always go straight to the registration flow.
+				router.replace('/beneficiary-profile')
+			}
 		},
 	}),
 	logout: createResource({

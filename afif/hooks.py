@@ -257,6 +257,8 @@ override_whitelisted_methods = {
 
 boot_session = "afif.override.apply_overrides"
 
+get_website_user_home_page = "afif.hooks_call.get_home_page"
+
 website_route_rules = [
     {"from_route": "/signin", "to_route": "frontend"},
     {"from_route": "/register", "to_route": "frontend"},

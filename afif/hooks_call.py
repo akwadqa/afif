@@ -7,6 +7,14 @@ from frappe.utils.file_manager import get_file_path
 from dateutil.relativedelta import relativedelta
 # from frappe.utils.background_jobs import enqueue
 
+def get_home_page(user):
+    if user == "Guest":
+        return "signin"
+    if frappe.db.get_value("User", user, "user_type") == "Website User":
+        return "beneficiary-profile"
+    return None
+
+
 def get_sanadi_integration_settings():
     if frappe.db.exists("Sanadi Integration Settings", {"user": frappe.session.user}):
         sanadi_integration_settings = frappe.get_doc("Sanadi Integration Settings", {"user": frappe.session.user})
