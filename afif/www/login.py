@@ -30,6 +30,9 @@ def get_context(context):
 		if redirect_to != "login":
 			frappe.local.flags.redirect_location = redirect_to
 			raise frappe.Redirect
+	else:
+		frappe.local.flags.redirect_location = "/signin"
+		raise frappe.Redirect
 
 	context.no_header = True
 	context.for_test = "login.html"
