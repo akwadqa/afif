@@ -406,7 +406,8 @@
   {
    "fieldname": "ben_sec_idnumber",
    "fieldtype": "Data",
-   "label": "Benificiary Secondary Id "
+   "label": "Benificiary Secondary Id ",
+   "mandatory_depends_on": "eval: doc.current_step == 1"
   },
   {
    "depends_on": "eval:in_list([\"Married\", \"Akwad\"], doc.marital_status)",
@@ -479,9 +480,11 @@
    "options": "\nIgnorant\nPrimary School Graduate\nIndustrial School\nSecondary School Graduate\nHigh Education Level\nAbove High Education Level"
   },
   {
+   "depends_on": "eval:doc.ben_nationality!=\"Qatar\"",
    "fieldname": "sponsor_name",
    "fieldtype": "Data",
-   "label": "Sponsor Name"
+   "label": "Sponsor Name",
+   "mandatory_depends_on": "eval: doc.current_step == 1 && (doc.ben_nationality!=\"Qatar\")"
   },
   {
    "fieldname": "monthly_income",

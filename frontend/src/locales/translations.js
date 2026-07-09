@@ -335,6 +335,16 @@ export default {
       createAccount: 'أنشئ حساباً جديداً',
       invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
     },
+    resetPassword: {
+      title: 'إعادة تعيين كلمة المرور',
+      subtitle: 'أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.',
+      email: 'البريد الإلكتروني',
+      emailPlaceholder: 'name@example.com',
+      submitBtn: 'إعادة تعيين كلمة المرور',
+      backToLogin: 'العودة لتسجيل الدخول',
+      successMsg: 'إذا كان البريد الإلكتروني مسجلاً لدينا، فسيصلك رابط لإعادة تعيين كلمة المرور خلال دقائق.',
+      errorMsg: 'حدث خطأ أثناء إرسال طلب إعادة التعيين. يرجى المحاولة مرة أخرى.',
+    },
     register: {
       title: 'أنشئ حسابك',
       subtitle: 'قم بإنشاء حساب للتمكن من الاستفادة من خدمات عفيف الخيرية وتقديم الطلبات بسهولة.',
@@ -1159,6 +1169,16 @@ export default {
       noAccount: "Don't have an account?",
       createAccount: 'Create a new account',
       invalidCredentials: 'Invalid email or password',
+    },
+    resetPassword: {
+      title: 'Reset Password',
+      subtitle: 'Enter your email and we will send you a link to reset your password.',
+      email: 'Email',
+      emailPlaceholder: 'name@example.com',
+      submitBtn: 'Reset Password',
+      backToLogin: 'Back to Login',
+      successMsg: "If that email is registered with us, you'll receive a password reset link shortly.",
+      errorMsg: 'An error occurred while sending the reset request. Please try again.',
     },
     register: {
       title: 'Create Your Account',

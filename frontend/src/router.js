@@ -34,6 +34,19 @@ const routes = [
   },
 
   {
+    path: '/forgot-password',
+    component: () => import('@/layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'ResetPassword',
+        component: () => import('@/pages/ResetPassword.vue'),
+        meta: { public: true },
+      },
+    ],
+  },
+
+  {
     path: '/',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },
@@ -71,7 +84,7 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !isLoggedIn) {
     next({ name: 'Login' })
-  } else if ((to.name === 'Login' || to.name === 'Register') && isLoggedIn) {
+  } else if ((to.name === 'Login' || to.name === 'Register' || to.name === 'ResetPassword') && isLoggedIn) {
     next({ name: 'Home' })
   } else {
     next()

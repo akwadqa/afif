@@ -24,9 +24,9 @@
         <div class="relative">
           <input
             v-model="email"
-            type="email"
+            type="text"
             :placeholder="t('login.emailPlaceholder')"
-            autocomplete="email"
+            autocomplete="username"
             required
             class="w-full py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-gray-300 text-sm transition-all"
             :class="isRTL ? 'pr-4 pl-11 text-right' : 'pl-4 pr-11 text-left'"
@@ -85,13 +85,12 @@
         </div>
       </div>
 
-      <!-- Forgot password (commented out)
+      <!-- Forgot password -->
       <div :class="isRTL ? 'text-left' : 'text-right'">
-        <a href="#" class="text-xs text-sky-600 hover:underline">
+        <RouterLink to="/forgot-password" class="text-xs text-sky-600 hover:underline">
           {{ t('login.forgotPassword') }}
-        </a>
+        </RouterLink>
       </div>
-      -->
 
       <!-- Error message -->
       <p v-if="errorMsg" class="text-sm text-red-500 text-center -mt-1">

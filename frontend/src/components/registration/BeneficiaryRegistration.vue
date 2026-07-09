@@ -651,6 +651,7 @@ function validateCurrentStep() {
     req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
     if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
     if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))
+    req(ai.ben_sec_idnumber, 'ben_sec_idnumber', t('registration.additionalInfo.secIdNumber'))
     req(ai.currently_working, 'currently_working', t('registration.additionalInfo.currentlyWorking'))
     if (ai.currently_working === 'Yes') {
       req(ai.employer_name, 'employer_name', t('registration.additionalInfo.employerName'))
@@ -659,7 +660,7 @@ function validateCurrentStep() {
     }
     if (isResidence && ai.currently_working === 'No') req(ai.worked_before, 'worked_before', t('registration.additionalInfo.workedBefore'))
     req(ai.education_level, 'education_level', t('registration.additionalInfo.educationLevel'))
-    req(ai.sponsor_name, 'sponsor_name', t('registration.additionalInfo.sponsorName'))
+    if (pi.ben_nationality !== 'Qatar') req(ai.sponsor_name, 'sponsor_name', t('registration.additionalInfo.sponsorName'))
 
     req(fd.family_size, 'family_size', t('registration.familyDetails.familySize'))
     if (fd.ben_dependent_count === undefined || fd.ben_dependent_count === null || fd.ben_dependent_count === '') {

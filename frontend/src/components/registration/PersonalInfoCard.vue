@@ -471,7 +471,7 @@
 
       <!-- Secondary ID Number -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdNumber') }}</label>
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdNumber') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
           :value="additionalInfo.ben_sec_idnumber"
@@ -479,7 +479,8 @@
           maxlength="9"
           placeholder="A12345678"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('ben_sec_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
       </div>
 
@@ -582,8 +583,8 @@
         </select>
       </div>
 
-      <!-- Sponsor Name -->
-      <div class="space-y-1.5">
+      <!-- Sponsor Name — hidden when nationality is Qatar -->
+      <div v-if="modelValue.ben_nationality !== 'Qatar'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.sponsorName') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
