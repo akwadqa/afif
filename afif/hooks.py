@@ -266,3 +266,9 @@ website_route_rules = [
     {"from_route": "/request", "to_route": "frontend"},
     {"from_route": "/account", "to_route": "frontend"},
 ]
+
+website_redirects = [
+    {"source": "/registration-afif", "target": "/beneficiary-profile"},
+    {"source": "/beneficiary-request3", "target": "/beneficiary-profile"},
+    {"source": "/registration-new-doctype", "target": "/beneficiary-profile"},
+]
