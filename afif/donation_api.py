@@ -3,6 +3,9 @@
 
 import frappe
 from frappe import _
+from frappe.rate_limiter import rate_limit
+
+from afif import dibsy
 
 
 @frappe.whitelist(allow_guest=True)
@@ -31,7 +34,7 @@ def get_projects(program):
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=10, seconds=60 * 60)
+@rate_limit(limit=10, seconds=60 * 60)
 def create_donation(donation_project, amount, donor_name, donor_mobile, donor_email=None):
 	project = frappe.db.get_value(
 		"Donation Project",
@@ -57,16 +60,18 @@ def create_donation(donation_project, amount, donor_name, donor_mobile, donor_em
 	donation.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-	# Dibsy checkout session creation is wired in here once the gateway integration is added.
+	checkout = dibsy.create_payment(donation)
+
 	return {
 		"reference_id": donation.reference_id,
 		"amount": donation.amount,
 		"currency": donation.currency,
+		"payment_url": checkout["payment_url"],
 	}
 
 
 @frappe.whitelist(allow_guest=True)
-@frappe.rate_limit(limit=30, seconds=60 * 60)
+@rate_limit(limit=30, seconds=60 * 60)
 def get_status(reference_id):
 	donation = frappe.db.get_value(
 		"Donation",
