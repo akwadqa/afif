@@ -265,9 +265,12 @@ get_website_user_home_page = "afif.hooks_call.get_home_page"
 website_route_rules = [
     {"from_route": "/signin", "to_route": "frontend"},
     {"from_route": "/register", "to_route": "frontend"},
+    {"from_route": "/forgot-password", "to_route": "frontend"},
     {"from_route": "/beneficiary-profile", "to_route": "frontend"},
     {"from_route": "/request", "to_route": "frontend"},
     {"from_route": "/account", "to_route": "frontend"},
+    {"from_route": "/donate", "to_route": "frontend"},
+    {"from_route": "/donate/success", "to_route": "frontend"},
 ]
 
 website_redirects = [

@@ -16,6 +16,8 @@ declare module 'vue' {
     AttachmentsCard: typeof import('./src/components/registration/AttachmentsCard.vue')['default']
     BeneficiaryRegistration: typeof import('./src/components/registration/BeneficiaryRegistration.vue')['default']
     BeneficiaryRequest: typeof import('./src/components/request/BeneficiaryRequest.vue')['default']
+    DonationForm: typeof import('./src/components/donation/DonationForm.vue')['default']
+    DonationWelcome: typeof import('./src/components/donation/DonationWelcome.vue')['default']
     FamilyDetailsCard: typeof import('./src/components/registration/FamilyDetailsCard.vue')['default']
     FinancialObligationsCard: typeof import('./src/components/registration/FinancialObligationsCard.vue')['default']
     FormActionsBar: typeof import('./src/components/registration/FormActionsBar.vue')['default']

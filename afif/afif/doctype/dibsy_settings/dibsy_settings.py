@@ -28,9 +28,6 @@ class DibsySettings(Document):
 		merchant_id = (self.production_merchant_id if self.is_live() else self.test_merchant_id) or ""
 		return merchant_id.strip()
 
-	def get_webhook_secret(self):
-		return (self.get_password("webhook_secret", raise_exception=False) or "").strip()
-
 	def get_currency(self):
 		return (self.default_currency or "QAR").strip() or "QAR"
 

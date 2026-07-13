@@ -13,9 +13,11 @@
   "content_section",
   "quote",
   "body",
-  "settings_section",
-  "min_amount",
-  "display_order"
+  "funding_section",
+  "required_amount",
+  "column_break_funding",
+  "donated_amount",
+  "percentage"
  ],
  "fields": [
   {
@@ -62,22 +64,34 @@
    "translatable": 1
   },
   {
-   "collapsible": 1,
-   "fieldname": "settings_section",
+   "fieldname": "funding_section",
    "fieldtype": "Section Break",
-   "label": "Settings"
+   "label": "Funding"
   },
   {
-   "default": "1",
-   "fieldname": "min_amount",
+   "fieldname": "required_amount",
    "fieldtype": "Currency",
-   "label": "Minimum Amount"
+   "label": "Required Amount"
+  },
+  {
+   "fieldname": "column_break_funding",
+   "fieldtype": "Column Break"
   },
   {
    "default": "0",
-   "fieldname": "display_order",
-   "fieldtype": "Int",
-   "label": "Display Order"
+   "fieldname": "donated_amount",
+   "fieldtype": "Currency",
+   "label": "Donated Amount",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage Raised",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -102,8 +116,8 @@
   }
  ],
  "show_title_field_in_link": 1,
- "sort_field": "display_order",
- "sort_order": "ASC",
+ "sort_field": "creation",
+ "sort_order": "DESC",
  "states": [],
  "title_field": "title"
 }

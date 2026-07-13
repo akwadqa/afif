@@ -100,14 +100,12 @@
    "fieldname": "donor_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Donor Name",
-   "reqd": 1
+   "label": "Donor Name"
   },
   {
    "fieldname": "donor_mobile",
    "fieldtype": "Data",
-   "label": "Donor Mobile",
-   "reqd": 1
+   "label": "Donor Mobile"
   },
   {
    "fieldname": "column_break_donor",

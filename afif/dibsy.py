@@ -4,27 +4,21 @@
 """
 Dibsy payment gateway integration for the donation flow.
 
-NOTE: the exact endpoint paths, request/response field names, and webhook
-signature scheme below have not been verified against Dibsy's official API
-reference - they mirror a sibling in-house integration as a best-effort
-baseline. Confirm the following against Dibsy's current docs / sandbox before
-relying on this in production:
-  - POST {base_url}/payments request/response shape
-  - GET {base_url}/payments/{id} response shape and status values
-  - the webhook signature header name and hashing algorithm
-    (DIBSY_SIGNATURE_HEADER below is a placeholder)
+Per Dibsy's official docs (dibsy.dev/docs/overview/webhooks), webhook
+notifications carry no signature header - Dibsy's own documented security
+model is: (1) requests originate from a fixed IP (54.254.52.196), and (2) the
+receiver is expected to re-verify by fetching the payment status
+server-to-server before trusting it. We do (2) via fetch_payment() below,
+which is sufficient since a forged webhook body alone cannot mark a donation
+as paid - only our own authenticated GET to Dibsy can do that.
 """
 
-import hashlib
-import hmac
 import json
 
 import frappe
 from frappe import _
 from frappe.integrations.utils import make_request
 from frappe.utils import flt, get_url, now_datetime
-
-DIBSY_SIGNATURE_HEADER = "Dibsy-Signature"
 
 STATUS_MAP = {
 	"paid": "Paid",
@@ -141,24 +135,6 @@ def fetch_payment(payment_id):
 	return _get(f"/payments/{payment_id}")
 
 
-def verify_webhook_signature(request):
-	"""
-	Verify the inbound webhook came from Dibsy via an HMAC-SHA256 over the raw
-	request body, keyed by the Webhook Secret in Dibsy Settings. Fails closed
-	(rejects) if no secret is configured or no signature header is present.
-	"""
-	secret = _settings().get_webhook_secret()
-	if not secret:
-		return False
-
-	signature = request.headers.get(DIBSY_SIGNATURE_HEADER, "")
-	if not signature:
-		return False
-
-	expected = hmac.new(secret.encode("utf-8"), request.get_data(), hashlib.sha256).hexdigest()
-	return hmac.compare_digest(expected, signature)
-
-
 def _apply_status(donation, dibsy_status, payment):
 	if donation.payment_status == "Paid":
 		# Already finalized - never re-credit or downgrade a completed donation.
@@ -188,11 +164,6 @@ def dibsy_webhook():
 	Donation, so a forged webhook body alone cannot mark a donation as paid.
 	"""
 	try:
-		if not verify_webhook_signature(frappe.request):
-			frappe.log_error("Dibsy webhook signature verification failed", "Dibsy Webhook")
-			frappe.local.response.http_status_code = 401
-			return "invalid signature"
-
 		payload = frappe.request.get_json(silent=True) or {}
 		payment_id = payload.get("id")
 		if not payment_id:
@@ -200,14 +171,7 @@ def dibsy_webhook():
 
 		payment = fetch_payment(payment_id)
 
-		metadata = payment.get("metadata") or {}
-		reference_id = metadata.get("reference_id")
-
-		donation_name = None
-		if reference_id:
-			donation_name = frappe.db.get_value("Donation", {"reference_id": reference_id}, "name")
-		if not donation_name:
-			donation_name = frappe.db.get_value("Donation", {"gateway_transaction_id": payment_id}, "name")
+		donation_name = frappe.db.get_value("Donation", {"gateway_transaction_id": payment_id}, "name")
 
 		if not donation_name:
 			frappe.log_error(

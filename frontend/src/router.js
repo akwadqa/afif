@@ -47,6 +47,25 @@ const routes = [
   },
 
   {
+    path: '/donate',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Donate',
+        component: () => import('@/pages/Donate.vue'),
+        meta: { public: true },
+      },
+      {
+        path: 'success',
+        name: 'DonationSuccess',
+        component: () => import('@/pages/DonationSuccess.vue'),
+        meta: { public: true },
+      },
+    ],
+  },
+
+  {
     path: '/',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },

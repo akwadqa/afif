@@ -23,8 +23,6 @@
   "production_merchant_id",
   "production_api_key",
   "production_secret_key",
-  "webhook_section",
-  "webhook_secret",
   "redirect_section",
   "success_url",
   "failure_url"
@@ -136,16 +134,6 @@
    "fieldname": "production_secret_key",
    "fieldtype": "Password",
    "label": "Production Secret Key"
-  },
-  {
-   "fieldname": "webhook_section",
-   "fieldtype": "Section Break",
-   "label": "Webhook"
-  },
-  {
-   "fieldname": "webhook_secret",
-   "fieldtype": "Password",
-   "label": "Webhook Secret"
   },
   {
    "collapsible": 1,

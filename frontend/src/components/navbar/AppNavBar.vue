@@ -12,14 +12,12 @@
       <div class="flex items-center gap-2 md:gap-4">
         <NavLogo />
         <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
-        <a
-          :href="donateNowRoute"
-          target="_blank"
-          rel="noopener"
+        <router-link
+          to="/donate"
           class="bg-[#005979] text-white px-3 py-1.5 text-xs md:px-5 md:py-2 md:text-sm rounded-lg font-semibold hover:bg-[#004a66] transition-colors whitespace-nowrap"
         >
           {{ t('nav.donateNow') }}
-        </a>
+        </router-link>
       </div>
 
       <!-- End: Nav links (desktop) + hamburger -->
@@ -28,7 +26,7 @@
 
         <!-- Hamburger: toggles sidebar on md+, toggles mobile menu on small -->
         <button
-          v-if="session.isLoggedIn"
+          v-if="session.isLoggedIn && !isDonatePage"
           :class="[
             'p-1 md:p-2 rounded-lg transition-colors',
             isActive
@@ -59,17 +57,19 @@ import NavLogo from './NavLogo.vue'
 import NavLinks from './NavLinks.vue'
 import LanguageToggle from './LanguageToggle.vue'
 import MobileMenu from './MobileMenu.vue'
+import { useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
-import { donateNowRoute } from '@/config/navConfig'
 
 const { isRTL, t } = useLanguage()
 
+const route = useRoute()
 const menuOpen = ref(false)
 const { sidebarOpen, toggleSidebar } = useSidebar()
 
 const isActive = computed(() => menuOpen.value || sidebarOpen.value)
+const isDonatePage = computed(() => route.path.startsWith('/donate'))
 
 function handleMenuToggle() {
   const isDesktop = window.matchMedia('(min-width: 768px)').matches

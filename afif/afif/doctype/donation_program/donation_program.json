@@ -10,8 +10,7 @@
   "title",
   "published",
   "content_section",
-  "intro",
-  "display_order"
+  "intro"
  ],
  "fields": [
   {
@@ -41,12 +40,6 @@
    "fieldtype": "Text Editor",
    "label": "Introduction",
    "translatable": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "display_order",
-   "fieldtype": "Int",
-   "label": "Display Order"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -71,8 +64,8 @@
   }
  ],
  "show_title_field_in_link": 1,
- "sort_field": "display_order",
- "sort_order": "ASC",
+ "sort_field": "creation",
+ "sort_order": "DESC",
  "states": [],
  "title_field": "title"
 }
