@@ -69,15 +69,17 @@
           <span class="flex-1 text-sm text-start">{{ t(item.labelKey) }}</span>
         </button>
       </router-link>
-    </nav>
 
-    <!-- Logout — pinned to bottom -->
-    <div class="px-2 pt-3 pb-4 border-t border-gray-100">
+      <!-- Divider -->
+      <div class="mt-6 mb-4 border-t border-gray-100"></div>
+
+      <!-- Logout -->
       <button
         @click="handleLogout"
         :disabled="session.logout.loading"
         :class="[
-          'w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-60',
+          'w-full flex items-center gap-3 px-4 py-3 mt-2 rounded-lg transition-colors disabled:opacity-60',
+          'bg-red-50 text-red-600 font-semibold hover:bg-red-100',
           'flex-row',
         ]"
       >
@@ -86,9 +88,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
         </svg>
         <!-- Label -->
-        <span class="flex-1 text-sm font-semibold text-start">{{ t('sidebar.logout') }}</span>
+        <span class="flex-1 text-sm text-start">{{ t('sidebar.logout') }}</span>
       </button>
-    </div>
+    </nav>
   </aside>
 </template>
 

@@ -11,9 +11,9 @@
           <button
             v-if="canEdit && !editing"
             @click="editing = true"
-            class="border border-sky-200 text-sky-600 hover:bg-sky-50 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap"
+            class="border-2 border-sky-500 bg-white text-sky-600 hover:bg-sky-50 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.99]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 shrink-0">
               <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
             </svg>
             {{ t('registration.editButton') }}
@@ -130,6 +130,8 @@ const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update 
 
 const currentStep = ref(1)
 const subStep4 = ref(1)
+const maxStepReached = ref(1)
+const snapshot = ref(null)
 const submitting = ref(false)
 const error = ref('')
 const docName = ref(null)
@@ -259,6 +261,7 @@ function populateFromDoc(doc) {
     docstatus: doc.docstatus,
     workflow_state: doc.workflow_state,
     status: doc.status,
+    custom_notes: doc.custom_notes,
   }
 
   const step = doc.current_step || 0
@@ -270,6 +273,7 @@ function populateFromDoc(doc) {
     currentStep.value = nextStep >= 4 ? 4 : nextStep
     subStep4.value = nextStep >= 5 ? 2 : 1
   }
+  maxStepReached.value = logicalCurrentStep.value
 
   formData.value.personalInfo = {
     ar_name: doc.ar_name,
@@ -299,7 +303,7 @@ function populateFromDoc(doc) {
     ben_sec_idtype: doc.ben_sec_idtype || 'Passport',
     ben_sec_nationality: doc.ben_sec_nationality,
     ben_sec_gulf_country: doc.ben_sec_gulf_country,
-    ben_sec_idnumber: doc.ben_sec_idnumber,
+    ben_sec_idnumber: doc.passport_number,
     currently_working: doc.currently_working,
     employer_name: doc.employer_name,
     employer_address: doc.employer_address,
@@ -415,6 +419,8 @@ function populateFromDoc(doc) {
     .map(row => row.attachment)
     .filter(Boolean)
   formData.value.attachments.files = existingFiles
+
+  snapshot.value = cloneFormData(formData.value)
 }
 
 onMounted(() => {
@@ -427,22 +433,40 @@ onMounted(() => {
   }
 })
 
-function buildStepPayload(logicalStep) {
+function buildAttachmentsPayload(source) {
+  const lc = source.attachments.legalClaims
+  const payload = {
+    documents_confirmation: lc.correctData      ? 1 : 0,
+    verification_consent:   lc.verificationRight ? 1 : 0,
+    cancellation_right:     lc.statusAwareness   ? 1 : 0,
+  }
+  for (const field of ATTACHMENT_FIELDS) {
+    const val = source.attachments.files[field]
+    if (typeof val === 'string') payload[field] = val
+  }
+  payload.additional_attachments = (source.attachments.files.additional_attachments || [])
+    .filter(val => typeof val === 'string')
+    .map(url => ({ attachment: url }))
+  return payload
+}
+
+function buildStepPayload(logicalStep, source = formData.value) {
   if (logicalStep === 1) {
     return {
-      ...formData.value.personalInfo,
-      ...formData.value.additionalInfo,
-      ...formData.value.familyDetails,
+      ...source.personalInfo,
+      ...source.additionalInfo,
+      ...source.familyDetails,
+      ben_sec_idnumber: source.personalInfo.passport_number,
     }
   }
   if (logicalStep === 2) {
-    return { ...formData.value.incomeDetails }
+    return { ...source.incomeDetails }
   }
   if (logicalStep === 3) {
-    return { ...formData.value.financialObligations }
+    return { ...source.financialObligations }
   }
   if (logicalStep === 4) {
-    const ad = formData.value.additionalData || {}
+    const ad = source.additionalData || {}
     return {
       housing_type:                ad.housing_type,
       city:                        ad.housing_city,
@@ -460,48 +484,55 @@ function buildStepPayload(logicalStep) {
     }
   }
   // logicalStep === 5
-  const lc = formData.value.attachments.legalClaims
+  return buildAttachmentsPayload(source)
+}
+
+function buildFullPayload(source = formData.value) {
   return {
-    documents_confirmation: lc.correctData      ? 1 : 0,
-    verification_consent:   lc.verificationRight ? 1 : 0,
-    cancellation_right:     lc.statusAwareness   ? 1 : 0,
+    ...buildStepPayload(1, source),
+    ...buildStepPayload(2, source),
+    ...buildStepPayload(3, source),
+    ...buildStepPayload(4, source),
+    ...buildStepPayload(5, source),
   }
 }
 
-function buildFullPayload() {
-  const ad = formData.value.additionalData || {}
-  const lc = formData.value.attachments.legalClaims
-  const payload = {
-    ...formData.value.personalInfo,
-    ...formData.value.additionalInfo,
-    ...formData.value.familyDetails,
-    ...formData.value.incomeDetails,
-    ...formData.value.financialObligations,
-    housing_type:                ad.housing_type,
-    city:                        ad.housing_city,
-    zone:                        ad.zone_number,
-    street_name:                 ad.street_number,
-    unit:                        ad.unit_number,
-    building_name:               ad.building_number,
-    adress:                      ad.housing_description,
-    afif_relationship:           ad.has_afif_employee_relation,
-    additional_information:      ad.has_other_info,
-    additional_information_text: ad.additional_notes,
-    coresidence:                 ad.has_housemates,
-    bank_loans:                  ad.has_bank_loans,
-    court_tried:                 ad.court_tried,
-    documents_confirmation: lc.correctData      ? 1 : 0,
-    verification_consent:   lc.verificationRight ? 1 : 0,
-    cancellation_right:     lc.statusAwareness   ? 1 : 0,
+function cloneSection(section) {
+  return JSON.parse(JSON.stringify(section))
+}
+
+function cloneFormData(source) {
+  return {
+    personalInfo:          cloneSection(source.personalInfo),
+    additionalInfo:        cloneSection(source.additionalInfo),
+    familyDetails:         cloneSection(source.familyDetails),
+    incomeDetails:         cloneSection(source.incomeDetails),
+    financialObligations:  cloneSection(source.financialObligations),
+    additionalData:        cloneSection(source.additionalData),
+    attachments:           cloneSection(source.attachments),
   }
-  for (const field of ATTACHMENT_FIELDS) {
-    const val = formData.value.attachments.files[field]
-    if (typeof val === 'string') payload[field] = val
+}
+
+const SNAPSHOT_SECTIONS = {
+  1: ['personalInfo', 'additionalInfo', 'familyDetails'],
+  2: ['incomeDetails'],
+  3: ['financialObligations'],
+  4: ['additionalData'],
+  5: ['attachments'],
+}
+
+function updateSnapshotForStep(logicalStep) {
+  if (!snapshot.value) return
+  for (const section of SNAPSHOT_SECTIONS[logicalStep]) {
+    snapshot.value[section] = cloneSection(formData.value[section])
   }
-  payload.additional_attachments = (formData.value.attachments.files.additional_attachments || [])
-    .filter(val => typeof val === 'string')
-    .map(url => ({ attachment: url }))
-  return payload
+}
+
+function buildMergedPayload(logicalStep) {
+  return {
+    ...buildFullPayload(snapshot.value),
+    ...buildStepPayload(logicalStep, formData.value),
+  }
 }
 
 async function applyAction(action) {
@@ -516,16 +547,22 @@ async function applyAction(action) {
     docstatus: result.docstatus,
     workflow_state: result.workflow_state,
     status: result.status,
+    custom_notes: result.custom_notes,
   }
   return result
 }
 
-async function saveStep(logicalStep) {
+async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
+  // Once a doc has left Draft it's a live record reviewers can already see, so a save must only
+  // ever persist the step being confirmed here — every other step's fields come from the
+  // last-confirmed snapshot instead of live formData, so an edit abandoned on another step
+  // (navigated away from without hitting its own Next) never reaches the backend.
+  const isLiveRecord = Boolean(docName.value) && docMeta.value.status !== 'Draft' && snapshot.value
   const doc = {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
     email: session.user,
-    ...buildFullPayload(),
+    ...(isLiveRecord ? buildMergedPayload(logicalStep) : buildFullPayload()),
   }
 
   const currentState = docName.value ? docMeta.value.workflow_state : null
@@ -539,13 +576,15 @@ async function saveStep(logicalStep) {
     doc.docstatus = docMeta.value.docstatus
     doc.workflow_state = currentState
     doc.status = docMeta.value.status
+    doc.custom_notes = docMeta.value.custom_notes
   }
 
-  if (currentState === 'Not Accepted') {
+  if (applyWorkflow && logicalStep >= 5 && currentState === 'Not Accepted') {
     await applyAction('Review')
     doc.modified = docMeta.value.modified
     doc.workflow_state = docMeta.value.workflow_state
     doc.status = docMeta.value.status
+    doc.custom_notes = docMeta.value.custom_notes
     return saveDoc.submit({ doc })
   }
 
@@ -555,14 +594,14 @@ async function saveStep(logicalStep) {
 
   const result = await saveDoc.submit({ doc })
 
-  if (logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
+  if (applyWorkflow && logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
     return applyAction('Submit')
   }
 
   return result
 }
 
-function validateCurrentStep() {
+function validateStep(targetStep, targetSubStep4) {
   const pi = formData.value.personalInfo
   const ai = formData.value.additionalInfo
   const fd = formData.value.familyDetails
@@ -581,7 +620,7 @@ function validateCurrentStep() {
     }
   }
 
-  if (currentStep.value === 1) {
+  if (targetStep === 1) {
     const isResidence = Boolean(pi.ben_nationality && pi.ben_nationality !== 'Qatar')
     req(pi.ar_name, 'ar_name', t('registration.personalInfo.arName'))
     if (pi.ar_name && /[a-zA-Z]/.test(pi.ar_name)) {
@@ -601,7 +640,7 @@ function validateCurrentStep() {
     }
     req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
     req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
-    if (pi.passport_number && !/^[A-Z0-9]{1,9}$/.test(pi.passport_number)) {
+    if (pi.passport_number && !/^[A-Z0-9]{12}$/.test(pi.passport_number)) {
       errors.push(t('registration.validation.passportFormat'))
       fields.push('passport_number')
     }
@@ -625,6 +664,11 @@ function validateCurrentStep() {
     if (pi.phone_number && pi.phone_number.length !== 8) {
       errors.push(t('registration.validation.phoneMustBe8'))
       fields.push('phone_number')
+    }
+    req(pi.partners_phone_number, 'partners_phone_number', t('registration.personalInfo.partnerPhone'))
+    if (pi.partners_phone_number && pi.partners_phone_number.length !== 8) {
+      errors.push(t('registration.validation.phoneMustBe8'))
+      fields.push('partners_phone_number')
     }
     req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
     if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
@@ -651,7 +695,6 @@ function validateCurrentStep() {
     req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
     if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
     if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))
-    req(ai.ben_sec_idnumber, 'ben_sec_idnumber', t('registration.additionalInfo.secIdNumber'))
     req(ai.currently_working, 'currently_working', t('registration.additionalInfo.currentlyWorking'))
     if (ai.currently_working === 'Yes') {
       req(ai.employer_name, 'employer_name', t('registration.additionalInfo.employerName'))
@@ -687,7 +730,7 @@ function validateCurrentStep() {
     if (fd.afif_charity_assistance === 'Yes') req(fd.affif_assistance, 'affif_assistance', t('registration.familyDetails.afifAssistanceAmount'))
   }
 
-  if (currentStep.value === 2) {
+  if (targetStep === 2) {
     const incomeFields = ['ben_income', 'family_income', 'family_extra', 'children_income', 'private_income', 'stock_income', 'rent_income']
     if (!incomeFields.some(f => id[f] == 1)) {
       errors.push(t('registration.validation.atLeastOneIncome'))
@@ -710,7 +753,7 @@ function validateCurrentStep() {
     }
   }
 
-  if (currentStep.value === 3) {
+  if (targetStep === 3) {
     const obligationFields = ['family_obligation', 'rent_obligation', 'treatment_obligation', 'debt_obligation', 'tuition_obligation']
     if (!obligationFields.some(f => fo[f] == 1)) {
       errors.push(t('registration.validation.atLeastOneObligation'))
@@ -754,7 +797,7 @@ function validateCurrentStep() {
     }
   }
 
-  if (currentStep.value === 4 && subStep4.value === 1) {
+  if (targetStep === 4 && targetSubStep4 === 1) {
     req(ad.housing_type, 'housing_type', t('registration.additionalData.housingType'))
     req(ad.housing_city, 'housing_city', t('registration.additionalData.city'))
     req(ad.zone_number, 'zone_number', t('registration.additionalData.zoneNumber'))
@@ -776,7 +819,7 @@ function validateCurrentStep() {
     }
   }
 
-  if (currentStep.value === 4 && subStep4.value === 2) {
+  if (targetStep === 4 && targetSubStep4 === 2) {
     const files = at.files
     const lc = at.legalClaims
     const isMarried       = pi.marital_status === 'Married'
@@ -841,11 +884,45 @@ function validateCurrentStep() {
   return { errors, fields }
 }
 
+function logicalStepArgs(logicalStep) {
+  if (logicalStep === 4) return [4, 1]
+  if (logicalStep === 5) return [4, 2]
+  return [logicalStep, undefined]
+}
+
+function validateUpToCurrentStep() {
+  const targetLogical = Math.max(maxStepReached.value, logicalCurrentStep.value)
+  for (let logicalStep = 1; logicalStep <= targetLogical; logicalStep++) {
+    const [step, subStep4Arg] = logicalStepArgs(logicalStep)
+    const result = validateStep(step, subStep4Arg)
+    if (result.errors.length > 0) {
+      return { ...result, step, subStep4: subStep4Arg ?? 1 }
+    }
+  }
+  return { errors: [], fields: [] }
+}
+
+function validateCurrentStepOnly() {
+  const result = validateStep(currentStep.value, subStep4.value)
+  return { ...result, step: currentStep.value, subStep4: subStep4.value }
+}
+
 async function handleNext() {
   error.value = ''
 
-  const { errors, fields } = validateCurrentStep()
+  const isFinalStep = currentStep.value === 4 && subStep4.value === 2
+  // The snapshot/merge logic in saveStep() already guarantees every step but the one being
+  // confirmed here keeps its last-saved-valid data, whether the doc is a Draft or already a live
+  // (submitted) record — so every intermediate Next only needs to validate the current step. The
+  // full sweep across every step only has to run once, right before the Draft leaves Draft.
+  const validation = isFinalStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
+
+  const { errors, fields, step: invalidStep, subStep4: invalidSubStep4 } = validation
   if (errors.length > 0) {
+    if (invalidStep !== undefined && (invalidStep !== currentStep.value || invalidSubStep4 !== subStep4.value)) {
+      currentStep.value = invalidStep
+      subStep4.value = invalidSubStep4
+    }
     validationErrors.value = errors
     invalidFields.value = fields
     showValidationPopup.value = true
@@ -855,10 +932,18 @@ async function handleNext() {
   invalidFields.value = []
   submitting.value = true
 
-  const isFinalStep = currentStep.value === 4 && subStep4.value === 2
+  const wasLiveRecord = Boolean(docName.value) && docMeta.value.status !== 'Draft' && snapshot.value
+  function syncSnapshot() {
+    if (wasLiveRecord) {
+      updateSnapshotForStep(logicalCurrentStep.value)
+    } else {
+      snapshot.value = cloneFormData(formData.value)
+    }
+  }
+
   let data
   try {
-    data = await saveStep(logicalCurrentStep.value)
+    data = await saveStep(logicalCurrentStep.value, { applyWorkflow: !isFinalStep })
   } catch (e) {
     return
   }
@@ -870,12 +955,14 @@ async function handleNext() {
     docstatus: data.docstatus,
     workflow_state: data.workflow_state,
     status: data.status,
+    custom_notes: data.custom_notes,
   }
+  syncSnapshot()
 
   if (isFinalStep) {
     try {
-      await uploadAllFiles()
-      const finalData = await saveStep(logicalCurrentStep.value)
+      const failedUploads = await uploadAllFiles()
+      const finalData = await saveStep(logicalCurrentStep.value, { applyWorkflow: failedUploads.length === 0 })
       docMeta.value = {
         owner: finalData.owner,
         modified: finalData.modified,
@@ -883,8 +970,14 @@ async function handleNext() {
         docstatus: finalData.docstatus,
         workflow_state: finalData.workflow_state,
         status: finalData.status,
+        custom_notes: finalData.custom_notes,
       }
-      emit('submitted', finalData.name)
+      syncSnapshot()
+      if (failedUploads.length > 0) {
+        error.value = `${t('registration.submitError')}: ${failedUploads.join(', ')}`
+      } else {
+        emit('submitted', finalData.name)
+      }
     } catch (e) {
       error.value = e.message || t('registration.submitError')
     }
@@ -898,6 +991,7 @@ async function handleNext() {
   } else {
     currentStep.value++
   }
+  maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
 }
 
 function prevStep() {
@@ -926,20 +1020,32 @@ function readOnlyPrev() {
 }
 
 async function uploadAllFiles() {
+  const failures = []
+
   for (const [fieldname, file] of Object.entries(formData.value.attachments.files)) {
     if (fieldname === 'additional_attachments') continue
     if (file instanceof File) {
-      const fileUrl = await uploadFile(file, docName.value, fieldname)
-      formData.value.attachments.files[fieldname] = fileUrl
+      try {
+        const fileUrl = await uploadFile(file, docName.value, fieldname)
+        formData.value.attachments.files[fieldname] = fileUrl
+      } catch (e) {
+        failures.push(e.message || file.name)
+      }
     }
   }
 
   const extras = formData.value.attachments.files.additional_attachments || []
   for (let i = 0; i < extras.length; i++) {
     if (extras[i] instanceof File) {
-      extras[i] = await uploadFile(extras[i], docName.value, 'additional_attachments')
+      try {
+        extras[i] = await uploadFile(extras[i], docName.value, 'additional_attachments')
+      } catch (e) {
+        failures.push(e.message || extras[i].name)
+      }
     }
   }
+
+  return failures
 }
 
 async function uploadFile(file, docName, fieldname) {

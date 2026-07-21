@@ -73,6 +73,7 @@
   "ed_ressources_proof",
   "ed_equipement",
   "ed_other",
+  "grade_transcript",
   "garmeen_proof",
   "oprhan_need_proof",
   "marriage_assist_document",
@@ -524,6 +525,13 @@
    "fieldtype": "Attach",
    "hidden": 1,
    "label": "Other Educational Assistance proof"
+  },
+  {
+   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "fieldname": "grade_transcript",
+   "fieldtype": "Attach",
+   "hidden": 1,
+   "label": "Grade Transcript"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",

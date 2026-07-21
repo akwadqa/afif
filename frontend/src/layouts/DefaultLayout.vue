@@ -12,7 +12,11 @@
 import AppNavBar from '@/components/navbar/AppNavBar.vue'
 import AppFooter from '@/components/footer/AppFooter.vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { useGoogleAnalytics } from '@/composables/useGoogleAnalytics'
 
 // Ensures language/dir is initialised when any page using this layout loads
 useLanguage()
+
+// This layout is only used by the /donate route, so GA is scoped to donations
+useGoogleAnalytics()
 </script>

@@ -47,10 +47,14 @@
             <span>{{ t(item.labelKey) }}</span>
           </button>
         </router-link>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-100 my-1"></div>
+
         <button
           @click="handleLogout"
           :disabled="session.logout.loading"
-          class="w-full flex items-center gap-3 py-3 text-sm font-medium text-red-500 hover:text-red-600 transition-colors disabled:opacity-60"
+          class="w-full flex items-center gap-3 py-3 px-2 rounded-lg text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-60"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />

@@ -16,6 +16,17 @@ frappe.ui.form.on('Beneficiaries Registration', {
 			}
 		}
 
+		if (frm.doc.phone_number) {
+			let $whatsapp = frm.add_custom_button(__('WhatsApp'), function () {
+				let digits = (frm.doc.phone_number || '').replace(/\D/g, '');
+				if (!digits.startsWith('974')) {
+					digits = '974' + digits;
+				}
+				window.open('https://wa.me/' + digits, '_blank');
+			});
+			$whatsapp.html(frappe.utils.icon('message', 'sm') + ' ' + __('WhatsApp'));
+		}
+
 		if (!frm.doc.update_required) {
 			frm.add_custom_button('Update Required', function () {
 				frappe.call({

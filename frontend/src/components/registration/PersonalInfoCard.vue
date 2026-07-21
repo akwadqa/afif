@@ -107,13 +107,13 @@
           type="text"
           :value="modelValue.passport_number"
           @input="onPassportInput($event)"
-          maxlength="9"
-          placeholder="A12345678"
+          maxlength="12"
+          placeholder="XXXXXXXXXXXX"
           dir="ltr"
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('passport_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
-        <p v-if="modelValue.passport_number && !isValidPassport(modelValue.passport_number)" class="text-xs text-red-500">
+        <p v-if="modelValue.passport_number && modelValue.passport_number.length !== 12" class="text-xs text-red-500">
           {{ t('registration.validation.passportFormat') }}
         </p>
       </div>
@@ -215,7 +215,6 @@
           :class="isInvalid('marital_status') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.personalInfo.maritalStatusPlaceholder') }}</option>
-          <option value="Single">{{ t('registration.personalInfo.single') }}</option>
           <option value="Married">{{ t('registration.personalInfo.married') }}</option>
           <option value="Divorced">{{ t('registration.personalInfo.divorced') }}</option>
           <option value="Widowed">{{ t('registration.personalInfo.widowed') }}</option>
@@ -225,7 +224,7 @@
 
       <!-- Partner Phone (always shown) -->
       <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }}</label>
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
           :value="modelValue.partners_phone_number"
@@ -233,7 +232,8 @@
           maxlength="8"
           placeholder="00000000"
           dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border border-gray-100 rounded-xl outline-none text-sm"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('partners_phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
         <p v-if="modelValue.partners_phone_number && modelValue.partners_phone_number.length !== 8" class="text-xs text-red-500">
           {{ t('registration.validation.phoneMustBe8') }}
@@ -469,21 +469,6 @@
         </select>
       </div>
 
-      <!-- Secondary ID Number -->
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdNumber') }} <span class="text-red-500">*</span></label>
-        <input
-          type="text"
-          :value="additionalInfo.ben_sec_idnumber"
-          @input="onAlphanumericOnly('ben_sec_idnumber', $event, 9)"
-          maxlength="9"
-          placeholder="A12345678"
-          dir="ltr"
-          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
-          :class="isInvalid('ben_sec_idnumber') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
-        />
-      </div>
-
       <!-- Currently Working -->
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.currentlyWorking') }} <span class="text-red-500">*</span></label>
@@ -716,13 +701,10 @@ function onAlphanumericOnly(field, event, maxLen) {
 }
 
 function onPassportInput(event) {
-  let val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9)
+  let val = arabicToWestern(event.target.value).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)
   event.target.value = val
   update('passport_number', val)
-}
-
-function isValidPassport(val) {
-  return /^[A-Z0-9]{1,9}$/.test(val)
+  updateAdditional('ben_sec_idnumber', val)
 }
 
 function countryLabel(name) {

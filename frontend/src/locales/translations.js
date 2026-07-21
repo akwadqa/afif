@@ -14,7 +14,7 @@ export default {
       validation: {
         idMustBe11: 'رقم الهوية يجب أن يكون 11 رقماً',
         phoneMustBe8: 'رقم الهاتف يجب أن يكون 8 أرقام',
-        passportFormat: 'رقم جواز السفر يجب أن يكون حروف وأرقام (بحد أقصى 9 خانات)',
+        passportFormat: 'رقم جواز السفر يجب أن يكون 12 حرفاً و/أو رقماً',
         arabicOnly: 'هذا الحقل يقبل الأحرف العربية فقط',
         englishOnly: 'هذا الحقل يقبل الأحرف الإنجليزية فقط',
         noNumbers: 'هذا الحقل لا يقبل الأرقام',
@@ -66,7 +66,6 @@ export default {
         visaNumber: 'رقم التأشيرة',
         male: 'ذكر',
         female: 'أنثى',
-        single: 'أعزب / عزباء',
         married: 'متزوج / متزوجة',
         divorced: 'مطلق / مطلقة',
         widowed: 'أرمل / أرملة',
@@ -496,6 +495,7 @@ export default {
         docs: {
           medicalBill: 'فاتورة طبية',
           educationInvoice: 'فاتورة مستحقات المدرسة/الجامعة',
+          gradeTranscript: 'كشف الدرجات',
           garmeenProof: 'إثبات الغارمين',
           garmeenDisclosure: 'إفصاح القضايا والأحكام (محدّث)',
           travelTicketDoc: 'إثبات الحاجة لتذكرة سفر',
@@ -849,7 +849,7 @@ export default {
       validation: {
         idMustBe11: 'ID number must be exactly 11 digits',
         phoneMustBe8: 'Phone number must be exactly 8 digits',
-        passportFormat: 'Passport number must be letters and digits (max 9 characters)',
+        passportFormat: 'Passport number must be 12 letters and/or digits',
         arabicOnly: 'This field accepts Arabic characters only',
         englishOnly: 'This field accepts English characters only',
         noNumbers: 'This field does not accept numbers',
@@ -901,7 +901,6 @@ export default {
         visaNumber: 'Visa Number',
         male: 'Male',
         female: 'Female',
-        single: 'Single',
         married: 'Married',
         divorced: 'Divorced',
         widowed: 'Widowed',
@@ -1331,6 +1330,7 @@ export default {
         docs: {
           medicalBill: 'Medical Bill',
           educationInvoice: 'School/University Dues Invoice',
+          gradeTranscript: 'Grade Transcript',
           garmeenProof: 'Garmeen Proof',
           garmeenDisclosure: 'Disclosure of Cases and Rulings (Updated)',
           travelTicketDoc: 'Travel Ticket Need Proof',

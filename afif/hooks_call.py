@@ -1,4 +1,5 @@
 import frappe
+import re
 import requests
 import json
 from datetime import datetime, timedelta, timezone
@@ -92,7 +93,10 @@ def updated_status(doc, method):
     status = frappe.db.sql(query)
     if status:
         status = status[0][0]
-        if doc.workflow_state == "Not Accepted" and status == "Not Accepted":
+        if doc.workflow_state == "Not Accepted" and status == "Not Accepted" and (doc.current_step or 0) >= 5:
+            # Gated on the final step so an autosave on an earlier step (still carrying the same
+            # unchanged workflow_state) doesn't flip the record to "Updated" before the
+            # beneficiary has actually finished revising the rejected registration.
             doc.status = "Updated"
             doc.workflow_state = "Updated"
             # query = f"""update `tabBeneficiaries Registration` set `status`="Updated"
@@ -100,9 +104,15 @@ def updated_status(doc, method):
             # frappe.db.sql(query)
             # frappe.db.commit()
             # doc.reload()
-        elif doc.workflow_state == "Update Required" and status == "Update Required":
+        elif doc.workflow_state == "Update Required" and status == "Update Required" and doc.qid and doc.passport:
+            # qid/passport are the two attachments required on every registration regardless of
+            # marital/visa status; their presence is what proves the beneficiary actually
+            # re-uploaded documents after a supervisor's "Update Required" action wiped them all.
+            # Without this check, any autosave on an earlier step (still carrying the same
+            # unchanged workflow_state) flips the record to "Updated beneficiary" before the
+            # beneficiary has uploaded anything, leaving it reviewable with empty attachments.
             doc.status = "Updated beneficiary"
-            doc.workflow_state = "Updated beneficiary"    
+            doc.workflow_state = "Updated beneficiary"
     # # Not Accepted exception
     # query = f""" select workflow_state from `tabBeneficiaries Registration` where name="{doc.name}" """
     # workflow_state = frappe.db.sql(query)
@@ -155,6 +165,12 @@ def updated_status(doc, method):
 def rejection_note(doc, method):
     if doc.workflow_state == "Not Accepted" and not doc.custom_notes:
         frappe.throw("The field 'Notes' must be filled in to reject the registration.")
+
+
+def validate_passport_number(doc, method):
+    if doc.passport_number and not re.match(r"^[A-Za-z0-9]{12}$", doc.passport_number):
+        frappe.throw("Passport Number must be 12 letters and/or digits.")
+    doc.ben_sec_idnumber = doc.passport_number
 
 
 def create_new_beneficiary(doc, method):

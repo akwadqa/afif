@@ -271,7 +271,7 @@ const form = ref({
 const files = ref({})
 
 const REQUEST_ATTACHMENT_FIELDS = [
-  'medical_bill', 'education_invoice', 'garmeen_proof', 'garmeen_disclosure',
+  'medical_bill', 'education_invoice', 'grade_transcript', 'garmeen_proof', 'garmeen_disclosure',
   'travel_ticket_doc', 'rent_contract', 'onwer_qid', 'late_letter', 'estate_pruchase',
 ]
 
@@ -435,6 +435,7 @@ const requiredDocs = computed(() => {
   }
   if (cat === 'Education Assistance') {
     docs.push({ id: 'education_invoice', labelKey: 'request.attachments.docs.educationInvoice' })
+    docs.push({ id: 'grade_transcript', labelKey: 'request.attachments.docs.gradeTranscript' })
   }
   if (cat === 'Social Assistance' && sub === 'Garmeen') {
     docs.push({ id: 'garmeen_proof', labelKey: 'request.attachments.docs.garmeenProof' })

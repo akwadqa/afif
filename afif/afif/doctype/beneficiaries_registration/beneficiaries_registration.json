@@ -287,13 +287,14 @@
   {
    "fieldname": "passport_number",
    "fieldtype": "Data",
-   "label": "Passport Number"
+   "label": "Passport Number",
+   "length": 12
   },
   {
    "fieldname": "marital_status",
    "fieldtype": "Select",
    "label": "Marital Status",
-   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
+   "options": "\nMarried\nDivorced\nWidowed\nSeparated"
   },
   {
    "fieldname": "phone_number",
@@ -1447,7 +1448,8 @@
   {
    "fieldname": "partners_phone_number",
    "fieldtype": "Data",
-   "label": "Partner's phone number"
+   "label": "Partner's phone number",
+   "mandatory_depends_on": "eval: doc.current_step == 1"
   }
  ],
  "index_web_pages_for_search": 1,
