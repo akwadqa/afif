@@ -640,7 +640,7 @@ function validateStep(targetStep, targetSubStep4) {
     }
     req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
     req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
-    if (pi.passport_number && !/^[A-Z0-9]{12}$/.test(pi.passport_number)) {
+    if (pi.passport_number && !/^[A-Z0-9]{1,12}$/.test(pi.passport_number)) {
       errors.push(t('registration.validation.passportFormat'))
       fields.push('passport_number')
     }

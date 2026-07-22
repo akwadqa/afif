@@ -168,8 +168,8 @@ def rejection_note(doc, method):
 
 
 def validate_passport_number(doc, method):
-    if doc.passport_number and not re.match(r"^[A-Za-z0-9]{12}$", doc.passport_number):
-        frappe.throw("Passport Number must be 12 letters and/or digits.")
+    if doc.passport_number and not re.match(r"^[A-Za-z0-9]{1,12}$", doc.passport_number):
+        frappe.throw("Passport Number must be at most 12 letters and/or digits.")
     doc.ben_sec_idnumber = doc.passport_number
 
 

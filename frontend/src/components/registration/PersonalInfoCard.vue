@@ -113,7 +113,7 @@
           class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
           :class="isInvalid('passport_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
-        <p v-if="modelValue.passport_number && modelValue.passport_number.length !== 12" class="text-xs text-red-500">
+        <p v-if="modelValue.passport_number && modelValue.passport_number.length > 12" class="text-xs text-red-500">
           {{ t('registration.validation.passportFormat') }}
         </p>
       </div>

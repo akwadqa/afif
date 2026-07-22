@@ -14,7 +14,7 @@ export default {
       validation: {
         idMustBe11: 'رقم الهوية يجب أن يكون 11 رقماً',
         phoneMustBe8: 'رقم الهاتف يجب أن يكون 8 أرقام',
-        passportFormat: 'رقم جواز السفر يجب أن يكون 12 حرفاً و/أو رقماً',
+        passportFormat: 'رقم جواز السفر يجب ألا يتجاوز 12 حرفاً و/أو رقماً',
         arabicOnly: 'هذا الحقل يقبل الأحرف العربية فقط',
         englishOnly: 'هذا الحقل يقبل الأحرف الإنجليزية فقط',
         noNumbers: 'هذا الحقل لا يقبل الأرقام',
@@ -849,7 +849,7 @@ export default {
       validation: {
         idMustBe11: 'ID number must be exactly 11 digits',
         phoneMustBe8: 'Phone number must be exactly 8 digits',
-        passportFormat: 'Passport number must be 12 letters and/or digits',
+        passportFormat: 'Passport number must be at most 12 letters and/or digits',
         arabicOnly: 'This field accepts Arabic characters only',
         englishOnly: 'This field accepts English characters only',
         noNumbers: 'This field does not accept numbers',
