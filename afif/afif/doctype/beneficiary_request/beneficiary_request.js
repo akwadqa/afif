@@ -60,7 +60,7 @@ function send_visit_sms(frm) {
 				method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
 				args: {
 					receiver_list: [frm.doc.phone_number],
-					msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة \nمن الساعه 9ص-12م'
+					msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة غداً من الساعه 10ص-12م'
 				},
 				freeze: true,
 				freeze_message: __('Sending SMS...')
