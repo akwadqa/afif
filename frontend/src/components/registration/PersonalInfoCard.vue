@@ -322,10 +322,13 @@
         </select>
       </div>
 
-      <!-- Placeholder to keep grid aligned when requestor fields are hidden -->
-      <div v-if="additionalInfo.ben_requestor_relationtype !== 'Relative to the subvention requestor'" />
+      <!-- Placeholder to keep grid aligned (requestor fields below are disabled: relation type is locked to "The same subvention requestor") -->
+      <div />
 
-      <!-- Requestor fields — shown when "Relative to the subvention requestor" -->
+      <!--
+      Requestor fields — kept for reference, disabled now that ben_requestor_relationtype
+      only allows "The same subvention requestor" (beneficiary is always the applicant).
+
       <template v-if="additionalInfo.ben_requestor_relationtype === 'Relative to the subvention requestor'">
 
         <div class="space-y-1.5">
@@ -415,6 +418,7 @@
         </div>
 
       </template>
+      -->
 
       <!-- Secondary ID Type -->
       <div class="space-y-1.5">

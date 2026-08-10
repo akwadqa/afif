@@ -179,8 +179,7 @@
   {
    "fieldname": "suggested_amount",
    "fieldtype": "Data",
-   "label": "Estimated Amount",
-   "read_only": 1
+   "label": "Estimated Amount"
   },
   {
    "depends_on": "eval: doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\"",
@@ -195,7 +194,6 @@
    "default": "0",
    "fieldname": "installments_count",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Installments Count"
   },
   {
@@ -291,7 +289,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-03 13:35:16.055502",
+ "modified": "2026-08-06 10:40:12.928423",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

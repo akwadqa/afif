@@ -495,7 +495,7 @@ export default {
         docs: {
           medicalBill: 'فاتورة طبية',
           educationInvoice: 'فاتورة مستحقات المدرسة/الجامعة',
-          gradeTranscript: 'كشف الدرجات',
+          gradeTranscript: 'كشف درجات او شهادة دراسية لآخر فصل دراسي',
           garmeenProof: 'إثبات الغارمين',
           garmeenDisclosure: 'إفصاح القضايا والأحكام (محدّث)',
           travelTicketDoc: 'إثبات الحاجة لتذكرة سفر',
@@ -1330,7 +1330,7 @@ export default {
         docs: {
           medicalBill: 'Medical Bill',
           educationInvoice: 'School/University Dues Invoice',
-          gradeTranscript: 'Grade Transcript',
+          gradeTranscript: 'Grade Transcript or School Certificate for the Last Semester',
           garmeenProof: 'Garmeen Proof',
           garmeenDisclosure: 'Disclosure of Cases and Rulings (Updated)',
           travelTicketDoc: 'Travel Ticket Need Proof',

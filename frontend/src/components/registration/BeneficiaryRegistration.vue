@@ -265,15 +265,13 @@ function populateFromDoc(doc) {
   }
 
   const step = doc.current_step || 0
-  if (step >= 5) {
-    currentStep.value = 1
-    subStep4.value = 1
-  } else {
-    const nextStep = step + 1
-    currentStep.value = nextStep >= 4 ? 4 : nextStep
-    subStep4.value = nextStep >= 5 ? 2 : 1
-  }
-  maxStepReached.value = logicalCurrentStep.value
+  const nextStep = step + 1
+  const resumeStep = step >= 5 ? 1 : (nextStep >= 4 ? 4 : nextStep)
+  const resumeSubStep4 = step >= 5 || nextStep >= 5 ? 2 : 1
+
+  currentStep.value = 1
+  subStep4.value = 1
+  maxStepReached.value = resumeStep === 4 && resumeSubStep4 === 2 ? 5 : resumeStep
 
   formData.value.personalInfo = {
     ar_name: doc.ar_name,
@@ -677,21 +675,23 @@ function validateStep(targetStep, targetSubStep4) {
     req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
 
     req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
-    if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
-      req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
-      req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
-      req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
-      if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
-        errors.push(t('registration.validation.idMustBe11'))
-        fields.push('requestor_idnumber')
-      }
-      req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
-      req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
-      if (ai.requestor_number && ai.requestor_number.length !== 8) {
-        errors.push(t('registration.validation.phoneMustBe8'))
-        fields.push('requestor_number')
-      }
-    }
+    // Requestor sub-fields validation kept for reference, disabled now that
+    // ben_requestor_relationtype only allows "The same subvention requestor".
+    // if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
+    //   req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
+    //   req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
+    //   req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
+    //   if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
+    //     errors.push(t('registration.validation.idMustBe11'))
+    //     fields.push('requestor_idnumber')
+    //   }
+    //   req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
+    //   req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
+    //   if (ai.requestor_number && ai.requestor_number.length !== 8) {
+    //     errors.push(t('registration.validation.phoneMustBe8'))
+    //     fields.push('requestor_number')
+    //   }
+    // }
     req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
     if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
     if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))

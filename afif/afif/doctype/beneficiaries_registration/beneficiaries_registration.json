@@ -333,10 +333,11 @@
    "label": "ID Expiry Date"
   },
   {
+   "default": "The same subvention requestor",
    "fieldname": "ben_requestor_relationtype",
    "fieldtype": "Select",
    "label": "Beneficiary Relation To Requestion",
-   "options": "\nRelative to the subvention requestor\nThe same subvention requestor"
+   "options": "The same subvention requestor"
   },
   {
    "depends_on": "eval:in_list([\"Relative to the subvention requestor\", \"Akwad\"], doc.ben_requestor_relationtype)",

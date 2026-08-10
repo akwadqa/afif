@@ -1,5 +1,5 @@
 <template>
-  <RouterLink to="/" class="block shrink-0">
+  <a href="https://afif.qa/" target="_blank" rel="noopener noreferrer" class="block shrink-0">
     <img
       v-if="!logoError"
       src="@/assets/images/logo.png"
@@ -18,7 +18,7 @@
         <span class="text-[8px] md:text-[10px] tracking-widest text-sky-400 font-semibold">AFIF CHARITY</span>
       </div>
     </div>
-  </RouterLink>
+  </a>
 </template>
 
 <script setup>

@@ -1448,9 +1448,9 @@ def get_existing_doc(user, id, dir):
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
 
         if dir == "rtl":
-            msg = f"{id} مرتبط بالفعل بالحساب {hidden_user_id}"
+            msg = "رقم البطاقة الشخصية مسجل مسبقا يجب تسجيل الدخول للحساب المسجل مسبقا"
         else:
-            msg = f"{id} is already associated with {hidden_user_id}"
+            msg = "This Personal ID is already registered. Please sign in to the existing account."
         return msg
 
     return None
