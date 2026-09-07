@@ -57,10 +57,9 @@ function send_visit_sms(frm) {
 		__('Are you sure you want to send an SMS to {0}?', [frm.doc.phone_number]),
 		function () {
 			frappe.call({
-				method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+				method: 'afif.afif.doctype.beneficiary_request.beneficiary_request.send_visit_sms',
 				args: {
-					receiver_list: [frm.doc.phone_number],
-					msg: 'يرجى الحضور لمؤسسة عفيف للمراجعة غداً من الساعه 10ص-12م'
+					request_name: frm.doc.name
 				},
 				freeze: true,
 				freeze_message: __('Sending SMS...')

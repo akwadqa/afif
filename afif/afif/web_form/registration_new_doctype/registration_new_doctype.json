@@ -144,7 +144,7 @@
    "label": "Beneficiary Relation To Requestion",
    "max_length": 0,
    "max_value": 0,
-   "options": "Relative to the subvention requestor\nThe same subvention requestor",
+   "options": "The same subvention requestor",
    "read_only": 0,
    "reqd": 1,
    "show_in_filter": 0

@@ -13,7 +13,7 @@
     <AppNavBar />
 
     <div class="flex-1 flex items-center justify-center p-4 py-8">
-      <div class="bg-white rounded-3xl shadow-xl flex max-w-4xl w-full overflow-hidden min-h-[580px]" style="border-radius:10px">
+      <div class="rounded-[32px] md:rounded-l-none flex max-w-[1155px] w-full overflow-hidden min-h-[420px] lg:min-h-[580px]">
         <LoginLeftPanel />
         <ResetPasswordFormPanel />
       </div>

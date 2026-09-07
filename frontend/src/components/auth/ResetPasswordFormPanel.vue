@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center"
+    class="w-full md:w-1/2 p-8 md:p-8 lg:px-16 lg:py-20 flex flex-col justify-center bg-white mt-[35px] rounded-[0_10px]"
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
     <!-- Success state -->
@@ -13,8 +13,7 @@
       <p class="text-sm text-gray-600">{{ t('resetPassword.successMsg') }}</p>
       <RouterLink
         to="/signin"
-        class="inline-block text-sm font-semibold hover:underline"
-        style="color: #34B0EE;"
+        class="inline-block text-sm font-semibold text-[#0570B6] hover:underline"
       >
         {{ t('resetPassword.backToLogin') }}
       </RouterLink>
@@ -23,20 +22,20 @@
     <!-- Form state -->
     <template v-else>
       <!-- Header -->
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-2" style="color: #34B0EE;">
+      <div class="mb-6">
+        <h2 class="text-[32px] leading-[40px] md:text-2xl md:leading-8 lg:text-[32px] lg:leading-[40px] font-medium text-[#0570B6] mb-2">
           {{ t('resetPassword.title') }}
         </h2>
-        <p class="text-sm text-gray-500">
+        <p class="text-xl leading-7 md:text-base md:leading-6 lg:text-xl lg:leading-7 text-[#3E4850]">
           {{ t('resetPassword.subtitle') }}
         </p>
       </div>
 
-      <form class="space-y-5" @submit.prevent="handleSubmit">
+      <form class="space-y-6" @submit.prevent="handleSubmit">
 
         <!-- Email -->
-        <div class="space-y-1.5">
-          <label class="block text-sm font-medium text-gray-700">
+        <div class="space-y-[15px]">
+          <label class="block text-base font-normal text-[#141D23] tracking-[0.28px]">
             {{ t('resetPassword.email') }}
           </label>
           <div class="relative">
@@ -46,11 +45,11 @@
               :placeholder="t('resetPassword.emailPlaceholder')"
               autocomplete="email"
               required
-              class="w-full py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-gray-300 text-sm transition-all"
+              class="w-full h-[53px] px-4 py-[11px] bg-[#F8FAFC] border border-[#F3F3F3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-[#AEAFB0] text-base leading-[25px] transition-all"
               :class="isRTL ? 'pr-4 pl-11 text-right' : 'pl-4 pr-11 text-left'"
             />
             <span
-              class="absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              class="absolute top-1/2 -translate-y-1/2 text-[#AEAFB0] pointer-events-none"
               :class="isRTL ? 'left-4' : 'right-4'"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -69,7 +68,7 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full text-white py-3 px-4 rounded-xl font-medium shadow-md transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          class="w-full h-[60px] text-white rounded-xl text-xl font-bold tracking-[-0.35px] shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           style="background-color: #34B0EE;"
         >
           <svg v-if="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -82,7 +81,7 @@
 
       <!-- Back to login -->
       <div class="text-center text-sm text-gray-500 mt-6">
-        <RouterLink to="/signin" class="font-semibold hover:underline" style="color: #34B0EE;">
+        <RouterLink to="/signin" class="font-semibold text-[#0570B6] hover:underline">
           {{ t('resetPassword.backToLogin') }}
         </RouterLink>
       </div>

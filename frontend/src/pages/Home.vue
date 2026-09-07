@@ -109,7 +109,7 @@ const view = ref('loading')
 const registrationName = ref(null)
 const registrations = ref([])
 
-const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
+const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required', 'Updated', 'Updated beneficiary']
 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',

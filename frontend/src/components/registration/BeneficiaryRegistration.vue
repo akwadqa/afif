@@ -126,7 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['submitted', 'back'])
 const { t, isRTL } = useLanguage()
 
-const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
+const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required', 'Updated', 'Updated beneficiary']
 
 const currentStep = ref(1)
 const subStep4 = ref(1)
@@ -284,6 +284,7 @@ function populateFromDoc(doc) {
     gender: doc.gender,
     date_of_birth: doc.date_of_birth,
     phone_number: doc.phone_number,
+    partners_phone_number: doc.partners_phone_number,
     marital_status: doc.marital_status,
     partner_name: doc.partner_name,
     expartner_name: doc.expartner_name,

@@ -1,17 +1,17 @@
 <template>
   <div
     class="hidden md:flex md:w-1/2 items-center justify-center overflow-hidden"
-    style="background: linear-gradient(180deg, #34B0EE 0%, #F5F5F5 100%);"
     aria-hidden="true"
   >
     <img
-      :src="maskGroupImg"
+      :src="logoImg"
       alt=""
-      class="w-4/5 max-w-xs object-contain select-none pointer-events-none"
+      class="w-full h-full object-cover select-none pointer-events-none origin-right md:scale-95 lg:scale-100"
     />
   </div>
 </template>
 
 <script setup>
-import maskGroupImg from '@/assets/images/Mask group.png'
+// import maskGroupImg from '@/assets/images/Mask group.png'
+import logoImg from '@/assets/images/Artboard.png'
 </script>

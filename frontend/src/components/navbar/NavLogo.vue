@@ -2,9 +2,9 @@
   <a href="https://afif.qa/" target="_blank" rel="noopener noreferrer" class="block shrink-0">
     <img
       v-if="!logoError"
-      src="@/assets/images/logo.png"
+      src="@/assets/images/afif.png"
       alt="Afif Charity"
-      class="w-[120px] h-[38px] md:w-[195px] md:h-[62px] object-contain"
+      class="w-[120px] h-auto md:w-[195px] object-contain"
       @error="logoError = true"
     />
     <!-- Fallback shown until logo.png is placed in src/assets/images/ -->

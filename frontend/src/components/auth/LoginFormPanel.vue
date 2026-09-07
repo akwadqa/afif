@@ -1,24 +1,24 @@
 <template>
   <div
-    class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center"
+    class="w-full md:w-1/2 p-8 md:p-8 lg:px-16 lg:py-20 flex flex-col justify-center bg-white mt-[35px] rounded-[0_10px]"
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
     <!-- Header -->
-    <div class="mb-8">
-      <h2 class="text-2xl font-bold text-sky-600 mb-2">
+    <div class="mb-6">
+      <h2 class="text-[32px] leading-[40px] md:text-2xl md:leading-8 lg:text-[32px] lg:leading-[40px] font-medium text-[#0570B6] mb-2">
         {{ t('login.welcomeBack') }}
       </h2>
-      <p class="text-sm text-gray-500">
+      <p class="text-xl leading-7 md:text-base md:leading-6 lg:text-xl lg:leading-7 text-[#3E4850]">
         {{ t('login.subtitle') }}
       </p>
     </div>
 
     <!-- Form -->
-    <form class="space-y-5" @submit.prevent="handleSubmit">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
 
       <!-- Email -->
-      <div class="space-y-1.5">
-        <label class="block text-sm font-medium text-gray-700">
+      <div class="space-y-[15px]">
+        <label class="block text-base font-normal text-[#141D23] tracking-[0.28px]">
           {{ t('login.email') }}
         </label>
         <div class="relative">
@@ -28,11 +28,11 @@
             :placeholder="t('login.emailPlaceholder')"
             autocomplete="username"
             required
-            class="w-full py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-gray-300 text-sm transition-all"
+            class="w-full h-[53px] px-4 py-[11px] bg-[#F8FAFC] border border-[#F3F3F3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-[#AEAFB0] text-base leading-[25px] transition-all"
             :class="isRTL ? 'pr-4 pl-11 text-right' : 'pl-4 pr-11 text-left'"
           />
           <span
-            class="absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            class="absolute top-1/2 -translate-y-1/2 text-[#AEAFB0] pointer-events-none"
             :class="isRTL ? 'left-4' : 'right-4'"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -43,8 +43,8 @@
       </div>
 
       <!-- Password -->
-      <div class="space-y-1.5">
-        <label class="block text-sm font-medium text-gray-700">
+      <div class="space-y-[15px]">
+        <label class="block text-base font-normal text-[#141D23] tracking-[0.28px]">
           {{ t('login.password') }}
         </label>
         <div class="relative">
@@ -54,12 +54,12 @@
             :placeholder="t('login.passwordPlaceholder')"
             autocomplete="current-password"
             required
-            class="w-full py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-gray-300 text-sm transition-all"
+            class="w-full h-[53px] px-4 py-[11px] bg-[#F8FAFC] border border-[#F3F3F3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34B0EE] focus:bg-white placeholder-[#AEAFB0] text-base leading-[25px] transition-all"
             :class="isRTL ? 'pr-4 pl-20 text-right' : 'pl-4 pr-20 text-left'"
           />
           <!-- Lock icon -->
           <span
-            class="absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            class="absolute top-1/2 -translate-y-1/2 text-[#AEAFB0] pointer-events-none"
             :class="isRTL ? 'left-10' : 'right-10'"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -69,7 +69,7 @@
           <!-- Toggle show/hide -->
           <button
             type="button"
-            class="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            class="absolute top-1/2 -translate-y-1/2 text-[#AEAFB0] hover:text-gray-600 transition-colors"
             :class="isRTL ? 'left-4' : 'right-4'"
             :aria-label="showPassword ? 'Hide password' : 'Show password'"
             @click="showPassword = !showPassword"
@@ -87,7 +87,7 @@
 
       <!-- Forgot password -->
       <div :class="isRTL ? 'text-left' : 'text-right'">
-        <RouterLink to="/forgot-password" class="text-xs text-sky-600 hover:underline">
+        <RouterLink to="/forgot-password" class="text-xs text-[#0570B6] hover:underline">
           {{ t('login.forgotPassword') }}
         </RouterLink>
       </div>
@@ -101,7 +101,7 @@
       <button
         type="submit"
         :disabled="session.login.loading"
-        class="w-full text-white py-3 px-4 rounded-xl font-medium shadow-md transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        class="w-full h-[60px] text-white rounded-xl text-xl font-bold tracking-[-0.35px] shadow-[0_2px_10px_rgba(0,0,0,0.25)] transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         style="background-color: #34B0EE;"
       >
         <svg v-if="session.login.loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -134,9 +134,9 @@
     -->
 
     <!-- Register link -->
-    <div class="mt-6 text-center text-sm text-gray-500">
+    <div class="mt-6 flex items-center justify-center gap-[7px] text-base text-[#3E4850]">
       {{ t('login.noAccount') }}
-      <RouterLink to="/register" class="text-sky-600 font-semibold hover:underline mx-1">
+      <RouterLink to="/register" class="text-sm font-semibold text-[#0570B6] hover:underline">
         {{ t('login.createAccount') }}
       </RouterLink>
     </div>

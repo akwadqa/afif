@@ -2,3 +2,4 @@
 
 [post_model_sync]
 afif.patches.migrate_additional_documents_to_child_table
+afif.patches.add_beneficiary_visit_sms_message_setting
