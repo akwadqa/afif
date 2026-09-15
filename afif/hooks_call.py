@@ -1224,7 +1224,6 @@ def set_aid_amount(doc, method):
         query = f"""update `tabBeneficiary Aid` set `aid_amount`={average_amount}
             where name="{doc.name}" """
         frappe.db.sql(query)
-        frappe.db.commit()
 
 
 def set_aid_total_amount(doc, method):
@@ -1235,7 +1234,6 @@ def set_aid_total_amount(doc, method):
         query = f"""update `tabBeneficiary Aid` set `aid_total_amount`={aid_total_amount}
             where name="{doc.name}" """
         frappe.db.sql(query)
-        frappe.db.commit()
         doc.reload()
 
 
@@ -1324,26 +1322,28 @@ def new_aid_request(doc, method):
                     msg = f"Aid response fail: {response_aid.json()}"
                     frappe.log_error("aid response", msg)
 
-                    message = response_aid.json().get('ms')
-                    frappe.msgprint(message, indicator="red", title="Aid Request Failed")
+                    message = response_aid.json().get('ms') or "Sanadi aid request failed"
+                    frappe.throw(message, title="Aid Request Failed")
 
             else:
                 msg = f"Validate response fail: {response_val.json()}"
                 frappe.log_error("validate response", msg)
+                frappe.throw("Sanadi token validation failed", title="Aid Request Failed")
 
         else:
             msg = f"Authentication response fail: {response_auth.json()}"
             frappe.log_error("authentication response", msg)
+            frappe.throw("Sanadi authentication failed", title="Aid Request Failed")
 
 
 
 def get_doner_id(doc):
     if doc.doner_id == "Donor Entity":
-        doner_id = 1
+        return 1
     elif doc.doner_id == "Doner":
-        doner_id = 2
+        return 2
 
-    return doner_id
+    frappe.throw("Donor ID must be selected before approving the aid.")
 
 
 def get_periodic_type(doc):
