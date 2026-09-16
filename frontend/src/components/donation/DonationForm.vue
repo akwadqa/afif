@@ -1,10 +1,11 @@
 <template>
+  <div class="min-h-screen flex justify-center p-4 py-12" style="background: #EBF4FF;">
   <div class="w-full max-w-xl mx-auto" :dir="isRTL ? 'rtl' : 'ltr'">
 
     <button
       type="button"
       class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-sky-600 font-medium mb-4 transition-colors"
-      @click="$emit('back')"
+      @click="goBack"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4" :class="{ 'rotate-180': !isRTL }">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -50,7 +51,7 @@
     <div class="form-card">
       <div class="input-group">
         <label class="input-label">{{ t('donation.program') }} <span class="text-red-500">*</span></label>
-        <select v-model="selectedProgram" class="custom-select" :disabled="programs.loading">
+        <select v-model="selectedProgram" class="custom-select" :disabled="programs.loading || isLocked">
           <option value="" disabled>{{ t('donation.selectProgram') }}</option>
           <option v-for="program in programsList" :key="program.name" :value="program.name">{{ program.title }}</option>
         </select>
@@ -58,7 +59,7 @@
 
       <div class="input-group">
         <label class="input-label">{{ t('donation.project') }} <span class="text-red-500">*</span></label>
-        <select v-model="selectedProject" class="custom-select" :disabled="!selectedProgram || projects.loading">
+        <select v-model="selectedProject" class="custom-select" :disabled="!selectedProgram || projects.loading || isLocked">
           <option value="" disabled>{{ t('donation.selectProject') }}</option>
           <option v-for="project in projectsList" :key="project.name" :value="project.name">{{ project.title }}</option>
         </select>
@@ -152,24 +153,39 @@
     </div>
 
   </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 
-defineEmits(['back'])
+const route = useRoute()
+const router = useRouter()
 
 const { t, isRTL, currentLang } = useLanguage()
 
 const presetAmounts = [10, 50, 100, 1000]
+
+const initialProjectQuery = typeof route.query.project === 'string' ? route.query.project : ''
+const preselectedProject = ref(initialProjectQuery)
+const isLocked = computed(() => !!initialProjectQuery)
 
 const selectedProgram = ref('')
 const selectedProject = ref('')
 const donationAmount = ref(0)
 const isCustomAmount = ref(false)
 const errorMessage = ref('')
+
+function goBack() {
+  if (initialProjectQuery) {
+    router.push({ name: 'DonationProject', params: { name: initialProjectQuery } })
+  } else {
+    router.push({ name: 'Donate' })
+  }
+}
 
 const donorForm = reactive({
   isAnonymous: false,
@@ -195,6 +211,13 @@ function extractError(err) {
 
 const programs = createResource({ url: 'afif.donation_api.get_programs', method: 'GET' })
 const projects = createResource({ url: 'afif.donation_api.get_projects', method: 'GET' })
+const projectDetail = createResource({
+  url: 'afif.donation_api.get_project_detail',
+  method: 'GET',
+  onSuccess(data) {
+    selectedProgram.value = data.program
+  },
+})
 const createDonation = createResource({
   url: 'afif.donation_api.create_donation',
   onSuccess(data) {
@@ -228,17 +251,30 @@ function fetchPrograms() {
 }
 
 function fetchProjects() {
-  if (!selectedProgram.value) return
-  projects.submit({ program: selectedProgram.value, lang: currentLang.value })
+  if (!selectedProgram.value) return Promise.resolve()
+  return projects.submit({ program: selectedProgram.value, lang: currentLang.value })
 }
 
-onMounted(fetchPrograms)
+onMounted(() => {
+  fetchPrograms()
+  if (preselectedProject.value) {
+    projectDetail.submit({ project_name: preselectedProject.value, lang: currentLang.value })
+  }
+})
 
 watch(selectedProgram, () => {
+  const keepProject = preselectedProject.value
   selectedProject.value = ''
   donationAmount.value = 0
   isCustomAmount.value = false
-  if (selectedProgram.value) fetchProjects()
+  if (selectedProgram.value) {
+    fetchProjects().then(() => {
+      if (keepProject) {
+        selectedProject.value = keepProject
+        preselectedProject.value = ''
+      }
+    })
+  }
 })
 
 watch(currentLang, () => {

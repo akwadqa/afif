@@ -407,6 +407,36 @@ export default {
       confirmDonate: 'تأكيد التبرع -',
       submitting: 'جاري إرسال التبرع...',
       submitError: 'حدث خطأ أثناء إرسال التبرع. يرجى المحاولة مرة أخرى.',
+      landing: {
+        allFilter: 'الكل',
+        noPrograms: 'لا توجد برامج تبرع متاحة حالياً',
+        noProjects: 'لا توجد مشاريع متاحة لهذا البرنامج حالياً',
+        noFees: 'بدون استقطاع أي مصاريف إدارية',
+      },
+      location: {
+        insideQatar: 'داخل قطر',
+        outsideQatar: 'خارج قطر',
+      },
+      detail: {
+        share: 'مشاركة',
+        details: 'التفاصيل',
+        back: 'رجوع',
+        linkCopied: 'تم نسخ رابط المشروع',
+        notFound: 'تعذر العثور على هذا المشروع',
+        remaining: 'متبقي',
+      },
+      dialog: {
+        title: 'تفاصيل التبرع',
+        close: 'إغلاق',
+      },
+      frequency: {
+        monthly: 'تبرع شهري',
+        monthlyDesc: 'يتم خصم المبلغ تلقائياً كل شهر',
+        annual: 'تبرع سنوي',
+        annualDesc: 'يتم التجديد بعد أخذ موافقتك',
+        daily: 'تبرع يومي',
+        dailyDesc: 'يتم خصم المبلغ تلقائيًا كل يوم',
+      },
       success: {
         checkingTitle: 'جاري التحقق من حالة الدفع...',
         paidTitle: 'شكراً لتبرعك',
@@ -561,6 +591,7 @@ export default {
       beneficiaryProfile: 'ملف المستفيد',
       request: 'طلباتي',
       myAccount: 'حسابي',
+      donate: 'التبرع',
       logout: 'تسجيل الخروج',
     },
     beneficiaryList: {
@@ -1293,6 +1324,36 @@ export default {
       confirmDonate: 'Confirm Donation -',
       submitting: 'Submitting donation...',
       submitError: 'An error occurred while submitting the donation. Please try again.',
+      landing: {
+        allFilter: 'All',
+        noPrograms: 'No donation programs are currently available',
+        noProjects: 'No projects are currently available for this program',
+        noFees: 'No administrative fees deducted',
+      },
+      location: {
+        insideQatar: 'Inside Qatar',
+        outsideQatar: 'Outside Qatar',
+      },
+      detail: {
+        share: 'Share',
+        details: 'Details',
+        back: 'Back',
+        linkCopied: 'Project link copied',
+        notFound: 'This project could not be found',
+        remaining: 'Remaining',
+      },
+      dialog: {
+        title: 'Donation Details',
+        close: 'Close',
+      },
+      frequency: {
+        monthly: 'Monthly Donation',
+        monthlyDesc: 'Amount will be deducted automatically every month',
+        annual: 'Annual Donation',
+        annualDesc: 'Renewed after your approval',
+        daily: 'Daily Donation',
+        dailyDesc: 'Amount will be deducted automatically every day',
+      },
       success: {
         checkingTitle: 'Checking payment status...',
         paidTitle: 'Thank you for your donation',
@@ -1447,6 +1508,7 @@ export default {
       beneficiaryProfile: 'Beneficiary Profile',
       request: 'My Requests',
       myAccount: 'My Account',
+      donate: 'Donate',
       logout: 'Logout',
     },
     beneficiaryList: {

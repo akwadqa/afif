@@ -1,11 +1,7 @@
 <template>
   <div class="min-h-screen flex items-center justify-center p-4 py-12" style="background: #EBF4FF;">
-    <div
-      class="bg-white shadow-xl max-w-xl w-full p-8 md:p-12 flex flex-col items-center justify-center text-center"
-      style="border-radius: 32px;"
-      :dir="isRTL ? 'rtl' : 'ltr'"
-    >
-      <div v-if="checking" class="py-10">
+    <div class="result-card" :dir="isRTL ? 'rtl' : 'ltr'">
+      <div v-if="checking" class="py-10 text-center">
         <svg class="animate-spin w-8 h-8 text-[#34B0EE] mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -14,50 +10,73 @@
       </div>
 
       <template v-else>
-        <div class="w-24 h-24 rounded-2xl flex items-center justify-center mb-6" :class="iconWrapClass">
-          <svg v-if="statusKey === 'paid'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#10b981" class="w-12 h-12">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        <div class="badge-icon">
+          <svg v-if="statusKey === 'paid'" viewBox="0 0 186 186" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="successBadgeGradient" x1="15%" y1="0%" x2="85%" y2="100%">
+                <stop offset="28.01%" stop-color="#BBE6A8" />
+                <stop offset="56.48%" stop-color="#38B502" />
+                <stop offset="75.03%" stop-color="#319F01" />
+                <stop offset="93.52%" stop-color="#2D9101" />
+                <stop offset="100%" stop-color="#2B8C01" />
+              </linearGradient>
+            </defs>
+            <circle cx="93" cy="93" r="88" fill="url(#successBadgeGradient)" />
+            <path d="M56 96 82 122 132 68" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <svg v-else-if="statusKey === 'pending'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d97706" class="w-12 h-12">
+          <svg v-else-if="statusKey === 'pending'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d97706" class="w-24 h-24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ef4444" class="w-12 h-12">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          <svg v-else viewBox="0 0 186 186" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="failureBadgeGradient" x1="10%" y1="0%" x2="90%" y2="100%">
+                <stop offset="19.78%" stop-color="#E68C7A" />
+                <stop offset="46.32%" stop-color="#FA0303" />
+                <stop offset="54.59%" stop-color="#EA0A02" />
+                <stop offset="69.59%" stop-color="#D21502" />
+                <stop offset="83.6%" stop-color="#C41C01" />
+                <stop offset="100%" stop-color="#BF1E01" />
+              </linearGradient>
+            </defs>
+            <circle cx="93" cy="93" r="88" fill="url(#failureBadgeGradient)" />
+            <path d="M65 65 121 121M121 65 65 121" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
 
-        <h2 class="text-2xl font-bold mb-4" :class="titleClass">{{ statusTitle }}</h2>
-        <p class="text-gray-500 text-base leading-relaxed max-w-md mb-8">{{ statusMessage }}</p>
+        <h2 class="result-title" :class="titleClass">{{ statusTitle }}</h2>
+        <p class="result-message">{{ statusMessage }}</p>
 
-        <div v-if="donation" class="w-full bg-gray-50 rounded-xl p-4 mb-8 text-sm text-gray-600 space-y-2">
-          <div class="flex justify-between">
+        <div v-if="donation" class="donation-summary" dir="ltr">
+          <div class="summary-row">
             <span>{{ t('donation.success.amountLabel') }}</span>
-            <span class="font-semibold text-gray-800">{{ donation.amount }} {{ donation.currency || t('donation.currency') }}</span>
+            <span class="summary-value">{{ donation.amount }} {{ donation.currency || t('donation.currency') }}</span>
           </div>
-          <div v-if="donation.donor_name" class="flex justify-between">
+          <div v-if="donation.donor_name" class="summary-row">
             <span>{{ t('donation.success.donorLabel') }}</span>
-            <span class="font-semibold text-gray-800">{{ donation.donor_name }}</span>
+            <span class="summary-value">{{ donation.donor_name }}</span>
           </div>
-          <div class="flex justify-between" dir="ltr">
+          <div class="summary-row">
             <span>{{ t('donation.success.referenceLabel') }}</span>
-            <span class="font-mono text-xs text-gray-500">{{ referenceId }}</span>
+            <span class="summary-value font-mono">{{ referenceId }}</span>
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <router-link
-            v-if="statusKey !== 'paid'"
-            to="/donate"
-            class="min-w-[200px] flex items-center justify-center text-white py-3.5 px-6 rounded-xl font-medium shadow-md transition-all hover:opacity-90 active:scale-[0.99]"
-            style="background-color: #34B0EE;"
-          >
-            {{ t('donation.success.tryAgain') }}
+        <div class="actions-col">
+          <router-link v-if="statusKey !== 'paid'" to="/donate" class="action-btn action-btn-primary">
+            <span>{{ t('donation.success.tryAgain') }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
           </router-link>
           <router-link
             to="/"
-            class="min-w-[200px] flex items-center justify-center border border-gray-200 text-gray-600 py-3.5 px-6 rounded-xl font-medium transition-all hover:bg-gray-50"
+            class="action-btn"
+            :class="statusKey === 'paid' ? 'action-btn-primary' : 'action-btn-secondary'"
           >
-            {{ t('donation.success.backHome') }}
+            <span>{{ t('donation.success.backHome') }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
           </router-link>
         </div>
       </template>
@@ -126,16 +145,10 @@ const statusKey = computed(() => {
   return 'pending'
 })
 
-const iconWrapClass = computed(() => ({
-  'bg-green-50': statusKey.value === 'paid',
-  'bg-amber-50': statusKey.value === 'pending',
-  'bg-red-50': statusKey.value === 'failed' || statusKey.value === 'not-found',
-}))
-
 const titleClass = computed(() => ({
-  'text-green-600': statusKey.value === 'paid',
-  'text-amber-600': statusKey.value === 'pending',
-  'text-red-600': statusKey.value === 'failed' || statusKey.value === 'not-found',
+  'title-success': statusKey.value === 'paid',
+  'title-pending': statusKey.value === 'pending',
+  'title-failed': statusKey.value === 'failed' || statusKey.value === 'not-found',
 }))
 
 const statusTitle = computed(() => {
@@ -156,3 +169,118 @@ const statusMessage = computed(() => {
   }
 })
 </script>
+
+<style scoped>
+.result-card {
+  @apply w-full flex flex-col items-center text-center;
+  max-width: 809px;
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 36px 24px;
+  gap: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+@media (min-width: 640px) {
+  .result-card {
+    padding: 50px 64px;
+    gap: 30px;
+  }
+}
+
+.badge-icon {
+  @apply flex items-center justify-center shrink-0;
+  width: 120px;
+  height: 120px;
+}
+
+.badge-icon svg {
+  @apply w-full h-full;
+}
+
+@media (min-width: 640px) {
+  .badge-icon {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+.result-title {
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+  .result-title {
+    font-size: 32px;
+  }
+}
+
+.title-success {
+  color: #14903a;
+}
+
+.title-pending {
+  color: #d97706;
+}
+
+.title-failed {
+  color: #c94545;
+}
+
+.result-message {
+  max-width: 509px;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #3e4850;
+}
+
+@media (min-width: 640px) {
+  .result-message {
+    font-size: 20px;
+  }
+}
+
+.donation-summary {
+  @apply w-full bg-gray-50 rounded-xl p-4 text-sm text-gray-600 space-y-2;
+}
+
+.summary-row {
+  @apply flex justify-between;
+}
+
+.summary-value {
+  @apply font-semibold text-gray-800;
+}
+
+.actions-col {
+  @apply w-full flex flex-col items-stretch;
+  gap: 16px;
+  max-width: 550px;
+}
+
+.action-btn {
+  @apply w-full flex items-center justify-center transition-opacity hover:opacity-90 active:scale-[0.99];
+  height: 60px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.35px;
+  gap: 8px;
+}
+
+.action-btn-primary {
+  background: #34b0ee;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+}
+
+.action-btn-secondary {
+  background: #ffffff;
+  border: 1px solid #d3d3d3;
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.07);
+  color: #0284c7;
+}
+</style>
