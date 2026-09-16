@@ -270,7 +270,7 @@ website_route_rules = [
     {"from_route": "/request", "to_route": "frontend"},
     {"from_route": "/account", "to_route": "frontend"},
     {"from_route": "/donate", "to_route": "frontend"},
-    {"from_route": "/donate/success", "to_route": "frontend"},
+    {"from_route": "/donate/<path:app_path>", "to_route": "frontend"},
 ]
 
 website_redirects = [

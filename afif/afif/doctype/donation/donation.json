@@ -15,6 +15,7 @@
   "column_break_amount",
   "amount",
   "currency",
+  "donation_frequency",
   "payment_status",
   "donor_section",
   "donor_name",
@@ -79,6 +80,14 @@
    "fieldtype": "Link",
    "label": "Currency",
    "options": "Currency"
+  },
+  {
+   "default": "One-Time",
+   "fieldname": "donation_frequency",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Donation Frequency",
+   "options": "One-Time\nDaily\nMonthly\nAnnual"
   },
   {
    "default": "Pending",

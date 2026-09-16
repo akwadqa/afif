@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "icon_key",
   "published",
   "content_section",
   "intro"
@@ -20,6 +21,15 @@
    "label": "Title",
    "reqd": 1,
    "translatable": 1
+  },
+  {
+   "default": "education",
+   "fieldname": "icon_key",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Icon",
+   "options": "social\nrelief\nempowerment_training\nseasonal\nhealth\neducation\norphan_care",
+   "reqd": 1
   },
   {
    "default": "0",

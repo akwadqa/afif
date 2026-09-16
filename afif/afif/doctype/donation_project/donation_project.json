@@ -11,6 +11,8 @@
   "title",
   "published",
   "content_section",
+  "image",
+  "location",
   "quote",
   "body",
   "funding_section",
@@ -49,6 +51,20 @@
    "fieldname": "content_section",
    "fieldtype": "Section Break",
    "label": "Content"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image",
+   "reqd": 1
+  },
+  {
+   "default": "inside_qatar",
+   "fieldname": "location",
+   "fieldtype": "Select",
+   "label": "Location",
+   "options": "inside_qatar\noutside_qatar",
+   "reqd": 1
   },
   {
    "description": "The verse/hadith highlighted for this project.",
