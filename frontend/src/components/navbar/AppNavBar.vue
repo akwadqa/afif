@@ -26,7 +26,7 @@
 
         <!-- Hamburger: toggles sidebar on md+, toggles mobile menu on small -->
         <button
-          v-if="session.isLoggedIn && !isDonatePage"
+          v-if="session.isLoggedIn"
           :class="[
             'p-1 md:p-2 rounded-lg transition-colors',
             isActive
@@ -57,19 +57,16 @@ import NavLogo from './NavLogo.vue'
 import NavLinks from './NavLinks.vue'
 import LanguageToggle from './LanguageToggle.vue'
 import MobileMenu from './MobileMenu.vue'
-import { useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
 
 const { isRTL, t } = useLanguage()
 
-const route = useRoute()
 const menuOpen = ref(false)
 const { sidebarOpen, toggleSidebar } = useSidebar()
 
 const isActive = computed(() => menuOpen.value || sidebarOpen.value)
-const isDonatePage = computed(() => route.path.startsWith('/donate'))
 
 function handleMenuToggle() {
   const isDesktop = window.matchMedia('(min-width: 768px)').matches

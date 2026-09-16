@@ -57,6 +57,18 @@ const routes = [
         meta: { public: true },
       },
       {
+        path: 'project/:name',
+        name: 'DonationProject',
+        component: () => import('@/pages/DonationProjectDetail.vue'),
+        meta: { public: true },
+      },
+      {
+        path: 'form',
+        name: 'DonationCheckout',
+        component: () => import('@/components/donation/DonationForm.vue'),
+        meta: { public: true },
+      },
+      {
         path: 'success',
         name: 'DonationSuccess',
         component: () => import('@/pages/DonationSuccess.vue'),
