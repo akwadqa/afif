@@ -80,7 +80,7 @@ def get_donation_landing(lang=None):
 	programs = frappe.get_all(
 		"Donation Program",
 		filters={"published": 1},
-		fields=["name", "title", "intro", "icon_key"],
+		fields=["name", "title", "intro", "icon"],
 		order_by="creation desc",
 		ignore_permissions=True,
 	)
@@ -138,7 +138,7 @@ def get_project_detail(project_name, lang=None):
 	program = frappe.db.get_value(
 		"Donation Program",
 		project.program,
-		["title", "intro", "icon_key"],
+		["title", "intro", "icon"],
 		as_dict=True,
 	)
 
@@ -147,7 +147,7 @@ def get_project_detail(project_name, lang=None):
 	project["body"] = _localize(project["body"], lang)
 	project["program_title"] = _localize(program.title, lang)
 	project["program_intro"] = _localize(program.intro, lang)
-	project["program_icon_key"] = program.icon_key
+	project["program_icon"] = program.icon
 
 	return project
 
@@ -220,7 +220,6 @@ def seed_test_donation_data():
 		{
 			"title": "التعليم",
 			"title_en": "Education",
-			"icon_key": "education",
 			"intro": (
 				"مساهمتك في مساعدة طلاب العلم هي الاجر الباقي والصدقة الجارية التي تتناقلها الاجيال وتزيد لك في الاجر.\n"
 				"إذا مات ابن آدم انقطع عمله إلا من ثلاث: صدقة جارية، أو علم يُنتفع به، أو ولد صالح يدعو له (رواه مسلم)"
@@ -294,7 +293,6 @@ def seed_test_donation_data():
 		{
 			"title": "صحة",
 			"title_en": "Health",
-			"icon_key": "health",
 			"intro": (
 				"تعتمد مؤسسة عفيف الخيرية في استراتيجيتها بالتوسع في جملة من المشاريع في مجال الصحة التي تخدم بعضها "
 				"بعضاً وتقدم فرصاً لحياة بدون ألم.\n"
@@ -367,7 +365,6 @@ def seed_test_donation_data():
 		{
 			"title": "اجتماعي",
 			"title_en": "Social",
-			"icon_key": "social",
 			"intro": (
 				"نسعى في مؤسسة عفيف الخيرية لتأمين والمساهمة في سد احتياجات الأسر المستهدفة من المواد الغذائية "
 				"الأساسية للفئات الأشد ضعفاً وحاجة، وضمان سد حاجاتهم لعيش كريم آمن وصحة ورفاه قادم."
@@ -423,7 +420,6 @@ def seed_test_donation_data():
 		{
 			"title": "التدريب والتمكين",
 			"title_en": "Training and Empowerment",
-			"icon_key": "empowerment_training",
 			"intro": "الشباب ليسوا مشكلة تنتظر الحل بل طاقة تنتظر الفرصة.",
 			"intro_en": "Young people are not a problem waiting to be solved, but energy waiting for an opportunity.",
 			"projects": [
@@ -446,7 +442,6 @@ def seed_test_donation_data():
 		{
 			"title": "مشاريع موسمية",
 			"title_en": "Seasonal Projects",
-			"icon_key": "seasonal",
 			"intro": (
 				"إعانة المتعففين والفقراء بكفهم السؤال، وتجسيد الاحتفالات والمواسم والمناسبات في صور برامج ومشاريع "
 				"موسمية تبقي جسور الخير متواصلة وممتدة طوال العام مع تلك الأسر.\n"
@@ -522,14 +517,10 @@ def seed_test_donation_data():
 				"doctype": "Donation Program",
 				"title": program["title"],
 				"intro": program["intro"],
-				"icon_key": program["icon_key"],
 				"published": 1,
 			})
 			program_doc.insert(ignore_permissions=True)
 			program_name = program_doc.name
-		else:
-			# Backfill icon_key on programs seeded before that field existed.
-			frappe.db.set_value("Donation Program", program_name, "icon_key", program["icon_key"])
 
 		_set_translation(program["title"], program["title_en"])
 		_set_translation(program["intro"], program["intro_en"])
@@ -585,8 +576,7 @@ def _download_real_image(file_name, picsum_id):
 
 def seed_relief_demo_data():
 	"""Dev-only console helper (mirrors seed_test_donation_data) that adds a new
-	"Relief" Donation Program - the one icon_key ("relief") not used by any
-	other seeded program - with real, distinct photos per project instead of
+	"Relief" Donation Program with real, distinct photos per project instead of
 	the shared placeholder image, for demoing the landing/detail pages with
 	fuller-looking test data.
 	"""
@@ -608,13 +598,10 @@ def seed_relief_demo_data():
 			"doctype": "Donation Program",
 			"title": program_title,
 			"intro": program_intro,
-			"icon_key": "relief",
 			"published": 1,
 		})
 		program_doc.insert(ignore_permissions=True)
 		program_name = program_doc.name
-	else:
-		frappe.db.set_value("Donation Program", program_name, "icon_key", "relief")
 
 	_set_translation(program_title, program_title_en)
 	_set_translation(program_intro, program_intro_en)
@@ -751,9 +738,9 @@ def seed_relief_demo_data():
 
 def seed_orphan_care_demo_data():
 	"""Dev-only console helper (mirrors seed_relief_demo_data) that adds a new
-	"Orphan Care" Donation Program with a new icon_key ("orphan_care") and
-	realistic, human-centered projects, each with its own real downloaded
-	photo instead of the shared placeholder image.
+	"Orphan Care" Donation Program with realistic, human-centered projects,
+	each with its own real downloaded photo instead of the shared placeholder
+	image.
 	"""
 	program_title = "رعاية الأيتام"
 	program_title_en = "Orphan Care"
@@ -775,13 +762,10 @@ def seed_orphan_care_demo_data():
 			"doctype": "Donation Program",
 			"title": program_title,
 			"intro": program_intro,
-			"icon_key": "orphan_care",
 			"published": 1,
 		})
 		program_doc.insert(ignore_permissions=True)
 		program_name = program_doc.name
-	else:
-		frappe.db.set_value("Donation Program", program_name, "icon_key", "orphan_care")
 
 	_set_translation(program_title, program_title_en)
 	_set_translation(program_intro, program_intro_en)

@@ -8,7 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
-  "icon_key",
+  "icon",
   "published",
   "content_section",
   "intro"
@@ -23,13 +23,11 @@
    "translatable": 1
   },
   {
-   "default": "education",
-   "fieldname": "icon_key",
-   "fieldtype": "Select",
+   "description": "Square icon shown for this program on the donation landing page.",
+   "fieldname": "icon",
+   "fieldtype": "Attach Image",
    "in_list_view": 1,
-   "label": "Icon",
-   "options": "social\nrelief\nempowerment_training\nseasonal\nhealth\neducation\norphan_care",
-   "reqd": 1
+   "label": "Icon"
   },
   {
    "default": "0",

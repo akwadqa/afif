@@ -9,7 +9,7 @@
           <span>{{ t('donation.landing.noFees') }}</span>
         </div>
 
-        <div class="chip-scroll">
+        <div class="chip-group">
           <button
             type="button"
             class="icon-chip all-chip"
@@ -21,18 +21,21 @@
             <span class="w-4 h-4 sm:w-5 sm:h-5" v-html="gridIconSvg" />
           </button>
 
-          <button
-            v-for="program in programs"
-            :key="program.name"
-            type="button"
-            class="icon-chip"
-            :class="{ active: activeProgram === program.name }"
-            :title="program.title"
-            :aria-label="program.title"
-            @click="activeProgram = program.name"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="getProgramIcon(program.icon_key)" />
-          </button>
+          <div class="chip-scroll">
+            <button
+              v-for="program in programs"
+              :key="program.name"
+              type="button"
+              class="icon-chip"
+              :class="{ active: activeProgram === program.name }"
+              :title="program.title"
+              :aria-label="program.title"
+              @click="activeProgram = program.name"
+            >
+              <img v-if="program.icon" :src="program.icon" :alt="program.title" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px] object-contain" />
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="programIconFallback" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -55,7 +58,8 @@
         :style="{ animationDelay: `${index * 80}ms` }"
       >
         <div class="program-header">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 shrink-0 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="getProgramIcon(program.icon_key)" />
+          <img v-if="program.icon" :src="program.icon" :alt="program.title" class="w-6 h-6 shrink-0 object-contain" />
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 shrink-0 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="programIconFallback" />
           <h2 class="program-title">{{ program.title }}</h2>
         </div>
 
@@ -101,7 +105,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
-import { getProgramIcon, gridIconSvg, noFeesIconSvg } from '@/config/donationIcons'
+import { programIconFallback, gridIconSvg, noFeesIconSvg } from '@/config/donationIcons'
 import DonationProjectCard from '@/components/donation/DonationProjectCard.vue'
 
 const { t, isRTL, currentLang } = useLanguage()
@@ -152,6 +156,10 @@ function scrollRow(event, direction, programName) {
   @apply relative flex items-center justify-center min-h-[42px] sm:min-h-[50px];
 }
 
+.chip-group {
+  @apply flex items-center gap-2.5 sm:gap-[25px] max-w-full;
+}
+
 .chip-scroll {
   @apply flex items-center gap-2.5 sm:gap-[25px] overflow-x-auto max-w-full;
   scrollbar-width: none;
@@ -182,13 +190,6 @@ function scrollRow(event, direction, programName) {
 
 .all-chip {
   @apply flex;
-}
-
-@media (min-width: 768px) {
-  .all-chip {
-    position: absolute;
-    inset-inline-start: 0;
-  }
 }
 
 .trust-badge {

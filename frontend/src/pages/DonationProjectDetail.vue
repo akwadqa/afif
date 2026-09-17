@@ -12,7 +12,8 @@
       <div class="intro-row">
         <div class="quotes-box">
           <div class="breadcrumb">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="getProgramIcon(project.program_icon_key)" />
+            <img v-if="project.program_icon" :src="project.program_icon" :alt="project.program_title" class="w-5 h-5 shrink-0 object-contain" />
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="programIconFallback" />
             <span>{{ project.program_title }}</span>
           </div>
 
@@ -95,7 +96,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
-import { getProgramIcon, qatarFlagSvg } from '@/config/donationIcons'
+import { programIconFallback, qatarFlagSvg } from '@/config/donationIcons'
 
 const route = useRoute()
 const router = useRouter()
