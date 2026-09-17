@@ -45,8 +45,8 @@
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.primaryIdType') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.ben_primary_idtype || 'Qatari Id'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          @change="update('ben_primary_idtype', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
           :class="isInvalid('ben_primary_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="Qatari Id">{{ t('registration.personalInfo.qatariId') }}</option>
@@ -276,13 +276,13 @@
         </div>
       </template>
 
-      <!-- Visa Type — fixed field, always shown -->
-      <div class="space-y-1.5">
+      <!-- Visa Type — shown only when nationality is not Qatar -->
+      <div v-if="modelValue.ben_nationality !== 'Qatar'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.visaType') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.visa_type || 'Residence'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          @change="update('visa_type', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
           :class="isInvalid('visa_type') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="Residence">{{ t('registration.personalInfo.residence') }}</option>
@@ -314,8 +314,8 @@
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.requestorRelation') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_requestor_relationtype || 'The same subvention requestor'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          @change="updateAdditional('ben_requestor_relationtype', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
           :class="isInvalid('ben_requestor_relationtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="The same subvention requestor">{{ t('registration.additionalInfo.sameRequestor') }}</option>
@@ -425,8 +425,8 @@
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdType') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_sec_idtype || 'Passport'"
-          disabled
-          class="select-field w-full px-4 py-3 bg-gray-100 border rounded-xl outline-none text-sm text-gray-600 appearance-none cursor-not-allowed"
+          @change="updateAdditional('ben_sec_idtype', $event.target.value)"
+          class="select-field w-full px-4 py-3 bg-gray-50/60 border rounded-xl outline-none text-sm text-gray-600 appearance-none transition-all"
           :class="isInvalid('ben_sec_idtype') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="Passport">{{ t('registration.personalInfo.passport') }}</option>
@@ -622,8 +622,17 @@ const countryOptions = computed(() =>
 const isResidence = computed(() => (props.modelValue.visa_type || 'Residence') === 'Residence')
 
 onMounted(async () => {
+  if (!props.modelValue.ben_primary_idtype) {
+    update('ben_primary_idtype', 'Qatari Id')
+  }
   if (!props.modelValue.visa_type) {
     update('visa_type', 'Residence')
+  }
+  if (!props.additionalInfo.ben_requestor_relationtype) {
+    updateAdditional('ben_requestor_relationtype', 'The same subvention requestor')
+  }
+  if (!props.additionalInfo.ben_sec_idtype) {
+    updateAdditional('ben_sec_idtype', 'Passport')
   }
 
   try {

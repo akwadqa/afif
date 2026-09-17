@@ -25,6 +25,7 @@ export default {
         additionalInfoTooLong: 'لا يمكن أن يحتوي هذا الحقل على أكثر من 120 حرفًا (حوالي 3 أسطر)',
         maxCharsExceeded: 'لا يمكن أن يتجاوز هذا الحقل 2000 حرف',
         maxCharsSuffix: 'حرف كحد أقصى',
+        mustBeGreaterThanZero: 'يجب أن تكون القيمة أكبر من 0',
       },
       steps: {
         personalData: 'البيانات الشخصية',
@@ -860,6 +861,7 @@ export default {
         additionalInfoTooLong: 'This field cannot contain more than 120 characters (about 3 lines)',
         maxCharsExceeded: 'This field cannot exceed 2000 characters',
         maxCharsSuffix: 'characters maximum',
+        mustBeGreaterThanZero: 'Must be greater than 0',
       },
       steps: {
         personalData: 'Personal Data',

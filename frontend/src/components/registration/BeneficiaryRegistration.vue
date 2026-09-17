@@ -672,7 +672,7 @@ function validateStep(targetStep, targetSubStep4) {
     req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
     if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
     if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
-    req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
+    if (isResidence) req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
     req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
 
     req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
@@ -761,39 +761,45 @@ function validateStep(targetStep, targetSubStep4) {
     }
     const obligationSources = [
       { field: 'family_obligation',   subFields: [
-        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel') },
+        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel'), positive: true },
         { name: 'family_obligation_periodicity',         label: t('registration.financialObligations.familyPeriodicLabel') },
         { name: 'family_expenses',                       label: t('registration.financialObligations.familyAmountLabel') },
         { name: 'family_obligations_note',               label: t('registration.financialObligations.familyNoteLabel') },
       ]},
       { field: 'rent_obligation',     subFields: [
         { name: 'rent_obligation_periodicity',           label: t('registration.financialObligations.rentPeriodicLabel') },
-        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel') },
+        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel'), positive: true },
         { name: 'rent_amount',                           label: t('registration.financialObligations.rentAmountLabel') },
         { name: 'rent_obligations_note',                 label: t('registration.financialObligations.rentNoteLabel') },
       ]},
       { field: 'treatment_obligation',subFields: [
         { name: 'treatment_obligation_periodicity',          label: t('registration.financialObligations.treatmentPeriodicLabel') },
-        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel') },
+        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel'), positive: true },
         { name: 'treatment_amount',                          label: t('registration.financialObligations.treatmentAmountLabel') },
         { name: 'treatment_obligations_note',                label: t('registration.financialObligations.treatmentNoteLabel') },
       ]},
       { field: 'debt_obligation',     subFields: [
         { name: 'debt_obligation_periodicity',           label: t('registration.financialObligations.debtPeriodicLabel') },
-        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel') },
+        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel'), positive: true },
         { name: 'bank_payments_amount',                  label: t('registration.financialObligations.debtAmountLabel') },
         { name: 'debt_obligations_note',                 label: t('registration.financialObligations.debtNoteLabel') },
       ]},
       { field: 'tuition_obligation',  subFields: [
         { name: 'tuition_obligation_periodicity',          label: t('registration.financialObligations.tuitionPeriodicLabel') },
-        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel') },
+        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel'), positive: true },
         { name: 'tuition_obligations_note',                label: t('registration.financialObligations.tuitionNoteLabel') },
         { name: 'tuition_amount',                          label: t('registration.financialObligations.tuitionAmountLabel') },
       ]},
     ]
     for (const src of obligationSources) {
       if (fo[src.field] == 1) {
-        for (const f of src.subFields) req(fo[f.name], f.name, f.label)
+        for (const f of src.subFields) {
+          req(fo[f.name], f.name, f.label)
+          if (f.positive && fo[f.name] !== undefined && fo[f.name] !== null && fo[f.name] !== '' && Number(fo[f.name]) <= 0) {
+            errors.push(t('registration.validation.mustBeGreaterThanZero'))
+            fields.push(f.name)
+          }
+        }
       }
     }
   }
