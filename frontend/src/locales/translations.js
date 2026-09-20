@@ -260,6 +260,7 @@ export default {
       attachments: {
         listTitle: 'قائمة المرفقات المطلوبة',
         upload: 'تحميل',
+        uploading: 'جارٍ الرفع...',
         reupload: 'إعادة تحميل الملف',
         delete: 'مسح',
         addAnother: 'إضافة مرفق آخر',
@@ -1096,6 +1097,7 @@ export default {
       attachments: {
         listTitle: 'Required Attachments',
         upload: 'Upload',
+        uploading: 'Uploading...',
         reupload: 'Re-upload File',
         delete: 'Remove',
         addAnother: 'Add another attachment',

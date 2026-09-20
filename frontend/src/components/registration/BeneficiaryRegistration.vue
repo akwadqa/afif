@@ -42,7 +42,15 @@
 
         <div v-else-if="currentStep === 4">
           <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
-          <AttachmentsCard v-else-if="subStep4 === 2" v-model="formData.attachments" :context="formData" :invalid-fields="invalidFields" />
+          <AttachmentsCard
+            v-else-if="subStep4 === 2"
+            v-model="formData.attachments"
+            :context="formData"
+            :invalid-fields="invalidFields"
+            :uploading="attachmentUploading"
+            :upload-errors="attachmentUploadErrors"
+            @select-file="handleAttachmentFileSelected"
+          />
         </div>
       </div>
 
@@ -134,6 +142,8 @@ const maxStepReached = ref(1)
 const snapshot = ref(null)
 const submitting = ref(false)
 const error = ref('')
+const attachmentUploading = ref({})
+const attachmentUploadErrors = ref({})
 const docName = ref(null)
 const docMeta = ref({})
 const showValidationPopup = ref(false)
@@ -439,9 +449,18 @@ function buildAttachmentsPayload(source) {
     verification_consent:   lc.verificationRight ? 1 : 0,
     cancellation_right:     lc.statusAwareness   ? 1 : 0,
   }
+
+  const lastKnownFiles = snapshot.value?.attachments?.files || {}
   for (const field of ATTACHMENT_FIELDS) {
     const val = source.attachments.files[field]
-    if (typeof val === 'string') payload[field] = val
+    if (typeof val === 'string') {
+      payload[field] = val
+    } else if (val === null) {
+      // Explicit user deletion (see AttachmentsCard's deleteFile) — clear it for real.
+      payload[field] = ''
+    } else if (typeof lastKnownFiles[field] === 'string') {
+      payload[field] = lastKnownFiles[field]
+    }
   }
   payload.additional_attachments = (source.attachments.files.additional_attachments || [])
     .filter(val => typeof val === 'string')
@@ -497,7 +516,15 @@ function buildFullPayload(source = formData.value) {
 }
 
 function cloneSection(section) {
-  return JSON.parse(JSON.stringify(section))
+
+  if (section instanceof File) return section
+  if (Array.isArray(section)) return section.map(cloneSection)
+  if (section && typeof section === 'object') {
+    const out = {}
+    for (const key of Object.keys(section)) out[key] = cloneSection(section[key])
+    return out
+  }
+  return section
 }
 
 function cloneFormData(source) {
@@ -1076,6 +1103,42 @@ async function uploadFile(file, docName, fieldname) {
   }
   const data = await res.json()
   return data.message.file_url
+}
+
+async function handleAttachmentFileSelected(id, file) {
+  attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: undefined }
+
+  if (!docName.value) {
+
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: file }
+    return
+  }
+
+  attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
+  try {
+    const fileUrl = await uploadFile(file, docName.value, id)
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
+
+    const data = await saveStep(5, { applyWorkflow: false })
+    docMeta.value = {
+      owner: data.owner,
+      modified: data.modified,
+      creation: data.creation,
+      docstatus: data.docstatus,
+      workflow_state: data.workflow_state,
+      status: data.status,
+      custom_notes: data.custom_notes,
+    }
+    if (docMeta.value.status !== 'Draft' && snapshot.value) {
+      updateSnapshotForStep(5)
+    } else {
+      snapshot.value = cloneFormData(formData.value)
+    }
+  } catch (e) {
+    attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: e.message || t('registration.submitError') }
+  } finally {
+    attachmentUploading.value = { ...attachmentUploading.value, [id]: false }
+  }
 }
 </script>
 
