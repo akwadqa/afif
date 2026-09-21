@@ -1,14 +1,22 @@
 <template>
-  <Dialog v-model="isOpen" :options="{ size: '3xl', position: 'top', paddingTop: dialogPaddingTop }" @close="handleClose">
-    <template #body>
+  <Teleport to="body">
+    <div
+      v-if="isOpen"
+      class="donation-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      @mousedown.self="handleClose"
+    >
+      <div class="donation-modal-wrapper" :style="{ paddingTop: dialogPaddingTop }" @mousedown.self="handleClose">
+        <div class="donation-modal-content">
       <div class="donation-dialog" :dir="isRTL ? 'rtl' : 'ltr'">
         <div class="dialog-header">
+          <h2 class="dialog-title">{{ t('donation.dialog.title') }}</h2>
           <button type="button" class="close-btn" :aria-label="t('donation.dialog.close')" @click="close">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
-          <h2 class="dialog-title">{{ t('donation.dialog.title') }}</h2>
         </div>
 
         <!-- Amount selection -->
@@ -52,7 +60,8 @@
           <span class="no-admin-fee-badge">{{ t('donation.noAdminFee') }}</span>
         </div>
 
-        <!-- Recurrence -->
+        <!-- Recurrence: hidden for now -->
+        <!--
         <div class="dialog-card">
           <div class="frequency-row">
             <button type="button" class="frequency-toggle" @click="toggleFrequency('Monthly')">
@@ -78,6 +87,7 @@
             <p class="frequency-desc">{{ t('donation.frequency.dailyDesc') }}</p>
           </div>
         </div>
+        -->
 
         <!-- Donor info + submit -->
         <div class="dialog-card">
@@ -112,8 +122,10 @@
           <p class="license-text">{{ t('donation.licenseText') }}</p>
         </div>
       </div>
-    </template>
-  </Dialog>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -129,8 +141,17 @@ const viewportWidth = ref(window.innerWidth)
 function updateViewportWidth() {
   viewportWidth.value = window.innerWidth
 }
-onMounted(() => window.addEventListener('resize', updateViewportWidth))
-onUnmounted(() => window.removeEventListener('resize', updateViewportWidth))
+function onKeydown(e) {
+  if (e.key === 'Escape' && isOpen.value) closeDonationDialog()
+}
+onMounted(() => {
+  window.addEventListener('resize', updateViewportWidth)
+  window.addEventListener('keydown', onKeydown)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', updateViewportWidth)
+  window.removeEventListener('keydown', onKeydown)
+})
 const dialogPaddingTop = computed(() => (viewportWidth.value < 640 ? '24px' : '130px'))
 
 const presetAmounts = [1000, 100, 50, 10]
@@ -520,10 +541,27 @@ function handleClose() {
 </style>
 
 <style>
-/* Unscoped: targets frappe-ui's own DialogOverlay wrapper, which sits above
-   this component's slot content and otherwise has no z-index, so the sticky
-   navbar's z-50 paints over it. */
-.dialog-overlay {
+/* Plain modal (no focus trap) rendered in body; z-index above the sticky navbar's z-50. */
+.donation-modal-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 60;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.4);
+}
+.donation-modal-wrapper {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+}
+.donation-modal-content {
+  width: 100%;
+  max-width: 48rem;
+  margin: 2rem 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #ebf4ff;
 }
 </style>

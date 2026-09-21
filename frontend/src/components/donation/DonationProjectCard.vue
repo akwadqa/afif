@@ -1,9 +1,9 @@
 <template>
-  <div class="project-card" :dir="isRTL ? 'rtl' : 'ltr'">
+  <div class="project-card" :dir="isRTL ? 'rtl' : 'ltr'" role="link" tabindex="0" @click="goToDetails" @keydown.enter="goToDetails">
     <div class="card-image">
       <img v-if="project.image" :src="project.image" :alt="project.title" />
-      <button type="button" class="share-btn" :aria-label="t('donation.detail.share')" @click="share">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <button type="button" class="share-btn" :aria-label="t('donation.detail.share')" @click.stop="share">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0-12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Zm0 12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Z" />
         </svg>
       </button>
@@ -32,10 +32,10 @@
       <div class="divider" />
 
       <div class="actions-row">
-        <button type="button" class="primary-btn" @click="openDonationDialog(project)">
+        <button type="button" class="primary-btn" @click.stop="openDonationDialog(project)">
           {{ t('donation.donateNow') }}
         </button>
-        <router-link :to="{ name: 'DonationProject', params: { name: project.name } }" class="secondary-btn">
+        <router-link :to="{ name: 'DonationProject', params: { name: project.name } }" class="secondary-btn" @click.stop>
           {{ t('donation.detail.details') }}
         </router-link>
       </div>
@@ -45,6 +45,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { qatarFlagSvg } from '@/config/donationIcons'
@@ -53,7 +54,12 @@ const props = defineProps({
   project: { type: Object, required: true },
 })
 
+const router = useRouter()
 const { t, isRTL } = useLanguage()
+
+function goToDetails() {
+  router.push({ name: 'DonationProject', params: { name: props.project.name } })
+}
 const { openDonationDialog } = useDonationDialog()
 
 const coveragePercentage = computed(() => Math.min(Math.round(props.project.percentage || 0), 100))
@@ -101,6 +107,7 @@ async function share() {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   scroll-snap-align: start;
+  cursor: pointer;
 }
 
 .card-image {
@@ -239,7 +246,7 @@ async function share() {
 }
 
 .secondary-btn {
-  @apply flex-1 h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium transition-colors hover:bg-sky-50 whitespace-nowrap;
+  @apply flex-1 h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-bold transition-colors hover:bg-sky-50 whitespace-nowrap;
   background: #ffffff;
   border: 1px solid #d3d3d3;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -248,7 +255,7 @@ async function share() {
 }
 
 .primary-btn {
-  @apply flex-1 h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-medium text-white transition-opacity hover:opacity-90 whitespace-nowrap border-none;
+  @apply flex-1 h-9 sm:h-10 flex items-center justify-center text-xs sm:text-sm font-bold text-white transition-opacity hover:opacity-90 whitespace-nowrap border-none;
   background: #00adef;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   border-radius: 12px;

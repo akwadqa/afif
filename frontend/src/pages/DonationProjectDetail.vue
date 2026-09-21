@@ -1,13 +1,16 @@
 <template>
   <div class="detail-page" :dir="isRTL ? 'rtl' : 'ltr'" style="background: #EBF4FF;">
-    <div class="detail-inner" v-if="project">
+    <div class="detail-inner" :class="{ 'is-wide': isWide }" v-if="project">
 
-      <button type="button" class="back-btn" @click="router.push({ name: 'Donate' })">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4" :class="{ 'rotate-180': !isRTL }">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-        <span>{{ t('donation.detail.back') }}</span>
-      </button>
+      <nav class="back-btn" aria-label="breadcrumb">
+        <a href="#" class="crumb-link" @click.prevent="router.push({ name: 'Donate' })">{{ t('donation.detail.mainPage') }}</a>
+        <template v-if="project.program_title">
+          <span class="crumb-sep">/</span>
+          <a href="#" class="crumb-link" @click.prevent="router.push({ name: 'Donate' })">{{ project.program_title }}</a>
+        </template>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">{{ project.title }}</span>
+      </nav>
 
       <div class="intro-row">
         <div class="quotes-box">
@@ -42,7 +45,7 @@
           <div class="meta-col">
             <span class="project-number">{{ project.name }}</span>
             <button type="button" class="icon-btn" :aria-label="t('donation.detail.share')" @click="share">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0-12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Zm0 12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Z" />
               </svg>
             </button>
@@ -94,12 +97,17 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
+import { useSidebar } from '@/composables/useSidebar'
+import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { programIconFallback, qatarFlagSvg } from '@/config/donationIcons'
 
 const route = useRoute()
 const router = useRouter()
+const { sidebarOpen } = useSidebar()
+// Use the full width when the sidebar isn't taking space
+const isWide = computed(() => !(session.isLoggedIn && sidebarOpen.value))
 const { t, isRTL, currentLang } = useLanguage()
 const { openDonationDialog } = useDonationDialog()
 
@@ -188,17 +196,36 @@ async function share() {
 }
 
 .back-btn {
-  @apply flex items-center gap-1.5 text-sm text-gray-500 hover:text-sky-600 font-medium transition-colors;
+  @apply flex items-center flex-wrap gap-2 text-sm text-gray-500 font-medium;
+}
+
+.crumb-link {
+  @apply hover:text-sky-600 transition-colors;
+}
+
+.crumb-sep {
+  @apply text-gray-400;
+}
+
+.crumb-current {
+  @apply text-gray-800;
 }
 
 .intro-row {
-  @apply flex flex-col md:flex-row items-start gap-4 sm:gap-6;
+  @apply flex flex-col md:flex-row md:items-stretch gap-4 sm:gap-6;
 }
 
 .image-wrap {
   @apply relative w-full md:w-[42%] rounded-xl overflow-hidden shrink-0;
   aspect-ratio: 473 / 314;
   background: linear-gradient(359.92deg, rgba(0, 173, 239, 0.2) 0.07%, rgba(255, 255, 255, 0.2) 99.93%), #e6eff8;
+}
+
+@media (min-width: 768px) {
+  .image-wrap {
+    aspect-ratio: auto;
+    min-height: 260px;
+  }
 }
 
 .image-wrap img {
@@ -298,7 +325,7 @@ async function share() {
 }
 
 .project-title {
-  @apply text-xl sm:text-2xl md:text-[32px] font-bold text-gray-800;
+  @apply text-lg sm:text-xl md:text-[26px] font-semibold text-gray-800;
 }
 
 .icon-btn {
@@ -318,6 +345,10 @@ async function share() {
 
 .total-block {
   @apply flex flex-col gap-1;
+}
+
+.total-block:last-child {
+  @apply items-end text-end;
 }
 
 .total-label {
@@ -399,5 +430,9 @@ async function share() {
 
 .not-found {
   @apply text-center text-sm text-gray-400 mt-20;
+}
+
+.detail-inner.is-wide {
+  max-width: 1600px;
 }
 </style>

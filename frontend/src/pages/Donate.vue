@@ -1,6 +1,6 @@
 <template>
   <div class="landing-page" :dir="isRTL ? 'rtl' : 'ltr'" style="background: #EBF4FF;">
-    <div class="landing-inner">
+    <div class="landing-inner" :class="{ 'is-wide': isWide }">
 
       <!-- Category filter chips -->
       <div class="chip-bar">
@@ -104,10 +104,15 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { createResource } from 'frappe-ui'
+import { useSidebar } from '@/composables/useSidebar'
+import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { programIconFallback, gridIconSvg, noFeesIconSvg } from '@/config/donationIcons'
 import DonationProjectCard from '@/components/donation/DonationProjectCard.vue'
 
+const { sidebarOpen } = useSidebar()
+// Use the full width when the sidebar isn't taking space
+const isWide = computed(() => !(session.isLoggedIn && sidebarOpen.value))
 const { t, isRTL, currentLang } = useLanguage()
 
 const activeProgram = ref('all')
@@ -188,6 +193,11 @@ function scrollRow(event, direction, programName) {
   color: #ffffff;
 }
 
+/* Uploaded program icons are <img>, so `color` can't recolour them: force white when active. */
+.icon-chip.active img {
+  filter: brightness(0) invert(1);
+}
+
 .all-chip {
   @apply flex;
 }
@@ -247,7 +257,8 @@ function scrollRow(event, direction, programName) {
 
 .program-quote {
   border-inline-start: 4px solid #00adef;
-  @apply bg-sky-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 text-[13px] sm:text-sm leading-relaxed;
+  @apply bg-sky-50 rounded-xl px-4 py-3 sm:px-5 sm:py-4 text-[13px] sm:text-sm;
+  line-height: 2;
   color: #141d23;
 }
 
@@ -281,5 +292,9 @@ function scrollRow(event, direction, programName) {
 
 .empty-state {
   @apply text-center text-sm text-gray-400;
+}
+
+.landing-inner.is-wide {
+  max-width: 1600px;
 }
 </style>
