@@ -29,36 +29,18 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-2 py-6 space-y-1 overflow-y-auto">
-      <router-link
-        v-for="item in menuItems"
-        :key="item.routeName"
-        :to="{ name: item.routeName }"
-        custom
-        v-slot="{ navigate, isActive }"
-      >
-        <button
-          @click="navigate"
-          :class="[
-            'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative',
-            'flex-row',
-            isActive
-              ? 'bg-sky-50 text-sky-600 font-semibold'
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
-          ]"
+      <template v-for="item in menuItems" :key="item.labelKey">
+        <a
+          v-if="item.externalHref"
+          :href="item.externalHref"
+          target="_blank"
+          rel="noopener"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative flex-row text-gray-500 hover:bg-gray-50 hover:text-gray-700"
         >
-          <!-- Active indicator — right edge in RTL, left edge in LTR -->
-          <div
-            v-if="isActive"
-            :class="[
-              'absolute inset-y-0 w-1 bg-sky-500',
-              isRTL ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full',
-            ]"
-          />
           <!-- Icon -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5 shrink-0"
-            :class="isActive ? 'text-sky-600' : 'text-gray-400'"
+            class="w-5 h-5 shrink-0 text-gray-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -67,8 +49,48 @@
           />
           <!-- Label -->
           <span class="flex-1 text-sm text-start">{{ t(item.labelKey) }}</span>
-        </button>
-      </router-link>
+        </a>
+
+        <router-link
+          v-else
+          :to="{ name: item.routeName }"
+          custom
+          v-slot="{ navigate, isActive }"
+        >
+          <button
+            @click="navigate"
+            :class="[
+              'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative',
+              'flex-row',
+              isActive
+                ? 'bg-sky-50 text-sky-600 font-semibold'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700',
+            ]"
+          >
+            <!-- Active indicator — right edge in RTL, left edge in LTR -->
+            <div
+              v-if="isActive"
+              :class="[
+                'absolute inset-y-0 w-1 bg-sky-500',
+                isRTL ? 'right-0 rounded-l-full' : 'left-0 rounded-r-full',
+              ]"
+            />
+            <!-- Icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5 shrink-0"
+              :class="isActive ? 'text-sky-600' : 'text-gray-400'"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.5"
+              v-html="item.svgPath"
+            />
+            <!-- Label -->
+            <span class="flex-1 text-sm text-start">{{ t(item.labelKey) }}</span>
+          </button>
+        </router-link>
+      </template>
 
       <!-- Divider -->
       <div class="mt-6 mb-4 border-t border-gray-100"></div>
@@ -117,7 +139,7 @@ const menuItems = [
   },
   {
     labelKey: 'sidebar.donate',
-    routeName: 'Donate',
+    externalHref: 'https://donate.afif.qa/',
     svgPath: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />',
   },
 ]

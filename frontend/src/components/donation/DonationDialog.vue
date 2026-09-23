@@ -96,22 +96,41 @@
             <label for="dialog-anonymous" class="checkbox-label">{{ t('donation.anonymousLabel') }}</label>
           </div>
 
-          <Transition name="fade-slide">
-            <div v-if="!donorForm.isAnonymous" class="donor-fields">
-              <div class="field-group">
-                <label class="field-label-plain">{{ t('donation.donorName') }}</label>
-                <input type="text" v-model="donorForm.fullName" class="text-input" :placeholder="t('donation.donorNamePlaceholder')" />
-              </div>
-              <div class="field-group">
-                <label class="field-label-plain">{{ t('donation.donorPhone') }}</label>
-                <input type="tel" v-model="donorForm.phone" class="text-input" :placeholder="t('donation.donorPhonePlaceholder')" />
-              </div>
-              <div class="field-group">
-                <label class="field-label-plain">{{ t('donation.donorEmail') }}</label>
-                <input type="email" v-model="donorForm.email" class="text-input" :placeholder="t('donation.donorEmailPlaceholder')" />
-              </div>
+          <div class="donor-fields">
+            <div class="field-group">
+              <label class="field-label-plain">{{ t('donation.donorName') }}</label>
+              <input
+                type="text"
+                v-model="donorForm.fullName"
+                class="text-input"
+                :readonly="donorForm.isAnonymous"
+                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
+                :placeholder="t('donation.donorNamePlaceholder')"
+              />
             </div>
-          </Transition>
+            <div class="field-group">
+              <label class="field-label-plain">{{ t('donation.donorPhone') }}</label>
+              <input
+                type="tel"
+                v-model="donorForm.phone"
+                class="text-input"
+                :readonly="donorForm.isAnonymous"
+                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
+                :placeholder="t('donation.donorPhonePlaceholder')"
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label-plain">{{ t('donation.donorEmail') }}</label>
+              <input
+                type="email"
+                v-model="donorForm.email"
+                class="text-input"
+                :readonly="donorForm.isAnonymous"
+                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
+                :placeholder="t('donation.donorEmailPlaceholder')"
+              />
+            </div>
+          </div>
 
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
@@ -488,6 +507,11 @@ function handleClose() {
 
 .text-input:focus {
   border-color: #0570b6;
+}
+
+.text-input-readonly {
+  @apply opacity-60 cursor-not-allowed;
+  background: #eceff1;
 }
 
 .error-text {

@@ -2,13 +2,14 @@
   <div class="bg-white border-b border-gray-100 shadow-md md:hidden" :dir="isRTL ? 'rtl' : 'ltr'">
     <div class="px-4 py-2 flex flex-col">
 
-      <!-- Nav links -->
+      <!-- All navigation links removed per client request; kept commented for future reference.
       <MobileMenuItem
         v-for="item in navItems"
         :key="item.key"
         :item="item"
         @close="$emit('close')"
       />
+      -->
 
       <!-- Language toggle -->
       <div class="py-3">

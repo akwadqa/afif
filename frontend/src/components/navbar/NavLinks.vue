@@ -1,6 +1,8 @@
 <template>
   <div class="flex items-center gap-6">
+    <!-- All navigation links removed per client request; kept commented for future reference.
     <NavDropdown v-for="item in navItems" :key="item.key" :item="item" />
+    -->
   </div>
 </template>
 
