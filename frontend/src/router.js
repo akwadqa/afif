@@ -48,6 +48,7 @@ const routes = [
 
   {
     path: '/donate',
+    alias: '/new-donate',
     component: () => import('@/layouts/DefaultLayout.vue'),
     children: [
       {
