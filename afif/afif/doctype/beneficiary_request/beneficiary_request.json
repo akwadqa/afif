@@ -531,7 +531,7 @@
    "fieldname": "grade_transcript",
    "fieldtype": "Attach",
    "hidden": 1,
-   "label": "Grade Transcript"
+   "label": "Grade Transcript or School Certificate for the Last Semester"
   },
   {
    "depends_on": "eval:in_list([\"Social Assistance\", \"Akwad\"], doc.request_category) && in_list([\"Garmeen\", \"Akwad\"], doc.social_assistance)",

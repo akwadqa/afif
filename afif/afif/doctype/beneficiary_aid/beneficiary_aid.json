@@ -10,6 +10,8 @@
  "field_order": [
   "request_category",
   "beneficiaries",
+  "beneficiary_name",
+  "beneficiary_personal_id",
   "beneficiary_request",
   "status",
   "medical_assistance_section",
@@ -177,8 +179,7 @@
   {
    "fieldname": "suggested_amount",
    "fieldtype": "Data",
-   "label": "Estimated Amount",
-   "read_only": 1
+   "label": "Estimated Amount"
   },
   {
    "depends_on": "eval: doc.workflow_state === \"Under Processing\" || doc.workflow_state === \"Approved\"",
@@ -193,7 +194,6 @@
    "default": "0",
    "fieldname": "installments_count",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Installments Count"
   },
   {
@@ -261,11 +261,35 @@
    "fieldtype": "Data",
    "label": "Aid Total Amount",
    "read_only": 1
+  },
+  {
+   "fetch_from": "beneficiaries.ar_name",
+   "fetch_if_empty": 1,
+   "fieldname": "beneficiary_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Beneficiary Name",
+   "options": "Beneficiaries Registration",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "beneficiaries.ben_primary_idnumber",
+   "fetch_if_empty": 1,
+   "fieldname": "beneficiary_personal_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Beneficiary Personal ID",
+   "options": "Beneficiaries Registration",
+   "read_only": 1,
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-23 12:56:09.816392",
+ "modified": "2026-08-06 10:40:12.928423",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",
@@ -285,6 +309,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

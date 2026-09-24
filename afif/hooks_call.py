@@ -16,6 +16,28 @@ def get_home_page(user):
     return None
 
 
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def update_password(new_password, logout_all_sessions=0, key=None, old_password=None):
+    from frappe.core.doctype.user.user import update_password as _update_password
+
+    redirect_url = _update_password(
+        new_password=new_password,
+        logout_all_sessions=logout_all_sessions,
+        key=key,
+        old_password=old_password,
+    )
+
+    # Invalid/expired reset key: native call already set a 410 response
+    # and returned an error message instead of a redirect url.
+    if frappe.local.response.get("http_status_code") == 410:
+        return redirect_url
+
+    if frappe.session.data.user_type == "Website User":
+        return get_home_page(frappe.session.user)
+
+    return redirect_url
+
+
 def get_sanadi_integration_settings():
     if frappe.db.exists("Sanadi Integration Settings", {"user": frappe.session.user}):
         sanadi_integration_settings = frappe.get_doc("Sanadi Integration Settings", {"user": frappe.session.user})
@@ -1202,7 +1224,6 @@ def set_aid_amount(doc, method):
         query = f"""update `tabBeneficiary Aid` set `aid_amount`={average_amount}
             where name="{doc.name}" """
         frappe.db.sql(query)
-        frappe.db.commit()
 
 
 def set_aid_total_amount(doc, method):
@@ -1213,7 +1234,6 @@ def set_aid_total_amount(doc, method):
         query = f"""update `tabBeneficiary Aid` set `aid_total_amount`={aid_total_amount}
             where name="{doc.name}" """
         frappe.db.sql(query)
-        frappe.db.commit()
         doc.reload()
 
 
@@ -1302,26 +1322,28 @@ def new_aid_request(doc, method):
                     msg = f"Aid response fail: {response_aid.json()}"
                     frappe.log_error("aid response", msg)
 
-                    message = response_aid.json().get('ms')
-                    frappe.msgprint(message, indicator="red", title="Aid Request Failed")
+                    message = response_aid.json().get('ms') or "Sanadi aid request failed"
+                    frappe.throw(message, title="Aid Request Failed")
 
             else:
                 msg = f"Validate response fail: {response_val.json()}"
                 frappe.log_error("validate response", msg)
+                frappe.throw("Sanadi token validation failed", title="Aid Request Failed")
 
         else:
             msg = f"Authentication response fail: {response_auth.json()}"
             frappe.log_error("authentication response", msg)
+            frappe.throw("Sanadi authentication failed", title="Aid Request Failed")
 
 
 
 def get_doner_id(doc):
     if doc.doner_id == "Donor Entity":
-        doner_id = 1
+        return 1
     elif doc.doner_id == "Doner":
-        doner_id = 2
+        return 2
 
-    return doner_id
+    frappe.throw("Donor ID must be selected before approving the aid.")
 
 
 def get_periodic_type(doc):
@@ -1426,9 +1448,9 @@ def get_existing_doc(user, id, dir):
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
 
         if dir == "rtl":
-            msg = f"{id} مرتبط بالفعل بالحساب {hidden_user_id}"
+            msg = "رقم البطاقة الشخصية مسجل مسبقا يجب تسجيل الدخول للحساب المسجل مسبقا"
         else:
-            msg = f"{id} is already associated with {hidden_user_id}"
+            msg = "This Personal ID is already registered. Please sign in to the existing account."
         return msg
 
     return None

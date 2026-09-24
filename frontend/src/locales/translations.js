@@ -25,6 +25,7 @@ export default {
         additionalInfoTooLong: 'لا يمكن أن يحتوي هذا الحقل على أكثر من 120 حرفًا (حوالي 3 أسطر)',
         maxCharsExceeded: 'لا يمكن أن يتجاوز هذا الحقل 2000 حرف',
         maxCharsSuffix: 'حرف كحد أقصى',
+        mustBeGreaterThanZero: 'يجب أن تكون القيمة أكبر من 0',
       },
       steps: {
         personalData: 'البيانات الشخصية',
@@ -259,6 +260,7 @@ export default {
       attachments: {
         listTitle: 'قائمة المرفقات المطلوبة',
         upload: 'تحميل',
+        uploading: 'جارٍ الرفع...',
         reupload: 'إعادة تحميل الملف',
         delete: 'مسح',
         addAnother: 'إضافة مرفق آخر',
@@ -577,7 +579,7 @@ export default {
         docs: {
           medicalBill: 'فاتورة طبية',
           educationInvoice: 'فاتورة مستحقات المدرسة/الجامعة',
-          gradeTranscript: 'كشف الدرجات',
+          gradeTranscript: 'كشف درجات او شهادة دراسية لآخر فصل دراسي',
           garmeenProof: 'إثبات الغارمين',
           garmeenDisclosure: 'إفصاح القضايا والأحكام (محدّث)',
           travelTicketDoc: 'إثبات الحاجة لتذكرة سفر',
@@ -943,6 +945,7 @@ export default {
         additionalInfoTooLong: 'This field cannot contain more than 120 characters (about 3 lines)',
         maxCharsExceeded: 'This field cannot exceed 2000 characters',
         maxCharsSuffix: 'characters maximum',
+        mustBeGreaterThanZero: 'Must be greater than 0',
       },
       steps: {
         personalData: 'Personal Data',
@@ -1177,6 +1180,7 @@ export default {
       attachments: {
         listTitle: 'Required Attachments',
         upload: 'Upload',
+        uploading: 'Uploading...',
         reupload: 'Re-upload File',
         delete: 'Remove',
         addAnother: 'Add another attachment',
@@ -1495,7 +1499,7 @@ export default {
         docs: {
           medicalBill: 'Medical Bill',
           educationInvoice: 'School/University Dues Invoice',
-          gradeTranscript: 'Grade Transcript',
+          gradeTranscript: 'Grade Transcript or School Certificate for the Last Semester',
           garmeenProof: 'Garmeen Proof',
           garmeenDisclosure: 'Disclosure of Cases and Rulings (Updated)',
           travelTicketDoc: 'Travel Ticket Need Proof',

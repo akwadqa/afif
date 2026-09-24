@@ -25,14 +25,29 @@
               {{ t(doc.labelKey) }}
               <span v-if="doc.required" class="text-red-500">*</span>
             </div>
+            <div v-if="uploadErrors[doc.id]" class="text-xs text-red-500 mt-1">
+              {{ uploadErrors[doc.id] }}
+            </div>
           </div>
 
           <!-- Action buttons + file name -->
           <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
 
+            <!-- Uploading (in progress) -->
+            <span
+              v-if="uploading[doc.id]"
+              class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-gray-400"
+            >
+              <svg class="w-4 h-4 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
+              </svg>
+              <span>{{ t('registration.attachments.uploading') }}</span>
+            </span>
+
             <!-- Upload (no file yet) -->
             <button
-              v-if="!modelValue.files[doc.id]"
+              v-else-if="!modelValue.files[doc.id]"
               type="button"
               @click="triggerFileInput(doc.id)"
               class="flex items-center gap-1.5 px-4 py-2 border border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm"
@@ -212,8 +227,10 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   context: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
+  uploading: { type: Object, default: () => ({}) },
+  uploadErrors: { type: Object, default: () => ({}) },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'select-file'])
 
 function isInvalid(field) {
   return props.invalidFields.includes(field)
@@ -315,17 +332,13 @@ function handleFileSelected(event, id) {
     return
   }
 
-  emit('update:modelValue', {
-    ...props.modelValue,
-    files: { ...props.modelValue.files, [id]: file },
-  })
+  emit('select-file', id, file)
   event.target.value = ''
 }
 
 function deleteFile(id) {
-  const files = { ...props.modelValue.files }
-  delete files[id]
-  emit('update:modelValue', { ...props.modelValue, files })
+
+  emit('update:modelValue', { ...props.modelValue, files: { ...props.modelValue.files, [id]: null } })
 }
 
 const additionalAttachments = computed(() => props.modelValue.files.additional_attachments || [])

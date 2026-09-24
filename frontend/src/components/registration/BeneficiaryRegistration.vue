@@ -42,7 +42,15 @@
 
         <div v-else-if="currentStep === 4">
           <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
-          <AttachmentsCard v-else-if="subStep4 === 2" v-model="formData.attachments" :context="formData" :invalid-fields="invalidFields" />
+          <AttachmentsCard
+            v-else-if="subStep4 === 2"
+            v-model="formData.attachments"
+            :context="formData"
+            :invalid-fields="invalidFields"
+            :uploading="attachmentUploading"
+            :upload-errors="attachmentUploadErrors"
+            @select-file="handleAttachmentFileSelected"
+          />
         </div>
       </div>
 
@@ -126,7 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['submitted', 'back'])
 const { t, isRTL } = useLanguage()
 
-const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required']
+const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required', 'Updated', 'Updated beneficiary']
 
 const currentStep = ref(1)
 const subStep4 = ref(1)
@@ -134,6 +142,8 @@ const maxStepReached = ref(1)
 const snapshot = ref(null)
 const submitting = ref(false)
 const error = ref('')
+const attachmentUploading = ref({})
+const attachmentUploadErrors = ref({})
 const docName = ref(null)
 const docMeta = ref({})
 const showValidationPopup = ref(false)
@@ -265,15 +275,13 @@ function populateFromDoc(doc) {
   }
 
   const step = doc.current_step || 0
-  if (step >= 5) {
-    currentStep.value = 1
-    subStep4.value = 1
-  } else {
-    const nextStep = step + 1
-    currentStep.value = nextStep >= 4 ? 4 : nextStep
-    subStep4.value = nextStep >= 5 ? 2 : 1
-  }
-  maxStepReached.value = logicalCurrentStep.value
+  const nextStep = step + 1
+  const resumeStep = step >= 5 ? 1 : (nextStep >= 4 ? 4 : nextStep)
+  const resumeSubStep4 = step >= 5 || nextStep >= 5 ? 2 : 1
+
+  currentStep.value = 1
+  subStep4.value = 1
+  maxStepReached.value = resumeStep === 4 && resumeSubStep4 === 2 ? 5 : resumeStep
 
   formData.value.personalInfo = {
     ar_name: doc.ar_name,
@@ -286,6 +294,7 @@ function populateFromDoc(doc) {
     gender: doc.gender,
     date_of_birth: doc.date_of_birth,
     phone_number: doc.phone_number,
+    partners_phone_number: doc.partners_phone_number,
     marital_status: doc.marital_status,
     partner_name: doc.partner_name,
     expartner_name: doc.expartner_name,
@@ -440,9 +449,18 @@ function buildAttachmentsPayload(source) {
     verification_consent:   lc.verificationRight ? 1 : 0,
     cancellation_right:     lc.statusAwareness   ? 1 : 0,
   }
+
+  const lastKnownFiles = snapshot.value?.attachments?.files || {}
   for (const field of ATTACHMENT_FIELDS) {
     const val = source.attachments.files[field]
-    if (typeof val === 'string') payload[field] = val
+    if (typeof val === 'string') {
+      payload[field] = val
+    } else if (val === null) {
+      // Explicit user deletion (see AttachmentsCard's deleteFile) — clear it for real.
+      payload[field] = ''
+    } else if (typeof lastKnownFiles[field] === 'string') {
+      payload[field] = lastKnownFiles[field]
+    }
   }
   payload.additional_attachments = (source.attachments.files.additional_attachments || [])
     .filter(val => typeof val === 'string')
@@ -498,7 +516,15 @@ function buildFullPayload(source = formData.value) {
 }
 
 function cloneSection(section) {
-  return JSON.parse(JSON.stringify(section))
+
+  if (section instanceof File) return section
+  if (Array.isArray(section)) return section.map(cloneSection)
+  if (section && typeof section === 'object') {
+    const out = {}
+    for (const key of Object.keys(section)) out[key] = cloneSection(section[key])
+    return out
+  }
+  return section
 }
 
 function cloneFormData(source) {
@@ -673,25 +699,27 @@ function validateStep(targetStep, targetSubStep4) {
     req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
     if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
     if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
-    req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
+    if (isResidence) req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
     req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
 
     req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
-    if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
-      req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
-      req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
-      req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
-      if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
-        errors.push(t('registration.validation.idMustBe11'))
-        fields.push('requestor_idnumber')
-      }
-      req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
-      req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
-      if (ai.requestor_number && ai.requestor_number.length !== 8) {
-        errors.push(t('registration.validation.phoneMustBe8'))
-        fields.push('requestor_number')
-      }
-    }
+    // Requestor sub-fields validation kept for reference, disabled now that
+    // ben_requestor_relationtype only allows "The same subvention requestor".
+    // if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
+    //   req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
+    //   req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
+    //   req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
+    //   if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
+    //     errors.push(t('registration.validation.idMustBe11'))
+    //     fields.push('requestor_idnumber')
+    //   }
+    //   req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
+    //   req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
+    //   if (ai.requestor_number && ai.requestor_number.length !== 8) {
+    //     errors.push(t('registration.validation.phoneMustBe8'))
+    //     fields.push('requestor_number')
+    //   }
+    // }
     req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
     if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
     if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))
@@ -760,39 +788,45 @@ function validateStep(targetStep, targetSubStep4) {
     }
     const obligationSources = [
       { field: 'family_obligation',   subFields: [
-        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel') },
+        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel'), positive: true },
         { name: 'family_obligation_periodicity',         label: t('registration.financialObligations.familyPeriodicLabel') },
         { name: 'family_expenses',                       label: t('registration.financialObligations.familyAmountLabel') },
         { name: 'family_obligations_note',               label: t('registration.financialObligations.familyNoteLabel') },
       ]},
       { field: 'rent_obligation',     subFields: [
         { name: 'rent_obligation_periodicity',           label: t('registration.financialObligations.rentPeriodicLabel') },
-        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel') },
+        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel'), positive: true },
         { name: 'rent_amount',                           label: t('registration.financialObligations.rentAmountLabel') },
         { name: 'rent_obligations_note',                 label: t('registration.financialObligations.rentNoteLabel') },
       ]},
       { field: 'treatment_obligation',subFields: [
         { name: 'treatment_obligation_periodicity',          label: t('registration.financialObligations.treatmentPeriodicLabel') },
-        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel') },
+        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel'), positive: true },
         { name: 'treatment_amount',                          label: t('registration.financialObligations.treatmentAmountLabel') },
         { name: 'treatment_obligations_note',                label: t('registration.financialObligations.treatmentNoteLabel') },
       ]},
       { field: 'debt_obligation',     subFields: [
         { name: 'debt_obligation_periodicity',           label: t('registration.financialObligations.debtPeriodicLabel') },
-        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel') },
+        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel'), positive: true },
         { name: 'bank_payments_amount',                  label: t('registration.financialObligations.debtAmountLabel') },
         { name: 'debt_obligations_note',                 label: t('registration.financialObligations.debtNoteLabel') },
       ]},
       { field: 'tuition_obligation',  subFields: [
         { name: 'tuition_obligation_periodicity',          label: t('registration.financialObligations.tuitionPeriodicLabel') },
-        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel') },
+        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel'), positive: true },
         { name: 'tuition_obligations_note',                label: t('registration.financialObligations.tuitionNoteLabel') },
         { name: 'tuition_amount',                          label: t('registration.financialObligations.tuitionAmountLabel') },
       ]},
     ]
     for (const src of obligationSources) {
       if (fo[src.field] == 1) {
-        for (const f of src.subFields) req(fo[f.name], f.name, f.label)
+        for (const f of src.subFields) {
+          req(fo[f.name], f.name, f.label)
+          if (f.positive && fo[f.name] !== undefined && fo[f.name] !== null && fo[f.name] !== '' && Number(fo[f.name]) <= 0) {
+            errors.push(t('registration.validation.mustBeGreaterThanZero'))
+            fields.push(f.name)
+          }
+        }
       }
     }
   }
@@ -1069,6 +1103,42 @@ async function uploadFile(file, docName, fieldname) {
   }
   const data = await res.json()
   return data.message.file_url
+}
+
+async function handleAttachmentFileSelected(id, file) {
+  attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: undefined }
+
+  if (!docName.value) {
+
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: file }
+    return
+  }
+
+  attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
+  try {
+    const fileUrl = await uploadFile(file, docName.value, id)
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
+
+    const data = await saveStep(5, { applyWorkflow: false })
+    docMeta.value = {
+      owner: data.owner,
+      modified: data.modified,
+      creation: data.creation,
+      docstatus: data.docstatus,
+      workflow_state: data.workflow_state,
+      status: data.status,
+      custom_notes: data.custom_notes,
+    }
+    if (docMeta.value.status !== 'Draft' && snapshot.value) {
+      updateSnapshotForStep(5)
+    } else {
+      snapshot.value = cloneFormData(formData.value)
+    }
+  } catch (e) {
+    attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: e.message || t('registration.submitError') }
+  } finally {
+    attachmentUploading.value = { ...attachmentUploading.value, [id]: false }
+  }
 }
 </script>
 

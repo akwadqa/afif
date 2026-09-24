@@ -12,6 +12,7 @@
       <div class="flex items-center gap-2 md:gap-4">
         <NavLogo />
         <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
+        <!-- Donate Now link removed per client request; kept commented for future reference.
         <a
           href="https://donate.afif.qa/"
           target="_blank"
@@ -20,6 +21,7 @@
         >
           {{ t('nav.donateNow') }}
         </a>
+        -->
       </div>
 
       <!-- End: Nav links (desktop) + hamburger -->
