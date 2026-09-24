@@ -33,5 +33,3 @@ export const navConfig = [
     children: [],
   },
 ]
-
-export const donateNowRoute = 'https://donate.afif.qa/'

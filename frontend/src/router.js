@@ -47,6 +47,37 @@ const routes = [
   },
 
   {
+    path: '/donate',
+    component: () => import('@/layouts/DefaultLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Donate',
+        component: () => import('@/pages/Donate.vue'),
+        meta: { public: true },
+      },
+      {
+        path: 'project/:name',
+        name: 'DonationProject',
+        component: () => import('@/pages/DonationProjectDetail.vue'),
+        meta: { public: true },
+      },
+      {
+        path: 'form',
+        name: 'DonationCheckout',
+        component: () => import('@/components/donation/DonationForm.vue'),
+        meta: { public: true },
+      },
+      {
+        path: 'success',
+        name: 'DonationSuccess',
+        component: () => import('@/pages/DonationSuccess.vue'),
+        meta: { public: true },
+      },
+    ],
+  },
+
+  {
     path: '/',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },

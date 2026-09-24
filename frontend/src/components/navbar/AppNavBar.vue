@@ -14,10 +14,10 @@
         <LanguageToggle :class="session.isLoggedIn ? 'hidden md:flex' : 'flex'" />
         <!-- Donate Now link removed per client request; kept commented for future reference.
         <a
-          :href="donateNowRoute"
+          href="https://donate.afif.qa/"
           target="_blank"
           rel="noopener"
-          class="bg-[#005979] text-white px-3 py-1.5 text-xs md:px-5 md:py-2 md:text-sm rounded-lg font-semibold hover:bg-[#004a66] transition-colors whitespace-nowrap"
+          class="bg-[#0284C7] text-white px-4 py-2.5 text-xs md:px-6 md:py-3 md:text-sm rounded-lg font-semibold hover:bg-[#026aa3] transition-colors whitespace-nowrap"
         >
           {{ t('nav.donateNow') }}
         </a>
@@ -64,7 +64,6 @@ import MobileMenu from './MobileMenu.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import { useLanguage } from '@/composables/useLanguage'
 import { session } from '@/data/session'
-import { donateNowRoute } from '@/config/navConfig'
 
 const { isRTL, t } = useLanguage()
 
