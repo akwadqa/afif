@@ -109,30 +109,71 @@ def link_user(doc, method):
 #         enqueue("afif.hooks_call.create_new_beneficiary", doc=doc)
 
 
+def get_missing_required_attachments(doc):
+
+    is_married = doc.marital_status == "Married"
+    is_divorced = doc.marital_status == "Divorced"
+    is_widowed = doc.marital_status == "Widowed"
+    is_residence = doc.visa_type == "Residence"
+    family_residence = doc.family_visa_type == "Residence"
+    children_above_eighteen = doc.children_above_eighteen == "Yes"
+    not_working = doc.currently_working == "No"
+
+    required = {
+        "qid": True,
+        "passport": True,
+        "wife_id": is_married,
+        "wife_passport": is_married,
+        "children_identification": doc.have_children == "Yes",
+        "rent_contract": doc.housing_type == "Rental",
+        "property_deed": doc.housing_type == "Private Ownership",
+        "bank_statement": is_residence,
+        "wife_bank_statement": is_married and family_residence,
+        "wife_credit_certificate": is_married and family_residence,
+        "beneficiary_credit_certificate": is_residence,
+        "children_bank_statement": family_residence and children_above_eighteen,
+        "children_credit_information": family_residence and children_above_eighteen,
+        "social_security_certificate": doc.ben_nationality == "Qatar" and not_working,
+        "partner_work_certificate": doc.partner_working == "Yes",
+        "employment_certificate": doc.currently_working == "Yes",
+        "vehicle_certificate": is_residence,
+        "iban_picture": is_residence,
+        "children_schooling_proof": doc.children_in_school == "Yes",
+        "special_needs_certificate": doc.children_special_needs == "Yes",
+        "termination_letter": not_working and doc.worked_before == "Yes",
+        "nonmarriage_proof": is_divorced or is_widowed,
+        "divorce_paper": is_divorced,
+        "partner_death_certificate": is_widowed,
+        "copy_of_court_judgment": doc.bank_loans == "Yes" and doc.court_tried == "Yes",
+        "id_coresidents": doc.coresidence == "Yes",
+        "id_sponsored": doc.visa_dependent == "Yes",
+        "metrash_adress": True,
+    }
+    return [field for field, needed in required.items() if needed and not doc.get(field)]
+
+
+def is_registration_complete(doc):
+    return (
+        not get_missing_required_attachments(doc)
+        and doc.documents_confirmation
+        and doc.verification_consent
+        and doc.cancellation_right
+    )
+
+
 # set status to Updated
 def updated_status(doc, method):
-    query = f""" select status from `tabBeneficiaries Registration` where name="{doc.name}" """
-    status = frappe.db.sql(query)
-    if status:
-        status = status[0][0]
-        if doc.workflow_state == "Not Accepted" and status == "Not Accepted" and (doc.current_step or 0) >= 5:
-            # Gated on the final step so an autosave on an earlier step (still carrying the same
-            # unchanged workflow_state) doesn't flip the record to "Updated" before the
-            # beneficiary has actually finished revising the rejected registration.
+    if doc.is_new():
+        return
+    status = frappe.db.get_value("Beneficiaries Registration", doc.name, "status")
+
+    if doc.workflow_state == "Not Accepted" and status == "Not Accepted" and (doc.current_step or 0) >= 5:
+        if is_registration_complete(doc):
             doc.status = "Updated"
             doc.workflow_state = "Updated"
-            # query = f"""update `tabBeneficiaries Registration` set `status`="Updated"
-            #             where name="{doc.name}" """
-            # frappe.db.sql(query)
-            # frappe.db.commit()
-            # doc.reload()
-        elif doc.workflow_state == "Update Required" and status == "Update Required" and doc.qid and doc.passport:
-            # qid/passport are the two attachments required on every registration regardless of
-            # marital/visa status; their presence is what proves the beneficiary actually
-            # re-uploaded documents after a supervisor's "Update Required" action wiped them all.
-            # Without this check, any autosave on an earlier step (still carrying the same
-            # unchanged workflow_state) flips the record to "Updated beneficiary" before the
-            # beneficiary has uploaded anything, leaving it reviewable with empty attachments.
+    elif doc.workflow_state == "Update Required" and status == "Update Required":
+ 
+        if is_registration_complete(doc):
             doc.status = "Updated beneficiary"
             doc.workflow_state = "Updated beneficiary"
     # # Not Accepted exception
@@ -1448,7 +1489,7 @@ def get_existing_doc(user, id, dir):
         hidden_user_id = f"{hidden_user}@{hidden_domain_name}.{domain_extension}"
 
         if dir == "rtl":
-            msg = "رقم البطاقة الشخصية مسجل مسبقا يجب تسجيل الدخول للحساب المسجل مسبقا"
+            msg = "رقم البطاقة الشخصية مسجل مسبقًا. يرجى تسجيل الدخول باستخدام الحساب المسجل مسبقًا."
         else:
             msg = "This Personal ID is already registered. Please sign in to the existing account."
         return msg
@@ -1731,11 +1772,81 @@ def set_registration_acceptance_date():
 
 @frappe.whitelist()
 def beneficiary_update_required_status_for_document(beneficiary_name):
-    try:        
+    try:
         clear_attachments_and_update_status(beneficiary_name)
 
-        return {"status": "success", "message": f"Done successfully."}       
+        return {"status": "success", "message": f"Done successfully."}
 
     except Exception as e:
         frappe.log_error(f"Error processing {beneficiary_name}: {str(e)}", "Beneficiary Update Error")
         return {"status": "error", "message": f"An error occurred: {str(e)}"}
+
+
+@frappe.whitelist()
+def change_beneficiary_linked_account(beneficiary_name, new_email):
+
+    allowed_roles = {"System Manager", "Supervisor", "Specialist"}
+    if not allowed_roles.intersection(frappe.get_roles()):
+        frappe.throw("You are not permitted to change the linked account.", frappe.PermissionError)
+
+    new_email = (new_email or "").strip().lower()
+    frappe.utils.validate_email_address(new_email, throw=True)
+
+    doc = frappe.get_doc("Beneficiaries Registration", beneficiary_name)
+    old_user = doc.user
+
+    if new_email == old_user:
+        frappe.throw("This account is already linked to this beneficiary.")
+
+    duplicate = frappe.db.exists(
+        "Beneficiaries Registration",
+        {"user": new_email, "name": ["!=", beneficiary_name]},
+    )
+    if duplicate:
+        frappe.throw(f"This email is already linked to another beneficiary registration ({duplicate}).")
+
+    if frappe.db.exists("User", new_email):
+
+        new_user_doc = frappe.get_doc("User", new_email)
+        if not new_user_doc.enabled:
+            new_user_doc.enabled = 1
+            new_user_doc.save(ignore_permissions=True)
+
+        doc.user = new_email
+        doc.email = new_email
+        doc.save(ignore_permissions=True)
+
+        if old_user and old_user not in ("Administrator", new_email):
+            if not frappe.db.exists("Beneficiaries Registration", {"user": old_user}):
+                old_user_doc = frappe.get_doc("User", old_user)
+                old_user_doc.role_profiles = []
+                old_user_doc.save(ignore_permissions=True)
+
+    elif old_user and old_user != "Administrator" and frappe.db.exists("User", old_user):
+
+        from frappe.model.rename_doc import rename_doc
+
+  
+        rename_doc("User", old_user, new_email, ignore_permissions=True, show_alert=False)
+        frappe.db.set_value("User", new_email, "email", new_email)
+
+        doc.reload()
+        doc.email = new_email
+        doc.save(ignore_permissions=True)
+
+    else:
+
+        frappe.get_doc({
+            "doctype": "User",
+            "email": new_email,
+            "first_name": doc.en_name or doc.ar_name or new_email,
+            "send_welcome_email": 1,
+            "user_type": "Website User",
+        }).insert(ignore_permissions=True)
+
+        doc.user = new_email
+        doc.email = new_email
+        doc.save(ignore_permissions=True)
+
+    frappe.db.commit()
+    return {"status": "success", "message": f"Beneficiary account successfully re-linked to {new_email}."}
