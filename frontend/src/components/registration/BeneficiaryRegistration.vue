@@ -945,10 +945,13 @@ async function handleNext() {
   error.value = ''
 
   const isFinalStep = currentStep.value === 4 && subStep4.value === 2
-  // The snapshot/merge logic in saveStep() already guarantees every step but the one being
-  // confirmed here keeps its last-saved-valid data, whether the doc is a Draft or already a live
-  // (submitted) record — so every intermediate Next only needs to validate the current step. The
-  // full sweep across every step only has to run once, right before the Draft leaves Draft.
+  if (isFinalStep && pendingAttachmentOps.size) {
+    
+    submitting.value = true
+    await waitForPendingAttachmentOps()
+    submitting.value = false
+  }
+  
   const validation = isFinalStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
 
   const { errors, fields, step: invalidStep, subStep4: invalidSubStep4 } = validation
@@ -1105,20 +1108,13 @@ async function uploadFile(file, docName, fieldname) {
   return data.message.file_url
 }
 
-async function handleAttachmentFileSelected(id, file) {
-  attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: undefined }
 
-  if (!docName.value) {
+let attachmentSaveChain = Promise.resolve()
+const pendingAttachmentOps = new Set()
 
-    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: file }
-    return
-  }
-
-  attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
-  try {
-    const fileUrl = await uploadFile(file, docName.value, id)
-    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
-
+function queueAttachmentSave() {
+  
+  const run = attachmentSaveChain.then(async () => {
     const data = await saveStep(5, { applyWorkflow: false })
     docMeta.value = {
       owner: data.owner,
@@ -1134,6 +1130,39 @@ async function handleAttachmentFileSelected(id, file) {
     } else {
       snapshot.value = cloneFormData(formData.value)
     }
+  })
+  attachmentSaveChain = run.catch(() => {})
+  return run
+}
+
+async function waitForPendingAttachmentOps() {
+  while (pendingAttachmentOps.size) {
+    await Promise.allSettled([...pendingAttachmentOps])
+  }
+}
+
+function handleAttachmentFileSelected(id, file) {
+  const op = uploadAndSaveAttachment(id, file)
+  pendingAttachmentOps.add(op)
+  op.finally(() => pendingAttachmentOps.delete(op))
+  return op
+}
+
+async function uploadAndSaveAttachment(id, file) {
+  attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: undefined }
+
+  if (!docName.value) {
+
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: file }
+    return
+  }
+
+  attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
+  try {
+    const fileUrl = await uploadFile(file, docName.value, id)
+    formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
+
+    await queueAttachmentSave()
   } catch (e) {
     attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: e.message || t('registration.submitError') }
   } finally {
