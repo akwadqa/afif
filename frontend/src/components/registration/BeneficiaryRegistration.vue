@@ -233,7 +233,11 @@ const ATTACHMENT_FIELDS = [
 ]
 
 function onStepError(err) {
-  error.value = err.messages?.[0] || err.message || t('registration.submitError')
+  if (err.exc_type === 'DuplicatePersonalIDError') {
+    error.value = t('registration.duplicatePersonalId')
+  } else {
+    error.value = err.messages?.[0] || err.message || t('registration.submitError')
+  }
   submitting.value = false
 }
 

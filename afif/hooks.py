@@ -125,7 +125,8 @@ doc_events = {
         "before_save": "afif.hooks_call.updated_status",
         "validate": [
             "afif.hooks_call.rejection_note",
-            "afif.hooks_call.validate_passport_number"
+            "afif.hooks_call.validate_passport_number",
+            "afif.hooks_call.validate_unique_personal_id"
         ]
     },
     "Beneficiary Request": {

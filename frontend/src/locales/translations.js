@@ -11,6 +11,7 @@ export default {
       back: 'رجوع',
       submit: 'إرسال الطلب',
       submitError: 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.',
+      duplicatePersonalId: 'رقم البطاقة الشخصية مسجل مسبقًا. يرجى تسجيل الدخول باستخدام الحساب المسجل مسبقًا.',
       validation: {
         idMustBe11: 'رقم الهوية يجب أن يكون 11 رقماً',
         phoneMustBe8: 'رقم الهاتف يجب أن يكون 8 أرقام',
@@ -931,6 +932,7 @@ export default {
       back: 'Back',
       submit: 'Submit Request',
       submitError: 'An error occurred while submitting the request. Please try again.',
+      duplicatePersonalId: 'This Personal ID is already registered. Please sign in to the existing account.',
       validation: {
         idMustBe11: 'ID number must be exactly 11 digits',
         phoneMustBe8: 'Phone number must be exactly 8 digits',

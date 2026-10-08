@@ -230,6 +230,23 @@ def rejection_note(doc, method):
         frappe.throw("The field 'Notes' must be filled in to reject the registration.")
 
 
+class DuplicatePersonalIDError(frappe.ValidationError):
+    pass
+
+
+def validate_unique_personal_id(doc, method):
+    # checked before the DB unique constraint so Frappe's generic "{0} must be unique" is never shown
+    if doc.ben_primary_idnumber and frappe.db.exists(
+        "Beneficiaries Registration",
+        {"ben_primary_idnumber": doc.ben_primary_idnumber, "name": ["!=", doc.name]},
+    ):
+        if (frappe.local.lang or "").startswith("ar"):
+            msg = "رقم البطاقة الشخصية مسجل مسبقًا. يرجى تسجيل الدخول باستخدام الحساب المسجل مسبقًا."
+        else:
+            msg = "This Personal ID is already registered. Please sign in to the existing account."
+        frappe.throw(msg, DuplicatePersonalIDError)
+
+
 def validate_passport_number(doc, method):
     if doc.passport_number and not re.match(r"^[A-Za-z0-9]{1,12}$", doc.passport_number):
         frappe.throw("Passport Number must be at most 12 letters and/or digits.")
@@ -1815,6 +1832,7 @@ def change_beneficiary_linked_account(beneficiary_name, new_email):
         doc.user = new_email
         doc.email = new_email
         doc.save(ignore_permissions=True)
+        set_record_owner(doc, new_email)
 
         if old_user and old_user not in ("Administrator", new_email):
             if not frappe.db.exists("Beneficiaries Registration", {"user": old_user}):
@@ -1833,6 +1851,7 @@ def change_beneficiary_linked_account(beneficiary_name, new_email):
         doc.reload()
         doc.email = new_email
         doc.save(ignore_permissions=True)
+        set_record_owner(doc, new_email)
 
     else:
 
@@ -1847,6 +1866,18 @@ def change_beneficiary_linked_account(beneficiary_name, new_email):
         doc.user = new_email
         doc.email = new_email
         doc.save(ignore_permissions=True)
+        set_record_owner(doc, new_email)
 
     frappe.db.commit()
     return {"status": "success", "message": f"Beneficiary account successfully re-linked to {new_email}."}
+
+
+def set_record_owner(doc, new_owner):
+    # owner is not updated by doc.save(), so set it directly on the parent and its child rows
+    frappe.db.set_value(doc.doctype, doc.name, "owner", new_owner, update_modified=False)
+    for table_field in doc.meta.get_table_fields():
+        frappe.db.sql(
+            f"""UPDATE `tab{table_field.options}` SET owner = %s
+            WHERE parent = %s AND parenttype = %s AND parentfield = %s""",
+            (new_owner, doc.name, doc.doctype, table_field.fieldname),
+        )
