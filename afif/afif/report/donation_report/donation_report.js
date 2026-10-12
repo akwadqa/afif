@@ -1,9 +1,11 @@
 // Copyright (c) 2026, Akwad and contributors
 // For license information, please see license.txt
 
-const DONATION_STATUS_COLORS = { Paid: "green", Pending: "orange", Failed: "red" };
-
+// No top-level const/let: Frappe can evaluate this script more than once per page,
+// and redeclaring a global const throws and leaves the report blank.
 frappe.query_reports["Donation Report"] = {
+	status_colors: { Paid: "green", Pending: "orange", Failed: "red" },
+
 	filters: [
 		{
 			fieldname: "from_date",
@@ -103,8 +105,9 @@ frappe.query_reports["Donation Report"] = {
 		if (data.is_group && column.fieldname === "amount") {
 			return `<b>${value}</b>`;
 		}
-		if (column.fieldname === "payment_status" && DONATION_STATUS_COLORS[data.payment_status]) {
-			return `<span class="indicator-pill ${DONATION_STATUS_COLORS[data.payment_status]}">${value}</span>`;
+		const status_color = frappe.query_reports["Donation Report"].status_colors[data.payment_status];
+		if (column.fieldname === "payment_status" && status_color) {
+			return `<span class="indicator-pill ${status_color}">${value}</span>`;
 		}
 
 		const link = {

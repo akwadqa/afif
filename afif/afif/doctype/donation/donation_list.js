@@ -1,23 +1,25 @@
 // Copyright (c) 2026, Akwad and contributors
 // For license information, please see license.txt
 
-const DONATION_REPORT_EXACT_FILTERS = [
-	"payment_status",
-	"donation_program",
-	"donation_project",
-	"donation_frequency",
-	"currency",
-];
-const DONATION_REPORT_TEXT_FILTERS = [
-	"donor_name",
-	"donor_mobile",
-	"donor_email",
-	"reference_id",
-	"gateway_transaction_id",
-];
-
+// No top-level const/let: Frappe can evaluate this script more than once per page,
+// and redeclaring a global const throws and stops the page from loading.
 frappe.listview_settings["Donation"] = {
 	onload(listview) {
+		const DONATION_REPORT_EXACT_FILTERS = [
+			"payment_status",
+			"donation_program",
+			"donation_project",
+			"donation_frequency",
+			"currency",
+		];
+		const DONATION_REPORT_TEXT_FILTERS = [
+			"donor_name",
+			"donor_mobile",
+			"donor_email",
+			"reference_id",
+			"gateway_transaction_id",
+		];
+
 		listview.page.add_inner_button(__("Donation Report"), () => {
 			// Carry the list's current filters over to the report where they map cleanly
 			const route_options = {};
