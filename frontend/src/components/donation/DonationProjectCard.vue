@@ -1,5 +1,5 @@
 <template>
-  <div class="project-card" :dir="isRTL ? 'rtl' : 'ltr'" role="link" tabindex="0" @click="goToDetails" @keydown.enter="goToDetails">
+  <div class="project-card" :dir="isRTL ? 'rtl' : 'ltr'" role="button" tabindex="0" @click="openDonationDialog(project)" @keydown.enter.self="openDonationDialog(project)">
     <div class="card-image">
       <img v-if="project.image" :src="project.image" :alt="project.title" />
       <button type="button" class="share-btn" :aria-label="t('donation.detail.share')" @click.stop="share">
@@ -16,7 +16,7 @@
         <span>{{ locationLabel }}</span>
       </div>
 
-      <div class="funding-block">
+      <div v-if="project.show_progress !== 0" class="funding-block">
         <div class="funding-row">
           <span class="paid-label">{{ t('donation.partiallyFundedLabel') }} {{ formatAmount(project.donated_amount) }}</span>
           <span class="percentage-label">{{ coveragePercentage }}%</span>
@@ -45,7 +45,6 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { qatarFlagSvg } from '@/config/donationIcons'
@@ -54,12 +53,7 @@ const props = defineProps({
   project: { type: Object, required: true },
 })
 
-const router = useRouter()
 const { t, isRTL } = useLanguage()
-
-function goToDetails() {
-  router.push({ name: 'DonationProject', params: { name: props.project.name } })
-}
 const { openDonationDialog } = useDonationDialog()
 
 const coveragePercentage = computed(() => Math.min(Math.round(props.project.percentage || 0), 100))

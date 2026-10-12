@@ -13,8 +13,8 @@
       <span>{{ t('donation.back') }}</span>
     </button>
 
-    <!-- Coverage / progress card -->
-    <div class="form-card">
+    <!-- Coverage / progress card (hidden when the selected project has Show Progress off) -->
+    <div v-if="selectedProjectData?.show_progress !== 0" class="form-card">
       <h3 class="section-title">{{ t('donation.coverageTitle') }}</h3>
 
       <div class="metrics-grid">
@@ -77,16 +77,20 @@
     <!-- Amount -->
     <div class="form-card">
       <label class="input-label">{{ t('donation.amountLabel') }} <span class="text-red-500">*</span></label>
-      <div class="presets-row">
+      <div v-if="presetAmounts.length" class="presets-row">
         <button
-          v-for="amount in presetAmounts"
-          :key="amount"
+          v-for="preset in presetAmounts"
+          :key="preset.amount"
           type="button"
           class="preset-btn"
-          :class="{ active: donationAmount === amount && !isCustomAmount }"
-          @click="setPresetAmount(amount)"
+          :class="{ active: donationAmount === preset.amount && !isCustomAmount }"
+          @click="setPresetAmount(preset.amount)"
         >
-          {{ amount }}
+          <template v-if="preset.label">
+            <span class="preset-label">{{ preset.label }}</span>
+            <span class="preset-amount">{{ preset.amount }} {{ t('donation.currency') }}</span>
+          </template>
+          <template v-else>{{ preset.amount }}</template>
         </button>
         <button
           type="button"
@@ -167,8 +171,6 @@ const router = useRouter()
 
 const { t, isRTL, currentLang } = useLanguage()
 
-const presetAmounts = [10, 50, 100, 1000]
-
 const initialProjectQuery = typeof route.query.project === 'string' ? route.query.project : ''
 const preselectedProject = ref(initialProjectQuery)
 const isLocked = computed(() => !!initialProjectQuery)
@@ -236,6 +238,8 @@ const selectedProgramData = computed(
 const selectedProjectData = computed(
   () => projectsList.value.find((project) => project.name === selectedProject.value) || null
 )
+// Admin-defined presets; a project without any only gets the custom amount input
+const presetAmounts = computed(() => selectedProjectData.value?.amounts || [])
 
 const coveragePercentage = computed(() => {
   if (!selectedProjectData.value) return 0
@@ -266,7 +270,6 @@ watch(selectedProgram, () => {
   const keepProject = preselectedProject.value
   selectedProject.value = ''
   donationAmount.value = 0
-  isCustomAmount.value = false
   if (selectedProgram.value) {
     fetchProjects().then(() => {
       if (keepProject) {
@@ -276,6 +279,13 @@ watch(selectedProgram, () => {
     })
   }
 })
+
+// Selected project/presets changed: clear the amount, and open the custom input
+// when there are no presets to pick from
+watch([selectedProject, () => presetAmounts.value.length], ([, count]) => {
+  donationAmount.value = 0
+  isCustomAmount.value = !count
+}, { immediate: true })
 
 watch(currentLang, () => {
   fetchPrograms()
@@ -407,16 +417,20 @@ function submitDonation() {
 }
 
 .presets-row {
-  @apply flex gap-2 mb-3;
+  @apply flex flex-wrap gap-2 mb-3;
 }
 
 .preset-btn {
-  @apply flex-1 bg-gray-50/60 border border-gray-100/70 py-2.5 rounded-lg font-semibold text-gray-800 text-sm transition-colors;
+  @apply flex-1 flex flex-col items-center justify-center gap-0.5 min-w-[70px] px-2 bg-gray-50/60 border border-gray-100/70 py-2.5 rounded-lg font-semibold text-gray-800 text-sm text-center transition-colors;
 }
 
 .preset-btn.active {
   @apply bg-sky-50 text-sky-600;
   border-color: #34b0ee;
+}
+
+.preset-amount {
+  @apply text-xs font-medium opacity-80;
 }
 
 .margin-top-sm {

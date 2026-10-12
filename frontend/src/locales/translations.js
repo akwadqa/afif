@@ -303,6 +303,9 @@ export default {
         claimStatusAwareness: 'أدرك أن المعلومات المقدمة أعلاه هي فقط للتسجيل كمستفيد في نظام جمعية عفيف الخيرية وليس طلب مساعدة، وسيتم إخطاري بالقرار النهائي عبر القنوات المعتمدة.',
       },
     },
+    footer: {
+      followUs: 'تابعنا على منصات التواصل الاجتماعية',
+    },
     nav: {
       aboutUs: 'من نحن',
       aboutAfif: 'عن عفيف الخيرية',
@@ -428,6 +431,7 @@ export default {
         linkCopied: 'تم نسخ رابط المشروع',
         notFound: 'تعذر العثور على هذا المشروع',
         remaining: 'متبقي',
+        projectNumber: 'رقم المشروع:',
       },
       dialog: {
         title: 'تفاصيل التبرع',
@@ -1224,6 +1228,9 @@ export default {
         claimStatusAwareness: 'I understand that the information above is only for registration as a beneficiary in the Afif Charity system and not an aid request. I will be notified of the final decision through official channels.',
       },
     },
+    footer: {
+      followUs: 'Follow us on social media',
+    },
     nav: {
       aboutUs: 'About Us',
       aboutAfif: 'About Afif Charity',
@@ -1349,6 +1356,7 @@ export default {
         linkCopied: 'Project link copied',
         notFound: 'This project could not be found',
         remaining: 'Remaining',
+        projectNumber: 'Project No.',
       },
       dialog: {
         title: 'Donation Details',

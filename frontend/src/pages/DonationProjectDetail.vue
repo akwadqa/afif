@@ -14,21 +14,18 @@
 
       <div class="intro-row">
         <div class="quotes-box">
-          <div class="breadcrumb">
-            <img v-if="project.program_icon" :src="project.program_icon" :alt="project.program_title" class="w-5 h-5 shrink-0 object-contain" />
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="programIconFallback" />
-            <span>{{ project.program_title }}</span>
+          <div class="box-header">
+            <span class="title-icon">
+              <img v-if="project.program_icon" :src="project.program_icon" alt="" />
+              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" v-html="programIconFallback" />
+            </span>
+            <h2 class="box-title">{{ project.title }}</h2>
           </div>
-
-          <p v-if="project.program_intro" class="program-quote" v-html="project.program_intro"></p>
-
-          <div v-if="project.program_intro && project.body" class="quotes-divider" />
-
           <div v-if="project.body" class="project-body" v-html="project.body"></div>
         </div>
 
-        <div class="image-wrap">
-          <img v-if="project.image" :src="project.image" :alt="project.title" />
+        <div class="image-wrap" :style="imageRatio ? { aspectRatio: imageRatio } : null">
+          <img v-if="project.image" :src="project.image" :alt="project.title" @load="onImageLoad" />
           <div class="location-badge">
             <span class="flag-icon" v-html="qatarFlagSvg" />
             <span>{{ locationLabel }}</span>
@@ -36,11 +33,31 @@
         </div>
       </div>
 
-      <div class="widget-card">
+      <!-- Progress hidden: one compact bar with the project info at the start and share + donate at the end -->
+      <div v-if="!hasProgress" class="compact-card">
+        <div class="compact-info">
+          <span v-if="project.program_title" class="type-badge">{{ project.program_title }}</span>
+          <span class="compact-number">
+            {{ t('donation.detail.projectNumber') }}
+            <span class="compact-number-value">{{ project.name }}</span>
+          </span>
+        </div>
+        <div class="compact-actions">
+          <button type="button" class="icon-btn" :aria-label="t('donation.detail.share')" :title="t('donation.detail.share')" @click="share">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0-12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Zm0 12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Z" />
+            </svg>
+          </button>
+          <button type="button" class="primary-btn compact-donate" @click="openDonationDialog(project)">
+            {{ t('donation.donateNow') }}
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="widget-card">
         <div class="title-row">
           <div class="info-col">
             <span v-if="project.program_title" class="type-badge">{{ project.program_title }}</span>
-            <h1 class="project-title">{{ project.title }}</h1>
           </div>
           <div class="meta-col">
             <span class="project-number">{{ project.name }}</span>
@@ -96,7 +113,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createResource } from 'frappe-ui'
+import { projectDetail, projectDetails, loadProjectDetail } from '@/data/donation'
 import { useSidebar } from '@/composables/useSidebar'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
@@ -111,25 +128,44 @@ const isWide = computed(() => !(session.isLoggedIn && sidebarOpen.value))
 const { t, isRTL, currentLang } = useLanguage()
 const { openDonationDialog } = useDonationDialog()
 
-const detail = createResource({ url: 'afif.donation_api.get_project_detail', method: 'GET' })
-const project = computed(() => detail.data || null)
+const detail = projectDetail
+const project = computed(() => projectDetails[`${route.params.name}:${currentLang.value}`] || null)
+
+const hasProgress = computed(() => project.value?.show_progress !== 0)
 
 const coveragePercentage = computed(() => Math.min(Math.round(project.value?.percentage || 0), 100))
 
 // Starts at 0 and animates up to the real percentage whenever a project
-// loads (including switching between projects), instead of appearing pre-filled.
+// loads (including switching between projects and coming back to an already-loaded
+// one), instead of appearing pre-filled.
 const animatedWidth = ref(0)
-watch(project, (newProject) => {
-  if (!newProject) return
-  animatedWidth.value = 0
-  requestAnimationFrame(() => {
-    animatedWidth.value = coveragePercentage.value
-  })
-})
+watch(
+  project,
+  (newProject) => {
+    if (!newProject) return
+    animatedWidth.value = 0
+    requestAnimationFrame(() => {
+      animatedWidth.value = coveragePercentage.value
+    })
+  },
+  { immediate: true }
+)
 
 const remainingAmount = computed(() =>
   Math.max((project.value?.required_amount || 0) - (project.value?.donated_amount || 0), 0)
 )
+
+// The photo's own width/height ratio, so the frame takes the photo's shape
+// instead of cropping it or leaving empty strips beside it.
+const imageRatio = ref(null)
+watch(() => project.value?.image, () => {
+  imageRatio.value = null
+})
+
+function onImageLoad(event) {
+  const { naturalWidth, naturalHeight } = event.target
+  if (naturalWidth && naturalHeight) imageRatio.value = naturalWidth / naturalHeight
+}
 
 const locationLabel = computed(() =>
   project.value?.location === 'outside_qatar' ? t('donation.location.outsideQatar') : t('donation.location.insideQatar')
@@ -140,7 +176,7 @@ function formatAmount(value) {
 }
 
 function fetchDetail() {
-  detail.submit({ project_name: route.params.name, lang: currentLang.value })
+  loadProjectDetail(route.params.name, currentLang.value)
 }
 
 onMounted(fetchDetail)
@@ -216,15 +252,26 @@ async function share() {
 }
 
 .image-wrap {
-  @apply relative w-full md:w-[42%] rounded-xl overflow-hidden shrink-0;
+  @apply relative w-full md:w-[42%] rounded-xl overflow-hidden shrink-0 self-start;
   aspect-ratio: 473 / 314;
   background: linear-gradient(359.92deg, rgba(0, 173, 239, 0.2) 0.07%, rgba(255, 255, 255, 0.2) 99.93%), #e6eff8;
 }
 
+/* Side by side, the photo gets a fixed, moderate height and its width follows the
+   photo's own shape (aspect-ratio set from the loaded image), so the frame fits the
+   photo exactly and a short description doesn't sit beside a huge image. The text
+   box takes the remaining width. Very wide panoramas are capped at half the row. */
 @media (min-width: 768px) {
   .image-wrap {
-    aspect-ratio: auto;
-    min-height: 260px;
+    width: auto;
+    height: 260px;
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .image-wrap {
+    height: 280px;
   }
 }
 
@@ -246,45 +293,50 @@ async function share() {
 }
 
 .quotes-box {
-  @apply flex-1 flex flex-col justify-center gap-4 sm:gap-5 bg-white rounded-xl p-5 sm:p-8;
+  @apply flex-1 flex flex-col justify-start gap-4 sm:gap-5 bg-white rounded-xl p-5 sm:p-7 lg:px-9 lg:py-8;
   border-inline-start: 4px solid #00adef;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.breadcrumb {
-  @apply flex items-center gap-2 text-lg sm:text-xl font-bold;
+.box-header {
+  @apply flex items-center gap-3;
+}
+
+.title-icon {
+  @apply flex items-center justify-center shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl p-2;
+  background: #e6f6fd;
   color: #0570b6;
 }
 
-.program-quote {
-  font-size: 15px;
-  line-height: 24px;
-  font-weight: 500;
+.title-icon img,
+.title-icon svg {
+  @apply w-full h-full object-contain;
+}
+
+.box-title {
+  @apply text-xl sm:text-2xl lg:text-[26px] font-bold;
+  line-height: 1.35;
   color: #141d23;
 }
 
-@media (min-width: 640px) {
-  .program-quote {
-    font-size: 18px;
-    line-height: 30px;
-  }
-}
-
-.quotes-divider {
-  border-top: 1px solid #e1e1e1;
-}
-
 .project-body {
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 500;
-  color: #6b7280;
+  font-size: 15px;
+  line-height: 26px;
+  font-weight: 400;
+  color: #1f2937;
 }
 
 @media (min-width: 640px) {
   .project-body {
-    font-size: 16px;
-    line-height: 25px;
+    font-size: 17px;
+    line-height: 30px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .project-body {
+    font-size: 18px;
+    line-height: 32px;
   }
 }
 
@@ -322,10 +374,6 @@ async function share() {
   .project-number {
     font-size: 12px;
   }
-}
-
-.project-title {
-  @apply text-lg sm:text-xl md:text-[26px] font-semibold text-gray-800;
 }
 
 .icon-btn {
@@ -421,6 +469,36 @@ async function share() {
 .action-area {
   @apply pt-3;
   border-top: 1px solid #bdc8d1;
+}
+
+.compact-card {
+  @apply bg-white rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
+  border: 1px solid #bdc8d1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.compact-info {
+  @apply flex flex-wrap items-center gap-2 sm:gap-3 min-w-0;
+}
+
+.compact-number {
+  @apply inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm;
+  color: #64748b;
+}
+
+.compact-number-value {
+  @apply font-semibold;
+  color: #141d23;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.compact-actions {
+  @apply flex items-center gap-2 sm:gap-3 shrink-0;
+}
+
+.primary-btn.compact-donate {
+  @apply flex-1 sm:flex-none sm:w-[220px] h-9 sm:h-11 text-sm sm:text-base;
 }
 
 .primary-btn {

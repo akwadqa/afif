@@ -12,13 +12,14 @@
         <div class="chip-group">
           <button
             type="button"
-            class="icon-chip all-chip"
+            class="filter-chip"
             :class="{ active: activeProgram === 'all' }"
-            :title="t('donation.landing.allFilter')"
-            :aria-label="t('donation.landing.allFilter')"
             @click="activeProgram = 'all'"
           >
-            <span class="w-4 h-4 sm:w-5 sm:h-5" v-html="gridIconSvg" />
+            <span class="icon-chip">
+              <span class="w-4 h-4 sm:w-5 sm:h-5" v-html="gridIconSvg" />
+            </span>
+            <span class="chip-label">{{ t('donation.landing.allFilter') }}</span>
           </button>
 
           <div class="chip-scroll">
@@ -26,14 +27,16 @@
               v-for="program in programs"
               :key="program.name"
               type="button"
-              class="icon-chip"
+              class="filter-chip"
               :class="{ active: activeProgram === program.name }"
               :title="program.title"
-              :aria-label="program.title"
               @click="activeProgram = program.name"
             >
-              <img v-if="program.icon" :src="program.icon" :alt="program.title" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px] object-contain" />
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" v-html="programIconFallback" />
+              <span class="icon-chip">
+                <img v-if="program.icon" :src="program.icon" alt="" class="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] object-contain" />
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-[24px] h-[24px] sm:w-[30px] sm:h-[30px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" v-html="programIconFallback" />
+              </span>
+              <span class="chip-label">{{ program.title }}</span>
             </button>
           </div>
         </div>
@@ -103,7 +106,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { createResource } from 'frappe-ui'
+import { donationLanding, loadDonationLanding } from '@/data/donation'
 import { useSidebar } from '@/composables/useSidebar'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
@@ -117,10 +120,7 @@ const { t, isRTL, currentLang } = useLanguage()
 
 const activeProgram = ref('all')
 
-const landing = createResource({
-  url: 'afif.donation_api.get_donation_landing',
-  method: 'GET',
-})
+const landing = donationLanding
 
 const programs = computed(() => landing.data || [])
 
@@ -130,7 +130,7 @@ const visiblePrograms = computed(() => {
 })
 
 function fetchLanding() {
-  landing.submit({ lang: currentLang.value })
+  loadDonationLanding(currentLang.value)
 }
 
 onMounted(fetchLanding)
@@ -158,15 +158,31 @@ function scrollRow(event, direction, programName) {
 }
 
 .chip-bar {
-  @apply relative flex items-center justify-center min-h-[42px] sm:min-h-[50px];
+  @apply flex items-center justify-center min-h-[42px] sm:min-h-[50px];
+}
+
+/* Three columns on desktop: empty spacer | chips | badge. The side columns share
+   the leftover space equally so the chips stay centred, and the chips column
+   shrinks (and scrolls) before it can ever run under the badge. */
+@media (min-width: 768px) {
+  .chip-bar {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, max-content) 1fr;
+    column-gap: 16px;
+  }
+
+  .chip-group {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 .chip-group {
-  @apply flex items-center gap-2.5 sm:gap-[25px] max-w-full;
+  @apply flex items-start gap-2.5 sm:gap-[25px] max-w-full;
 }
 
 .chip-scroll {
-  @apply flex items-center gap-2.5 sm:gap-[25px] overflow-x-auto max-w-full;
+  @apply flex items-start gap-2.5 sm:gap-[25px] overflow-x-auto max-w-full min-w-0;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -175,37 +191,48 @@ function scrollRow(event, direction, programName) {
   display: none;
 }
 
+.filter-chip {
+  @apply flex flex-col items-center gap-1 shrink-0 w-[60px] sm:w-[70px];
+}
+
 .icon-chip {
-  @apply flex items-center justify-center shrink-0 w-[42px] h-[42px] sm:w-[50px] sm:h-[50px] transition-colors;
+  @apply flex items-center justify-center w-[46px] h-[46px] sm:w-[54px] sm:h-[54px] transition-colors;
   background: #f8fafc;
   border: 1px solid #e1e1e1;
   border-radius: 12px;
   color: #64748b;
 }
 
-.icon-chip:hover {
+.filter-chip:hover .icon-chip {
   @apply bg-sky-50;
 }
 
-.icon-chip.active {
+.filter-chip.active .icon-chip {
   background: #0570b6;
   border-color: #0570b6;
   color: #ffffff;
 }
 
 /* Uploaded program icons are <img>, so `color` can't recolour them: force white when active. */
-.icon-chip.active img {
+.filter-chip.active .icon-chip img {
   filter: brightness(0) invert(1);
 }
 
-.all-chip {
-  @apply flex;
+.chip-label {
+  @apply w-full text-center text-[11px] sm:text-xs font-medium leading-tight line-clamp-2;
+  color: #64748b;
+}
+
+.filter-chip.active .chip-label {
+  @apply font-bold;
+  color: #0570b6;
 }
 
 .trust-badge {
   @apply hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap;
-  position: absolute;
-  inset-inline-end: 0;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
   background: #ffffff;
   border: 1px solid rgba(189, 200, 209, 0.3);
   backdrop-filter: blur(6px);

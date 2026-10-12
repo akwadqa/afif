@@ -74,6 +74,15 @@ textarea:not([dir])::placeholder {
   text-align: inherit;
 }
 
+/* Leaf-shaped notch cut into the auth form card so the overlapping
+   left-panel illustration appears to tuck into it. Coordinates are in the
+   card's own px box (path() ignores element width beyond the curve). */
+@media (min-width: 768px) {
+  .auth-leaf-clip {
+    clip-path: path('M 130 0 C 90 80 160 160 110 240 C 60 320 -10 400 40 480 C 70 530 80 570 100 600 L 1000 600 L 1000 0 Z');
+  }
+}
+
 /* Select dropdown arrow follows direction */
 [dir='ltr'] .select-field,
 [dir='ltr'] .custom-select {

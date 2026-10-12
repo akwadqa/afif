@@ -26,16 +26,20 @@
             <span class="required-star">*</span>
           </div>
 
-          <div class="presets-row">
+          <div v-if="presetAmounts.length" class="presets-row">
             <button
-              v-for="amount in presetAmounts"
-              :key="amount"
+              v-for="preset in presetAmounts"
+              :key="preset.amount"
               type="button"
               class="preset-btn"
-              :class="{ active: donationAmount === amount && !isCustomAmount }"
-              @click="setPresetAmount(amount)"
+              :class="{ active: donationAmount === preset.amount && !isCustomAmount }"
+              @click="setPresetAmount(preset.amount)"
             >
-              {{ amount }}
+              <template v-if="preset.label">
+                <span class="preset-label">{{ preset.label }}</span>
+                <span class="preset-amount">{{ preset.amount }} {{ t('donation.currency') }}</span>
+              </template>
+              <template v-else>{{ preset.amount }}</template>
             </button>
             <button type="button" class="preset-btn" :class="{ active: isCustomAmount }" @click="activateCustomAmount">
               {{ t('donation.customAmount') }}
@@ -103,8 +107,6 @@
                 type="text"
                 v-model="donorForm.fullName"
                 class="text-input"
-                :readonly="donorForm.isAnonymous"
-                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
                 :placeholder="t('donation.donorNamePlaceholder')"
               />
             </div>
@@ -114,8 +116,6 @@
                 type="tel"
                 v-model="donorForm.phone"
                 class="text-input"
-                :readonly="donorForm.isAnonymous"
-                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
                 :placeholder="t('donation.donorPhonePlaceholder')"
               />
             </div>
@@ -125,8 +125,6 @@
                 type="email"
                 v-model="donorForm.email"
                 class="text-input"
-                :readonly="donorForm.isAnonymous"
-                :class="{ 'text-input-readonly': donorForm.isAnonymous }"
                 :placeholder="t('donation.donorEmailPlaceholder')"
               />
             </div>
@@ -173,10 +171,11 @@ onUnmounted(() => {
 })
 const dialogPaddingTop = computed(() => (viewportWidth.value < 640 ? '24px' : '130px'))
 
-const presetAmounts = [1000, 100, 50, 10]
+// Admin-defined presets; a project without any only gets the custom amount input
+const presetAmounts = computed(() => activeProject.value?.amounts || [])
 
 const donationAmount = ref(0)
-const isCustomAmount = ref(false)
+const isCustomAmount = ref(!presetAmounts.value.length)
 const donationFrequency = ref('One-Time')
 const errorMessage = ref('')
 
@@ -189,7 +188,7 @@ const donorForm = reactive({
 
 function resetForm() {
   donationAmount.value = 0
-  isCustomAmount.value = false
+  isCustomAmount.value = !presetAmounts.value.length
   donationFrequency.value = 'One-Time'
   errorMessage.value = ''
   donorForm.isAnonymous = false
@@ -199,7 +198,8 @@ function resetForm() {
 }
 
 watch(isOpen, (open) => {
-  if (!open) resetForm()
+  if (open) isCustomAmount.value = !presetAmounts.value.length
+  else resetForm()
 })
 
 function setPresetAmount(amount) {
@@ -251,9 +251,9 @@ function submitDonation() {
   createDonation.submit({
     donation_project: activeProject.value.name,
     amount: donationAmount.value,
-    donor_name: donorForm.isAnonymous ? null : donorForm.fullName || null,
-    donor_mobile: donorForm.isAnonymous ? null : donorForm.phone || null,
-    donor_email: donorForm.isAnonymous ? null : donorForm.email || null,
+    donor_name: donorForm.fullName || null,
+    donor_mobile: donorForm.phone || null,
+    donor_email: donorForm.email || null,
   })
 }
 
@@ -355,7 +355,8 @@ function handleClose() {
 }
 
 .preset-btn {
-  @apply flex-1 flex items-center justify-center transition-colors;
+  @apply flex-1 flex flex-col items-center justify-center text-center transition-colors;
+  gap: 2px;
   min-width: 62px;
   padding: 10px 12px;
   background: #f8fafc;
@@ -372,6 +373,12 @@ function handleClose() {
   background: #0570b6;
   border-color: #0570b6;
   color: #ffffff;
+}
+
+.preset-amount {
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 @media (min-width: 640px) {
@@ -507,11 +514,6 @@ function handleClose() {
 
 .text-input:focus {
   border-color: #0570b6;
-}
-
-.text-input-readonly {
-  @apply opacity-60 cursor-not-allowed;
-  background: #eceff1;
 }
 
 .error-text {
