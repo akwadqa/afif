@@ -16,10 +16,13 @@
   "quote",
   "body",
   "funding_section",
+  "show_progress",
   "required_amount",
   "column_break_funding",
   "donated_amount",
-  "percentage"
+  "percentage",
+  "donation_amounts_section",
+  "donation_amounts"
  ],
  "fields": [
   {
@@ -85,6 +88,13 @@
    "label": "Funding"
   },
   {
+   "default": "1",
+   "description": "Show the funding progress bar and amounts on the website.",
+   "fieldname": "show_progress",
+   "fieldtype": "Check",
+   "label": "Show Progress"
+  },
+  {
    "fieldname": "required_amount",
    "fieldtype": "Currency",
    "label": "Required Amount"
@@ -108,11 +118,23 @@
    "label": "Percentage Raised",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "donation_amounts_section",
+   "fieldtype": "Section Break",
+   "label": "Donation Amounts"
+  },
+  {
+   "description": "Preset amounts shown to donors, in this order (max 6). With no rows, donors enter a custom amount.",
+   "fieldname": "donation_amounts",
+   "fieldtype": "Table",
+   "label": "Donation Amounts",
+   "options": "Donation Project Amount"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-08 10:00:00.000000",
+ "modified": "2026-10-11 16:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project",

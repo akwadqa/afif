@@ -11,7 +11,9 @@
   "icon",
   "published",
   "content_section",
-  "intro"
+  "intro",
+  "projects_order_section",
+  "project_order"
  ],
  "fields": [
   {
@@ -48,11 +50,25 @@
    "fieldtype": "Text Editor",
    "label": "Introduction",
    "translatable": 1
+  },
+  {
+   "fieldname": "projects_order_section",
+   "fieldtype": "Section Break",
+   "label": "Projects Order"
+  },
+  {
+   "cannot_add_rows": 1,
+   "cannot_delete_rows": 1,
+   "description": "Drag rows to set the order this program's projects appear on the website.",
+   "fieldname": "project_order",
+   "fieldtype": "Table",
+   "label": "Projects Order",
+   "options": "Donation Project Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-08 10:00:00.000000",
+ "modified": "2026-10-11 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Program",

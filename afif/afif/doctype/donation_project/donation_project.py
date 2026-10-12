@@ -2,13 +2,29 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
+
+MAX_DONATION_AMOUNTS = 6
 
 
 class DonationProject(Document):
 	def validate(self):
 		self.update_percentage()
+		self.validate_donation_amounts()
+
+	def validate_donation_amounts(self):
+		if len(self.donation_amounts) > MAX_DONATION_AMOUNTS:
+			frappe.throw(_("A project can have at most {0} donation amounts").format(MAX_DONATION_AMOUNTS))
+
+		seen = set()
+		for row in self.donation_amounts:
+			if flt(row.amount) <= 0:
+				frappe.throw(_("Row #{0}: Amount must be greater than 0").format(row.idx))
+			if flt(row.amount) in seen:
+				frappe.throw(_("Row #{0}: Amount {1} is already listed").format(row.idx, row.amount))
+			seen.add(flt(row.amount))
 
 	def update_percentage(self):
 		if flt(self.required_amount) > 0:

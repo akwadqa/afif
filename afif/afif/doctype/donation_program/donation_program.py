@@ -3,6 +3,14 @@
 
 from frappe.model.document import Document
 
+from afif.donation_order import sync_project_order
+
 
 class DonationProgram(Document):
-	pass
+	def onload(self):
+		if not self.is_new():
+			sync_project_order(self)
+
+	def validate(self):
+		if not self.is_new():
+			sync_project_order(self)
