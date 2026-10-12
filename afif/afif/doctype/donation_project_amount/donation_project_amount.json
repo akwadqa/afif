@@ -1,0 +1,42 @@
+{
+ "actions": [],
+ "creation": "2026-10-11 16:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "amount",
+  "label"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "reqd": 1
+  },
+  {
+   "columns": 7,
+   "description": "Optional. Shown on the donation button instead of the amount alone.",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label",
+   "translatable": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-11 16:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Afif",
+ "name": "Donation Project Amount",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
