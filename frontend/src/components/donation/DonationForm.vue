@@ -127,22 +127,21 @@
         <label for="donation-anonymous" class="checkbox-label">{{ t('donation.anonymousLabel') }}</label>
       </div>
 
-      <Transition name="fade-slide">
-        <div v-if="!donorForm.isAnonymous" class="space-y-4 mb-4">
-          <div class="input-group">
-            <label class="input-label">{{ t('donation.donorName') }}</label>
-            <input type="text" v-model="donorForm.fullName" class="custom-input" :placeholder="t('donation.donorNamePlaceholder')" />
-          </div>
-          <div class="input-group">
-            <label class="input-label">{{ t('donation.donorPhone') }}</label>
-            <input type="tel" v-model="donorForm.phone" class="custom-input text-left" :placeholder="t('donation.donorPhonePlaceholder')" />
-          </div>
-          <div class="input-group">
-            <label class="input-label">{{ t('donation.donorEmail') }}</label>
-            <input type="email" v-model="donorForm.email" class="custom-input text-left" :placeholder="t('donation.donorEmailPlaceholder')" />
-          </div>
+      <!-- Donor details are required unless donating as a benefactor, in which case they stay editable but optional -->
+      <div class="space-y-4 mb-4">
+        <div class="input-group">
+          <label class="input-label">{{ t('donation.donorName') }} <span v-if="donorFieldsRequired" class="text-red-500">*</span></label>
+          <input type="text" v-model="donorForm.fullName" class="custom-input" :required="donorFieldsRequired" :placeholder="t('donation.donorNamePlaceholder')" />
         </div>
-      </Transition>
+        <div class="input-group">
+          <label class="input-label">{{ t('donation.donorPhone') }} <span v-if="donorFieldsRequired" class="text-red-500">*</span></label>
+          <input type="tel" inputmode="tel" v-model="donorForm.phone" class="custom-input text-left" :required="donorFieldsRequired" :placeholder="t('donation.donorPhonePlaceholder')" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">{{ t('donation.donorEmail') }} <span v-if="donorFieldsRequired" class="text-red-500">*</span></label>
+          <input type="email" v-model="donorForm.email" class="custom-input text-left" :required="donorFieldsRequired" :placeholder="t('donation.donorEmailPlaceholder')" />
+        </div>
+      </div>
 
       <p v-if="errorMessage" class="text-sm text-red-500 mb-3">{{ errorMessage }}</p>
 
@@ -165,6 +164,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
+import { validateDonor, donorPayload } from '@/utils/donorValidation'
 
 const route = useRoute()
 const router = useRouter()
@@ -246,9 +246,12 @@ const coveragePercentage = computed(() => {
   return Math.min(Math.round(selectedProjectData.value.percentage || 0), 100)
 })
 
+const donorFieldsRequired = computed(() => !donorForm.isAnonymous)
+
 const canSubmit = computed(
   () => !!selectedProject.value && !!donationAmount.value && donationAmount.value > 0
 )
+
 
 function fetchPrograms() {
   programs.submit({ lang: currentLang.value })
@@ -287,6 +290,11 @@ watch([selectedProject, () => presetAmounts.value.length], ([, count]) => {
   isCustomAmount.value = !count
 }, { immediate: true })
 
+// Toggling the benefactor option changes which donor fields are required, so drop any stale validation error
+watch(() => donorForm.isAnonymous, () => {
+  errorMessage.value = ''
+})
+
 watch(currentLang, () => {
   fetchPrograms()
   if (selectedProgram.value) fetchProjects()
@@ -304,13 +312,13 @@ function activateCustomAmount() {
 
 function submitDonation() {
   if (!canSubmit.value) return
-  errorMessage.value = ''
+  const donorError = validateDonor(donorForm)
+  errorMessage.value = donorError ? t(donorError) : ''
+  if (donorError) return
   createDonation.submit({
     donation_project: selectedProject.value,
     amount: donationAmount.value,
-    donor_name: donorForm.isAnonymous ? null : donorForm.fullName || null,
-    donor_mobile: donorForm.isAnonymous ? null : donorForm.phone || null,
-    donor_email: donorForm.isAnonymous ? null : donorForm.email || null,
+    ...donorPayload(donorForm),
   })
 }
 </script>
@@ -475,16 +483,5 @@ function submitDonation() {
 
 .submit-donation-btn:disabled {
   @apply opacity-50 cursor-not-allowed;
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
 }
 </style>
