@@ -18,6 +18,7 @@
   "donation_frequency",
   "payment_status",
   "donor_section",
+  "is_anonymous",
   "donor_name",
   "donor_mobile",
   "column_break_donor",
@@ -113,15 +114,25 @@
    "label": "Donor Information"
   },
   {
+   "default": "0",
+   "description": "Donor chose to donate as a benefactor (فاعل خير). Name, mobile and email are optional.",
+   "fieldname": "is_anonymous",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Benefactor"
+  },
+  {
    "fieldname": "donor_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Donor Name"
+   "label": "Donor Name",
+   "mandatory_depends_on": "eval:!doc.is_anonymous"
   },
   {
    "fieldname": "donor_mobile",
    "fieldtype": "Data",
-   "label": "Donor Mobile"
+   "label": "Donor Mobile",
+   "mandatory_depends_on": "eval:!doc.is_anonymous"
   },
   {
    "fieldname": "column_break_donor",
@@ -131,7 +142,8 @@
    "fieldname": "donor_email",
    "fieldtype": "Data",
    "label": "Donor Email",
-   "options": "Email"
+   "options": "Email",
+   "mandatory_depends_on": "eval:!doc.is_anonymous"
   },
   {
    "collapsible": 1,
@@ -177,7 +189,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-11 10:00:00.000000",
+ "modified": "2026-10-15 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation",
