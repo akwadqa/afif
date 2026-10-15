@@ -192,7 +192,9 @@ def get_project_detail(project_name, lang=None):
 
 @frappe.whitelist(allow_guest=True)
 @rate_limit(limit=10, seconds=60 * 60)
-def create_donation(donation_project, amount, donor_name=None, donor_mobile=None, donor_email=None):
+def create_donation(
+	donation_project, amount, donor_name=None, donor_mobile=None, donor_email=None, is_anonymous=0
+):
 	project = frappe.db.get_value(
 		"Donation Project",
 		{"name": donation_project, "published": 1},
@@ -210,6 +212,8 @@ def create_donation(donation_project, amount, donor_name=None, donor_mobile=None
 		"doctype": "Donation",
 		"donation_project": project.name,
 		"amount": amount,
+		# Donor-detail rules (required unless benefactor, mobile format) live in Donation.validate
+		"is_anonymous": frappe.utils.cint(is_anonymous),
 		"donor_name": donor_name,
 		"donor_mobile": donor_mobile,
 		"donor_email": donor_email,
