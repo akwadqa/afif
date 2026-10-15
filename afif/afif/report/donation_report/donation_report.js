@@ -77,6 +77,16 @@ frappe.query_reports["Donation Report"] = {
 			],
 			default: "None",
 		},
+		{
+			fieldname: "is_anonymous",
+			label: __("Benefactor"),
+			fieldtype: "Select",
+			options: [
+				{ value: "", label: "" },
+				{ value: "Yes", label: __("Yes") },
+				{ value: "No", label: __("No") },
+			],
+		},
 		{ fieldname: "donor_name", label: __("Donor Name"), fieldtype: "Data" },
 		{ fieldname: "donor_mobile", label: __("Donor Mobile"), fieldtype: "Data" },
 		{ fieldname: "donor_email", label: __("Donor Email"), fieldtype: "Data" },

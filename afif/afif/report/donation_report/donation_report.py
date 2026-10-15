@@ -86,6 +86,8 @@ def get_donations(filters):
 	for field in EXACT_FILTERS:
 		if filters.get(field):
 			query = query.where(donation[field] == filters.get(field))
+	if filters.is_anonymous in ("Yes", "No"):
+		query = query.where(donation.is_anonymous == (1 if filters.is_anonymous == "Yes" else 0))
 	for field in TEXT_FILTERS:
 		value = (filters.get(field) or "").strip()
 		if value:
