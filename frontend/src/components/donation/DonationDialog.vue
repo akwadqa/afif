@@ -101,30 +101,44 @@
           </div>
 
           <div class="donor-fields">
+            <!-- Required unless donating as a benefactor; stays editable either way -->
             <div class="field-group">
-              <label class="field-label-plain">{{ t('donation.donorName') }}</label>
+              <label class="field-label-plain">
+                {{ t('donation.donorName') }}
+                <span v-if="donorFieldsRequired" class="required-star">*</span>
+              </label>
               <input
                 type="text"
                 v-model="donorForm.fullName"
                 class="text-input"
+                :required="donorFieldsRequired"
                 :placeholder="t('donation.donorNamePlaceholder')"
               />
             </div>
             <div class="field-group">
-              <label class="field-label-plain">{{ t('donation.donorPhone') }}</label>
+              <label class="field-label-plain">
+                {{ t('donation.donorPhone') }}
+                <span v-if="donorFieldsRequired" class="required-star">*</span>
+              </label>
               <input
                 type="tel"
+                inputmode="tel"
                 v-model="donorForm.phone"
                 class="text-input"
+                :required="donorFieldsRequired"
                 :placeholder="t('donation.donorPhonePlaceholder')"
               />
             </div>
             <div class="field-group">
-              <label class="field-label-plain">{{ t('donation.donorEmail') }}</label>
+              <label class="field-label-plain">
+                {{ t('donation.donorEmail') }}
+                <span v-if="donorFieldsRequired" class="required-star">*</span>
+              </label>
               <input
                 type="email"
                 v-model="donorForm.email"
                 class="text-input"
+                :required="donorFieldsRequired"
                 :placeholder="t('donation.donorEmailPlaceholder')"
               />
             </div>
@@ -150,6 +164,7 @@ import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
+import { validateDonor, donorPayload } from '@/utils/donorValidation'
 
 const { t, isRTL } = useLanguage()
 const { isOpen, activeProject, closeDonationDialog } = useDonationDialog()
@@ -245,15 +260,22 @@ const canSubmit = computed(
   () => !!activeProject.value?.name && !!donationAmount.value && donationAmount.value > 0
 )
 
+const donorFieldsRequired = computed(() => !donorForm.isAnonymous)
+
+// Toggling the benefactor option changes which donor fields are required, so drop any stale validation error
+watch(() => donorForm.isAnonymous, () => {
+  errorMessage.value = ''
+})
+
 function submitDonation() {
   if (!canSubmit.value) return
-  errorMessage.value = ''
+  const donorError = validateDonor(donorForm)
+  errorMessage.value = donorError ? t(donorError) : ''
+  if (donorError) return
   createDonation.submit({
     donation_project: activeProject.value.name,
     amount: donationAmount.value,
-    donor_name: donorForm.fullName || null,
-    donor_mobile: donorForm.phone || null,
-    donor_email: donorForm.email || null,
+    ...donorPayload(donorForm),
   })
 }
 
