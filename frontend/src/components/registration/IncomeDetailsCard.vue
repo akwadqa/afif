@@ -106,11 +106,13 @@
 import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
+import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
+  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -133,64 +135,16 @@ function isInvalid(field) {
   return props.invalidFields.includes(field)
 }
 
-const incomeSources = computed(() => [
-  {
-    field: 'ben_income',
-    label: t('registration.incomeDetails.benIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.benIncomeTitle'),
-    periodicField: 'ben_periodic_type',            periodicLabel: t('registration.incomeDetails.benPeriodicLabel'),
-    amountField:   'salary_amount',                amountLabel:   t('registration.incomeDetails.salaryAmount'),
-    noteField:     'benficiary_note',              noteLabel:     t('registration.incomeDetails.benNoteLabel'),
-  },
-  {
-    field: 'family_income',
-    label: t('registration.incomeDetails.familyIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.familyIncomeTitle'),
-    periodicField: 'family_periodic_type',         periodicLabel: t('registration.incomeDetails.familyPeriodicLabel'),
-    amountField:   'family_income_amount',         amountLabel:   t('registration.incomeDetails.familyAmount'),
-    noteField:     'family_note',                  noteLabel:     t('registration.incomeDetails.familyNoteLabel'),
-  },
-  {
-    field: 'family_extra',
-    label: t('registration.incomeDetails.familyExtraLabel'),
-    sectionTitle: t('registration.incomeDetails.familyExtraTitle'),
-    periodicField: 'extra_periodic_type',          periodicLabel: t('registration.incomeDetails.extraPeriodicLabel'),
-    amountField:   'family_extra_salary',          amountLabel:   t('registration.incomeDetails.extraAmount'),
-    noteField:     'family_extra_note',            noteLabel:     t('registration.incomeDetails.extraNoteLabel'),
-  },
-  {
-    field: 'children_income',
-    label: t('registration.incomeDetails.childrenIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.childrenIncomeTitle'),
-    periodicField: 'children_periodic_type',       periodicLabel: t('registration.incomeDetails.childrenPeriodicLabel'),
-    amountField:   'family_children_salary',       amountLabel:   t('registration.incomeDetails.childrenAmount'),
-    noteField:     'children_note',                noteLabel:     t('registration.incomeDetails.childrenNoteLabel'),
-  },
-  {
-    field: 'private_income',
-    label: t('registration.incomeDetails.privateIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.privateIncomeTitle'),
-    periodicField: 'private_business_periodicity', periodicLabel: t('registration.incomeDetails.privatePeriodicLabel'),
-    amountField:   'private_business_amount',      amountLabel:   t('registration.incomeDetails.privateAmount'),
-    noteField:     'private_note',                 noteLabel:     t('registration.incomeDetails.privateNoteLabel'),
-  },
-  {
-    field: 'stock_income',
-    label: t('registration.incomeDetails.stockIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.stockIncomeTitle'),
-    periodicField: 'stock_market_periodicity',     periodicLabel: t('registration.incomeDetails.stockPeriodicLabel'),
-    amountField:   'stock_market_income',          amountLabel:   t('registration.incomeDetails.stockAmount'),
-    noteField:     'stock_market_note',            noteLabel:     t('registration.incomeDetails.stockNoteLabel'),
-  },
-  {
-    field: 'rent_income',
-    label: t('registration.incomeDetails.rentIncomeLabel'),
-    sectionTitle: t('registration.incomeDetails.rentIncomeTitle'),
-    periodicField: 'rent_periodic_type',           periodicLabel: t('registration.incomeDetails.rentPeriodicLabel'),
-    amountField:   'rent_income_amount',           amountLabel:   t('registration.incomeDetails.rentAmount'),
-    noteField:     'rent_note',                    noteLabel:     t('registration.incomeDetails.rentNoteLabel'),
-  },
-])
+const incomeSources = computed(() =>
+  getRegistrationVariant(props.flow).incomeSources.map(src => ({
+    ...src,
+    label: t(src.labelKey),
+    sectionTitle: t(src.sectionTitleKey),
+    periodicLabel: t(src.periodicLabelKey),
+    amountLabel: t(src.amountLabelKey),
+    noteLabel: t(src.noteLabelKey),
+  }))
+)
 
 const activeIncomeSources = computed(() =>
   incomeSources.value.filter(src => props.modelValue[src.field] == 1)

@@ -140,25 +140,11 @@
   </div>
 </template>
 
-<script>
-// Mirrors the server lists in beneficiary_request.py; all of them are required.
-export const SCHOLARSHIP_ATTACHMENT_FIELDS = [
-  'education_invoice',
-  'grade_transcript',
-  'scholarship_guardian_id',
-  'scholarship_guardian_passport',
-  'scholarship_student_id',
-  'scholarship_student_passport',
-  'scholarship_family_ids',
-  'scholarship_guardian_bank_statement',
-]
-export const SCHOLARSHIP_DECLARATION_FIELDS = ['is_data_accuracy_declared', 'is_eligibility_check_accepted']
-</script>
-
 <script setup>
 import { ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
+import { SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({

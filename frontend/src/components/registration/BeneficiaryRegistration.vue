@@ -28,16 +28,16 @@
 
       <div :class="{ 'read-only-form': isReadOnly }">
         <div v-if="currentStep === 1" class="space-y-6">
-          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
-          <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
+          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :flow="flow" :invalid-fields="invalidFields" />
+          <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :flow="flow" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 2">
-          <IncomeDetailsCard v-model="formData.incomeDetails" :invalid-fields="invalidFields" />
+          <IncomeDetailsCard v-model="formData.incomeDetails" :flow="flow" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 3">
-          <FinancialObligationsCard v-model="formData.financialObligations" :invalid-fields="invalidFields" />
+          <FinancialObligationsCard v-model="formData.financialObligations" :flow="flow" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 4">
@@ -128,11 +128,14 @@ import IncomeDetailsCard from './IncomeDetailsCard.vue'
 import FinancialObligationsCard from './FinancialObligationsCard.vue'
 import AdditionalDataCard from './AdditionalDataCard.vue'
 import AttachmentsCard from './AttachmentsCard.vue'
-import ScholarshipRequestCard, {
+import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
+import ValidationErrorPopup from './ValidationErrorPopup.vue'
+import {
   SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
-} from './ScholarshipRequestCard.vue'
-import ValidationErrorPopup from './ValidationErrorPopup.vue'
+  getRegistrationVariant,
+} from './registrationVariant'
+import { validateRegistrationStep } from './registrationValidation'
 
 const props = defineProps({
   registrationName: { type: String, default: null },
@@ -163,6 +166,7 @@ const editing = ref(false)
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
 const isScholarshipFlow = computed(() => props.flow === 'scholarship')
+const variant = computed(() => getRegistrationVariant(props.flow))
 
 // Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
 // 6 = scholarship request data (scholarship flow only).
@@ -218,6 +222,8 @@ const formData = ref({
     private_income: 0,
     stock_income: 0,
     rent_income: 0,
+    father_income: 0,
+    mother_income: 0,
   },
   financialObligations: {
     family_obligation: 0,
@@ -331,6 +337,7 @@ function populateFromDoc(doc) {
     gender: doc.gender,
     date_of_birth: doc.date_of_birth,
     phone_number: doc.phone_number,
+    guardian_mobile_number: doc.guardian_mobile_number,
     partners_phone_number: doc.partners_phone_number,
     marital_status: doc.marital_status,
     partner_name: doc.partner_name,
@@ -384,6 +391,8 @@ function populateFromDoc(doc) {
     private_income: doc.private_income ?? 0,
     stock_income: doc.stock_income ?? 0,
     rent_income: doc.rent_income ?? 0,
+    father_income: doc.father_income ?? 0,
+    mother_income: doc.mother_income ?? 0,
     ben_periodic_type: doc.ben_periodic_type,
     salary_amount: doc.salary_amount,
     benficiary_note: doc.benficiary_note,
@@ -405,6 +414,12 @@ function populateFromDoc(doc) {
     rent_periodic_type: doc.rent_periodic_type,
     rent_income_amount: doc.rent_income_amount,
     rent_note: doc.rent_note,
+    father_income_periodicity: doc.father_income_periodicity,
+    father_income_amount: doc.father_income_amount,
+    father_income_note: doc.father_income_note,
+    mother_income_periodicity: doc.mother_income_periodicity,
+    mother_income_amount: doc.mother_income_amount,
+    mother_income_note: doc.mother_income_note,
   }
 
   formData.value.financialObligations = {
@@ -507,12 +522,14 @@ function buildAttachmentsPayload(source) {
 
 function buildStepPayload(logicalStep, source = formData.value) {
   if (logicalStep === 1) {
-    return {
+    const payload = {
       ...source.personalInfo,
       ...source.additionalInfo,
       ...source.familyDetails,
       ben_sec_idnumber: source.personalInfo.passport_number,
     }
+    // Defaults the cards set on hidden fields (e.g. ben_sec_idtype = Passport) must not be saved.
+    return Object.fromEntries(Object.entries(payload).filter(([field]) => variant.value.isShown(field)))
   }
   if (logicalStep === 2) {
     return { ...source.incomeDetails }
@@ -660,308 +677,13 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
 }
 
 function validateStep(targetStep, targetSubStep4) {
-  const pi = formData.value.personalInfo
-  const ai = formData.value.additionalInfo
-  const fd = formData.value.familyDetails
-  const id = formData.value.incomeDetails
-  const fo = formData.value.financialObligations
-  const ad = formData.value.additionalData
-  const at = formData.value.attachments
-
-  const errors = []
-  const fields = []
-
-  function req(value, field, label) {
-    if (value === undefined || value === null || value === '') {
-      errors.push(label)
-      fields.push(field)
-    }
-  }
-
-  if (targetStep === 1) {
-    const isResidence = Boolean(pi.ben_nationality && pi.ben_nationality !== 'Qatar')
-    req(pi.ar_name, 'ar_name', t('registration.personalInfo.arName'))
-    if (pi.ar_name && /[a-zA-Z]/.test(pi.ar_name)) {
-      errors.push(t('registration.validation.arabicOnly'))
-      fields.push('ar_name')
-    }
-    req(pi.en_name, 'en_name', t('registration.personalInfo.enName'))
-    if (pi.en_name && /[؀-ۿ]/.test(pi.en_name)) {
-      errors.push(t('registration.validation.englishOnly'))
-      fields.push('en_name')
-    }
-    req(pi.ben_primary_idtype, 'ben_primary_idtype', t('registration.personalInfo.primaryIdType'))
-    req(pi.ben_primary_idnumber, 'ben_primary_idnumber', t('registration.personalInfo.primaryIdNumber'))
-    if (pi.ben_primary_idnumber && pi.ben_primary_idnumber.length !== 11) {
-      errors.push(t('registration.validation.idMustBe11'))
-      fields.push('ben_primary_idnumber')
-    }
-    req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
-    req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
-    if (pi.passport_number && !/^[A-Z0-9]{1,12}$/.test(pi.passport_number)) {
-      errors.push(t('registration.validation.passportFormat'))
-      fields.push('passport_number')
-    }
-    req(pi.ben_nationality, 'ben_nationality', t('registration.personalInfo.nationality'))
-    req(pi.gender, 'gender', t('registration.personalInfo.gender'))
-    req(pi.date_of_birth, 'date_of_birth', t('registration.personalInfo.dob'))
-    if (pi.date_of_birth) {
-      const today = new Date()
-      const birthDate = new Date(pi.date_of_birth)
-      let age = today.getFullYear() - birthDate.getFullYear()
-      const monthDiff = today.getMonth() - birthDate.getMonth()
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--
-      }
-      if (age < 21) {
-        errors.push(t('registration.validation.minimumAge'))
-        fields.push('date_of_birth')
-      }
-    }
-    req(pi.phone_number, 'phone_number', t('registration.personalInfo.phone'))
-    if (pi.phone_number && pi.phone_number.length !== 8) {
-      errors.push(t('registration.validation.phoneMustBe8'))
-      fields.push('phone_number')
-    }
-    req(pi.partners_phone_number, 'partners_phone_number', t('registration.personalInfo.partnerPhone'))
-    if (pi.partners_phone_number && pi.partners_phone_number.length !== 8) {
-      errors.push(t('registration.validation.phoneMustBe8'))
-      fields.push('partners_phone_number')
-    }
-    req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
-    if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
-    if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
-    if (isResidence) req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
-    req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
-
-    req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
-    // Requestor sub-fields validation kept for reference, disabled now that
-    // ben_requestor_relationtype only allows "The same subvention requestor".
-    // if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
-    //   req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
-    //   req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
-    //   req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
-    //   if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
-    //     errors.push(t('registration.validation.idMustBe11'))
-    //     fields.push('requestor_idnumber')
-    //   }
-    //   req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
-    //   req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
-    //   if (ai.requestor_number && ai.requestor_number.length !== 8) {
-    //     errors.push(t('registration.validation.phoneMustBe8'))
-    //     fields.push('requestor_number')
-    //   }
-    // }
-    req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
-    if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
-    if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))
-    req(ai.currently_working, 'currently_working', t('registration.additionalInfo.currentlyWorking'))
-    if (ai.currently_working === 'Yes') {
-      req(ai.employer_name, 'employer_name', t('registration.additionalInfo.employerName'))
-      req(ai.employer_address, 'employer_address', t('registration.additionalInfo.employerAddress'))
-      req(ai.occupation, 'occupation', t('registration.additionalInfo.occupation'))
-    }
-    if (isResidence && ai.currently_working === 'No') req(ai.worked_before, 'worked_before', t('registration.additionalInfo.workedBefore'))
-    req(ai.education_level, 'education_level', t('registration.additionalInfo.educationLevel'))
-    if (pi.ben_nationality !== 'Qatar') req(ai.sponsor_name, 'sponsor_name', t('registration.additionalInfo.sponsorName'))
-
-    req(fd.family_size, 'family_size', t('registration.familyDetails.familySize'))
-    if (fd.ben_dependent_count === undefined || fd.ben_dependent_count === null || fd.ben_dependent_count === '') {
-      errors.push(t('registration.familyDetails.dependentCount'))
-      fields.push('ben_dependent_count')
-    }
-    req(fd.family_visa_type, 'family_visa_type', t('registration.familyDetails.familyVisa'))
-    if (isResidence) {
-      req(fd.visa_dependent, 'visa_dependent', t('registration.familyDetails.otherDependents'))
-      if (fd.visa_dependent === 'Yes') req(fd.names_and_relation_to_sponsored, 'names_and_relation_to_sponsored', t('registration.familyDetails.namesRelation'))
-    }
-    req(fd.have_children, 'have_children', t('registration.familyDetails.haveChildren'))
-    if (pi.marital_status === 'Married') req(fd.partner_working, 'partner_working', t('registration.familyDetails.partnerWorking'))
-    if (fd.have_children === 'Yes') {
-      req(fd.children_above_eighteen, 'children_above_eighteen', t('registration.familyDetails.childrenAbove18'))
-      req(fd.children_in_school, 'children_in_school', t('registration.familyDetails.childrenInSchool'))
-      if (fd.children_in_school === 'Yes') {
-        req(fd.children_school, 'children_school', t('registration.familyDetails.childrenSchoolType'))
-        req(fd.children_school_information, 'children_school_information', t('registration.familyDetails.childrenSchoolInfo'))
-      }
-      req(fd.children_special_needs, 'children_special_needs', t('registration.familyDetails.childrenSpecialNeeds'))
-    }
-    req(fd.afif_charity_assistance, 'afif_charity_assistance', t('registration.familyDetails.afifAssistance'))
-    if (fd.afif_charity_assistance === 'Yes') req(fd.affif_assistance, 'affif_assistance', t('registration.familyDetails.afifAssistanceAmount'))
-  }
-
-  if (targetStep === 2) {
-    const incomeFields = ['ben_income', 'family_income', 'family_extra', 'children_income', 'private_income', 'stock_income', 'rent_income']
-    if (!incomeFields.some(f => id[f] == 1)) {
-      errors.push(t('registration.validation.atLeastOneIncome'))
-    }
-    const incomeSources = [
-      { field: 'ben_income',      periodicField: 'ben_periodic_type',           periodicLabel: t('registration.incomeDetails.benPeriodicLabel'),      amountField: 'salary_amount',           amountLabel: t('registration.incomeDetails.salaryAmount'),    noteField: 'benficiary_note',     noteLabel: t('registration.incomeDetails.benNoteLabel') },
-      { field: 'family_income',   periodicField: 'family_periodic_type',        periodicLabel: t('registration.incomeDetails.familyPeriodicLabel'),   amountField: 'family_income_amount',    amountLabel: t('registration.incomeDetails.familyAmount'),    noteField: 'family_note',         noteLabel: t('registration.incomeDetails.familyNoteLabel') },
-      { field: 'family_extra',    periodicField: 'extra_periodic_type',         periodicLabel: t('registration.incomeDetails.extraPeriodicLabel'),    amountField: 'family_extra_salary',     amountLabel: t('registration.incomeDetails.extraAmount'),     noteField: 'family_extra_note',   noteLabel: t('registration.incomeDetails.extraNoteLabel') },
-      { field: 'children_income', periodicField: 'children_periodic_type',      periodicLabel: t('registration.incomeDetails.childrenPeriodicLabel'), amountField: 'family_children_salary',  amountLabel: t('registration.incomeDetails.childrenAmount'),  noteField: 'children_note',       noteLabel: t('registration.incomeDetails.childrenNoteLabel') },
-      { field: 'private_income',  periodicField: 'private_business_periodicity',periodicLabel: t('registration.incomeDetails.privatePeriodicLabel'),  amountField: 'private_business_amount', amountLabel: t('registration.incomeDetails.privateAmount'),   noteField: 'private_note',        noteLabel: t('registration.incomeDetails.privateNoteLabel') },
-      { field: 'stock_income',    periodicField: 'stock_market_periodicity',    periodicLabel: t('registration.incomeDetails.stockPeriodicLabel'),    amountField: 'stock_market_income',     amountLabel: t('registration.incomeDetails.stockAmount'),     noteField: 'stock_market_note',   noteLabel: t('registration.incomeDetails.stockNoteLabel') },
-      { field: 'rent_income',     periodicField: 'rent_periodic_type',          periodicLabel: t('registration.incomeDetails.rentPeriodicLabel'),     amountField: 'rent_income_amount',      amountLabel: t('registration.incomeDetails.rentAmount'),      noteField: 'rent_note',           noteLabel: t('registration.incomeDetails.rentNoteLabel') },
-    ]
-    for (const src of incomeSources) {
-      if (id[src.field] == 1) {
-        req(id[src.periodicField], src.periodicField, src.periodicLabel)
-        req(id[src.amountField], src.amountField, src.amountLabel)
-        req(id[src.noteField], src.noteField, src.noteLabel)
-      }
-    }
-  }
-
-  if (targetStep === 3) {
-    const obligationFields = ['family_obligation', 'rent_obligation', 'treatment_obligation', 'debt_obligation', 'tuition_obligation']
-    if (!obligationFields.some(f => fo[f] == 1)) {
-      errors.push(t('registration.validation.atLeastOneObligation'))
-    }
-    const obligationSources = [
-      { field: 'family_obligation',   subFields: [
-        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel'), positive: true },
-        { name: 'family_obligation_periodicity',         label: t('registration.financialObligations.familyPeriodicLabel') },
-        { name: 'family_expenses',                       label: t('registration.financialObligations.familyAmountLabel') },
-        { name: 'family_obligations_note',               label: t('registration.financialObligations.familyNoteLabel') },
-      ]},
-      { field: 'rent_obligation',     subFields: [
-        { name: 'rent_obligation_periodicity',           label: t('registration.financialObligations.rentPeriodicLabel') },
-        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel'), positive: true },
-        { name: 'rent_amount',                           label: t('registration.financialObligations.rentAmountLabel') },
-        { name: 'rent_obligations_note',                 label: t('registration.financialObligations.rentNoteLabel') },
-      ]},
-      { field: 'treatment_obligation',subFields: [
-        { name: 'treatment_obligation_periodicity',          label: t('registration.financialObligations.treatmentPeriodicLabel') },
-        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel'), positive: true },
-        { name: 'treatment_amount',                          label: t('registration.financialObligations.treatmentAmountLabel') },
-        { name: 'treatment_obligations_note',                label: t('registration.financialObligations.treatmentNoteLabel') },
-      ]},
-      { field: 'debt_obligation',     subFields: [
-        { name: 'debt_obligation_periodicity',           label: t('registration.financialObligations.debtPeriodicLabel') },
-        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel'), positive: true },
-        { name: 'bank_payments_amount',                  label: t('registration.financialObligations.debtAmountLabel') },
-        { name: 'debt_obligations_note',                 label: t('registration.financialObligations.debtNoteLabel') },
-      ]},
-      { field: 'tuition_obligation',  subFields: [
-        { name: 'tuition_obligation_periodicity',          label: t('registration.financialObligations.tuitionPeriodicLabel') },
-        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel'), positive: true },
-        { name: 'tuition_obligations_note',                label: t('registration.financialObligations.tuitionNoteLabel') },
-        { name: 'tuition_amount',                          label: t('registration.financialObligations.tuitionAmountLabel') },
-      ]},
-    ]
-    for (const src of obligationSources) {
-      if (fo[src.field] == 1) {
-        for (const f of src.subFields) {
-          req(fo[f.name], f.name, f.label)
-          if (f.positive && fo[f.name] !== undefined && fo[f.name] !== null && fo[f.name] !== '' && Number(fo[f.name]) <= 0) {
-            errors.push(t('registration.validation.mustBeGreaterThanZero'))
-            fields.push(f.name)
-          }
-        }
-      }
-    }
-  }
-
-  if (targetStep === 4 && targetSubStep4 === 1) {
-    req(ad.housing_type, 'housing_type', t('registration.additionalData.housingType'))
-    req(ad.housing_city, 'housing_city', t('registration.additionalData.city'))
-    req(ad.zone_number, 'zone_number', t('registration.additionalData.zoneNumber'))
-    req(ad.street_number, 'street_number', t('registration.additionalData.streetNumber'))
-    req(ad.unit_number, 'unit_number', t('registration.additionalData.unitNumber'))
-    req(ad.building_number, 'building_number', t('registration.additionalData.buildingNumber'))
-    req(ad.housing_description, 'housing_description', t('registration.additionalData.housingDescription'))
-    req(ad.has_afif_employee_relation, 'has_afif_employee_relation', t('registration.additionalData.afifRelation'))
-    req(ad.has_housemates, 'has_housemates', t('registration.additionalData.housemates'))
-    req(ad.has_bank_loans, 'has_bank_loans', t('registration.additionalData.bankLoans'))
-    if (ad.has_bank_loans === 'Yes') req(ad.court_tried, 'court_tried', t('registration.additionalData.courtTried'))
-    req(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
-    if (ad.has_other_info === 'Yes') {
-      req(ad.additional_notes, 'additional_notes', t('registration.additionalData.additionalNotes'))
-      if (ad.additional_notes && ad.additional_notes.length > 120) {
-        errors.push(t('registration.validation.additionalInfoTooLong'))
-        fields.push('additional_notes')
-      }
-    }
-  }
-
-  if (targetStep === 4 && targetSubStep4 === 2) {
-    const files = at.files
-    const lc = at.legalClaims
-    const isMarried       = pi.marital_status === 'Married'
-    const isDivorced      = pi.marital_status === 'Divorced'
-    const isWidowed       = pi.marital_status === 'Widowed'
-    const isResidence     = pi.visa_type === 'Residence'
-    const isQatari        = pi.ben_nationality === 'Qatar'
-    const hasChildren     = fd.have_children === 'Yes'
-    const childrenAbove18 = fd.children_above_eighteen === 'Yes'
-    const childrenSchool  = fd.children_in_school === 'Yes'
-    const childSpecial    = fd.children_special_needs === 'Yes'
-    const familyResidence = fd.family_visa_type === 'Residence'
-    const partnerWorking  = fd.partner_working === 'Yes'
-    const visaDependent   = fd.visa_dependent === 'Yes'
-    const working         = ai.currently_working === 'Yes'
-    const notWorking      = ai.currently_working === 'No'
-    const workedBefore    = ai.worked_before === 'Yes'
-    const hasHousemates   = ad.has_housemates === 'Yes'
-    const hasBankLoans    = ad.has_bank_loans === 'Yes'
-    const courtTried      = ad.court_tried === 'Yes'
-    const isRental        = ad.housing_type === 'Rental'
-    const isOwned         = ad.housing_type === 'Private Ownership'
-
-    const requiredDocs = [
-      { id: 'qid',                            labelKey: 'registration.attachments.docs.qid',                  show: true },
-      { id: 'passport',                       labelKey: 'registration.attachments.docs.passport',             show: true },
-      { id: 'wife_id',                        labelKey: 'registration.attachments.docs.wifeId',               show: isMarried },
-      { id: 'wife_passport',                  labelKey: 'registration.attachments.docs.wifePassport',         show: isMarried },
-      { id: 'children_identification',        labelKey: 'registration.attachments.docs.childrenId',          show: hasChildren },
-      { id: 'rent_contract',                  labelKey: 'registration.attachments.docs.rentContract',        show: isRental },
-      { id: 'property_deed',                  labelKey: 'registration.attachments.docs.property',            show: isOwned },
-      { id: 'bank_statement',                 labelKey: 'registration.attachments.docs.bankStatement',       show: isResidence },
-      { id: 'wife_bank_statement',            labelKey: 'registration.attachments.docs.wifeBankStatement',   show: isMarried && familyResidence },
-      { id: 'wife_credit_certificate',        labelKey: 'registration.attachments.docs.wifeCredit',          show: isMarried && familyResidence },
-      { id: 'beneficiary_credit_certificate', labelKey: 'registration.attachments.docs.creditBureau',        show: isResidence },
-      { id: 'children_bank_statement',        labelKey: 'registration.attachments.docs.childrenBankStatement',show: familyResidence && childrenAbove18 },
-      { id: 'children_credit_information',    labelKey: 'registration.attachments.docs.childrenCredit',      show: familyResidence && childrenAbove18 },
-      { id: 'social_security_certificate',    labelKey: 'registration.attachments.docs.socialSecurityCert',  show: isQatari && notWorking },
-      { id: 'partner_work_certificate',       labelKey: 'registration.attachments.docs.partnerWorkCert',     show: partnerWorking },
-      { id: 'employment_certificate',         labelKey: 'registration.attachments.docs.employmentCert',      show: working },
-      { id: 'vehicle_certificate',            labelKey: 'registration.attachments.docs.trafficCar',          show: isResidence },
-      { id: 'iban_picture',                   labelKey: 'registration.attachments.docs.ibanPhoto',           show: isResidence },
-      { id: 'children_schooling_proof',       labelKey: 'registration.attachments.docs.childrenSchoolProof', show: childrenSchool },
-      { id: 'special_needs_certificate',      labelKey: 'registration.attachments.docs.specialNeedsCert',    show: childSpecial },
-      { id: 'termination_letter',             labelKey: 'registration.attachments.docs.terminationLetter',   show: notWorking && workedBefore },
-      { id: 'nonmarriage_proof',              labelKey: 'registration.attachments.docs.nonmarriageProof',    show: isDivorced || isWidowed },
-      { id: 'divorce_paper',                  labelKey: 'registration.attachments.docs.divorcePaper',        show: isDivorced },
-      { id: 'partner_death_certificate',      labelKey: 'registration.attachments.docs.partnerDeathCert',    show: isWidowed },
-      { id: 'copy_of_court_judgment',         labelKey: 'registration.attachments.docs.courtJudgment',       show: hasBankLoans && courtTried },
-      { id: 'id_coresidents',                 labelKey: 'registration.attachments.docs.coresidentsId',       show: hasHousemates },
-      { id: 'id_sponsored',                   labelKey: 'registration.attachments.docs.sponsoredId',         show: visaDependent },
-      { id: 'metrash_adress',                 labelKey: 'registration.attachments.docs.metrashAddress',      show: true },
-    ]
-    for (const doc of requiredDocs.filter(d => d.show)) {
-      if (!files[doc.id]) { errors.push(t(doc.labelKey)); fields.push(`attach_${doc.id}`) }
-    }
-    if (!lc.correctData)      { errors.push('الإقرار بصحة البيانات');           fields.push('claim_correctData') }
-    if (!lc.verificationRight) { errors.push('الإقرار بحق التحقق من الأهلية'); fields.push('claim_verificationRight') }
-    if (!lc.statusAwareness)   { errors.push('الإقرار بطبيعة التسجيل');         fields.push('claim_statusAwareness') }
-  }
-
-  if (targetStep === 5) {
-    const sr = formData.value.scholarshipRequest
-    if (!(Number(sr.requested_amount) > 0)) {
-      errors.push(t('scholarship.request.requestedAmount'))
-      fields.push('requested_amount')
-    }
-    for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
-      if (!sr.files[id]) { errors.push(t(`scholarship.attachments.${id}`)); fields.push(`attach_${id}`) }
-    }
-    for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
-      if (!sr.declarations[field]) { errors.push(t(`scholarship.declarations.${field}`)); fields.push(`claim_${field}`) }
-    }
-  }
-
-  return { errors, fields }
+  return validateRegistrationStep({
+    formData: formData.value,
+    step: targetStep,
+    subStep4: targetSubStep4,
+    flow: props.flow,
+    t,
+  })
 }
 
 function logicalStepArgs(logicalStep) {

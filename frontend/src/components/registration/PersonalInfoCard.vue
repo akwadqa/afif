@@ -73,7 +73,7 @@
 
 
       <!-- ID Expiry Date -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('id_expiry_date')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.idExpiryDate') }} <span class="text-red-500">*</span></label>
         <DatePicker
           :modelValue="modelValue.id_expiry_date"
@@ -101,7 +101,7 @@
       </div>
 
       <!-- Passport Number -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('passport_number')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
@@ -222,8 +222,8 @@
         </select>
       </div>
 
-      <!-- Partner Phone (always shown) -->
-      <div class="space-y-1.5">
+      <!-- Partner Phone -->
+      <div v-if="variant.isShown('partners_phone_number')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
@@ -236,6 +236,24 @@
           :class="isInvalid('partners_phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
         <p v-if="modelValue.partners_phone_number && modelValue.partners_phone_number.length !== 8" class="text-xs text-red-500">
+          {{ t('registration.validation.phoneMustBe8') }}
+        </p>
+      </div>
+
+      <!-- Guardian Mobile -->
+      <div v-if="variant.isShown('guardian_mobile_number')" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('scholarship.personalInfo.guardianMobile') }} <span class="text-red-500">*</span></label>
+        <input
+          type="tel"
+          :value="modelValue.guardian_mobile_number"
+          @input="onDigitsOnly('guardian_mobile_number', $event, 8)"
+          maxlength="8"
+          placeholder="00000000"
+          dir="ltr"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('guardian_mobile_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+        <p v-if="modelValue.guardian_mobile_number && modelValue.guardian_mobile_number.length !== 8" class="text-xs text-red-500">
           {{ t('registration.validation.phoneMustBe8') }}
         </p>
       </div>
@@ -421,7 +439,7 @@
       -->
 
       <!-- Secondary ID Type -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('ben_sec_idtype')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdType') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_sec_idtype || 'Passport'"
@@ -434,7 +452,7 @@
       </div>
 
       <!-- Secondary Nationality — shown when secondary ID is Passport -->
-      <div v-if="additionalInfo.ben_sec_idtype === 'Passport'" class="space-y-1.5">
+      <div v-if="variant.isShown('ben_sec_nationality') && additionalInfo.ben_sec_idtype === 'Passport'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secNationality') }} <span class="text-red-500">*</span></label>
         <Autocomplete
           :options="countryOptions"
@@ -456,7 +474,7 @@
       </div>
 
       <!-- Gulf Country — shown when secondary ID is GCC Id -->
-      <div v-if="additionalInfo.ben_sec_idtype === 'GCC Id'" class="space-y-1.5">
+      <div v-if="variant.isShown('ben_sec_gulf_country') && additionalInfo.ben_sec_idtype === 'GCC Id'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.gulfCountry') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_sec_gulf_country"
@@ -537,7 +555,7 @@
 
       <!-- Worked Before — shown when visa=Residence AND currently_working=No -->
       <div
-        v-if="isResidence && additionalInfo.currently_working === 'No'"
+        v-if="variant.isShown('worked_before') && isResidence && additionalInfo.currently_working === 'No'"
         class="space-y-1.5"
       >
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.workedBefore') }} <span class="text-red-500">*</span></label>
@@ -597,6 +615,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker, Autocomplete } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
+import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 
@@ -605,8 +624,11 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   additionalInfo: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
+  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue', 'update:additionalInfo'])
+
+const variant = computed(() => getRegistrationVariant(props.flow))
 
 const countries = ref([])
 const numberWarnings = ref(new Set())

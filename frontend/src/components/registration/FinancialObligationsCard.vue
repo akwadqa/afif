@@ -95,13 +95,17 @@
 import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
+import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
+  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue'])
+
+const labelKeys = computed(() => getRegistrationVariant(props.flow).obligationLabelKeys)
 
 const letterWarnings = ref(new Set())
 
@@ -125,7 +129,7 @@ function isInvalid(field) {
 const obligationSources = computed(() => [
   {
     field: 'family_obligation',
-    label: t('registration.financialObligations.familyLabel'),
+    label: t(labelKeys.value.family_obligation),
     sectionTitle: t('registration.financialObligations.familyTitle'),
     fields: [
       { name: 'family_obligations_installments_count', type: 'text', numericOnly: true, label: t('registration.financialObligations.familyInstallmentsLabel'), placeholder: t('registration.financialObligations.installmentsPlaceholder') },
@@ -136,7 +140,7 @@ const obligationSources = computed(() => [
   },
   {
     field: 'rent_obligation',
-    label: t('registration.financialObligations.rentLabel'),
+    label: t(labelKeys.value.rent_obligation),
     sectionTitle: t('registration.financialObligations.rentTitle'),
     fields: [
       { name: 'rent_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.rentPeriodicLabel') },
@@ -147,7 +151,7 @@ const obligationSources = computed(() => [
   },
   {
     field: 'treatment_obligation',
-    label: t('registration.financialObligations.treatmentLabel'),
+    label: t(labelKeys.value.treatment_obligation),
     sectionTitle: t('registration.financialObligations.treatmentTitle'),
     fields: [
       { name: 'treatment_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.treatmentPeriodicLabel') },
@@ -158,7 +162,7 @@ const obligationSources = computed(() => [
   },
   {
     field: 'debt_obligation',
-    label: t('registration.financialObligations.debtLabel'),
+    label: t(labelKeys.value.debt_obligation),
     sectionTitle: t('registration.financialObligations.debtTitle'),
     fields: [
       { name: 'debt_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.debtPeriodicLabel') },
@@ -169,7 +173,7 @@ const obligationSources = computed(() => [
   },
   {
     field: 'tuition_obligation',
-    label: t('registration.financialObligations.tuitionLabel'),
+    label: t(labelKeys.value.tuition_obligation),
     sectionTitle: t('registration.financialObligations.tuitionTitle'),
     fields: [
       { name: 'tuition_obligation_periodicity',          type: 'select', label: t('registration.financialObligations.tuitionPeriodicLabel') },

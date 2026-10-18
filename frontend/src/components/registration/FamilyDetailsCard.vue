@@ -44,7 +44,7 @@
       </div>
 
       <!-- Family Visa Type -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('family_visa_type')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.familyVisa') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.family_visa_type"
@@ -59,7 +59,7 @@
       </div>
 
       <!-- Others Under Own Visa — only when visa_type = Residence -->
-      <div v-if="isResidence" class="space-y-1.5">
+      <div v-if="variant.isShown('visa_dependent') && isResidence" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.otherDependents') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.visa_dependent"
@@ -75,7 +75,7 @@
 
       <!-- Names and Relation to Sponsored — shown when visa_dependent = Yes -->
       <div
-        v-if="isResidence && modelValue.visa_dependent === 'Yes'"
+        v-if="variant.isShown('names_and_relation_to_sponsored') && isResidence && modelValue.visa_dependent === 'Yes'"
         class="space-y-1.5 md:col-span-2"
       >
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.namesRelation') }} <span class="text-red-500">*</span></label>
@@ -93,7 +93,7 @@
       </div>
 
       <!-- Have Children -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('have_children')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.haveChildren') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.have_children"
@@ -123,7 +123,7 @@
       </div>
 
       <!-- Children conditional fields — shown when have_children = Yes -->
-      <template v-if="modelValue.have_children === 'Yes'">
+      <template v-if="variant.isShown('have_children') && modelValue.have_children === 'Yes'">
 
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.childrenAbove18') }} <span class="text-red-500">*</span></label>
@@ -201,7 +201,7 @@
       </template>
 
       <!-- Received Afif Charity Assistance -->
-      <div class="space-y-1.5">
+      <div v-if="variant.isShown('afif_charity_assistance')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.afifAssistance') }} <span class="text-red-500">*</span></label>
         <select
           :value="modelValue.afif_charity_assistance"
@@ -216,7 +216,7 @@
       </div>
 
       <!-- Afif assistance amount — shown when afif_charity_assistance = Yes -->
-      <div v-if="modelValue.afif_charity_assistance === 'Yes'" class="space-y-1.5">
+      <div v-if="variant.isShown('affif_assistance') && modelValue.afif_charity_assistance === 'Yes'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.familyDetails.afifAssistanceAmount') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
@@ -237,14 +237,18 @@ import { ref, computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 
 import { arabicToWestern } from '@/utils/inputHelpers'
+import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   personalInfo: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
+  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue'])
+
+const variant = computed(() => getRegistrationVariant(props.flow))
 
 const numberWarnings = ref(new Set())
 const letterWarnings = ref(new Set())
