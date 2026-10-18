@@ -20,6 +20,7 @@ from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     ScholarshipFlagChangeError as RequestFlagChangeError,
 )
 from afif.api.scholarship import IncompleteScholarshipApplicationError, submit_scholarship_application
+from afif.hooks_call import get_beneficiary_income_set
 
 REGISTRATION_ATTACHMENTS = {
     "qid": "/files/test-qid.pdf",
@@ -83,6 +84,14 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
     def test_missing_registration_consent_creates_nothing(self):
         frappe.db.set_value("Beneficiaries Registration", self.registration, "verification_consent", 0)
+
+        with self.assertRaises(IncompleteScholarshipApplicationError):
+            submit_scholarship_application(self.registration, self.request_data)
+
+        self.assert_nothing_submitted()
+
+    def test_missing_guardian_mobile_number_creates_nothing(self):
+        frappe.db.set_value("Beneficiaries Registration", self.registration, "guardian_mobile_number", None)
 
         with self.assertRaises(IncompleteScholarshipApplicationError):
             submit_scholarship_application(self.registration, self.request_data)
@@ -195,6 +204,49 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         self.assertFalse(frappe.db.exists("Beneficiary Request", {"beneficiaries": self.registration}))
 
 
+class TestScholarshipIncomeSet(IntegrationTestCase):
+    def test_father_and_mother_incomes_are_sent_as_family_income(self):
+        registration = frappe.get_doc(
+            {
+                "doctype": "Beneficiaries Registration",
+                "father_income": 1,
+                "father_income_periodicity": "Monthly",
+                "father_income_amount": "12000",
+                "father_income_note": "Father salary",
+                "mother_income": 1,
+                "mother_income_periodicity": "Yearly",
+                "mother_income_amount": "30000",
+                "mother_income_note": "Mother salary",
+            }
+        )
+
+        self.assertEqual(
+            get_beneficiary_income_set(registration),
+            [
+                {"periodicType": 2, "benIncomeType": 5, "amount": "12000", "notes": "Father salary"},
+                {"periodicType": 1, "benIncomeType": 5, "amount": "30000", "notes": "Mother salary"},
+            ],
+        )
+
+    def test_unchecked_parent_incomes_are_not_sent(self):
+        registration = frappe.get_doc(
+            {
+                "doctype": "Beneficiaries Registration",
+                "ben_income": 1,
+                "ben_periodic_type": "Monthly",
+                "salary_amount": "8000",
+                "benficiary_note": "Guardian salary",
+                "father_income": 0,
+                "father_income_amount": "12000",
+            }
+        )
+
+        self.assertEqual(
+            get_beneficiary_income_set(registration),
+            [{"periodicType": 2, "benIncomeType": 1, "amount": "8000", "notes": "Guardian salary"}],
+        )
+
+
 class TestNormalFlowUnchanged(IntegrationTestCase):
     def setUp(self):
         sanadi = patch("afif.hooks_call.requests.post", side_effect=AssertionError("Sanadi must not be called"))
@@ -274,6 +326,7 @@ def make_registration(is_scholarship: int) -> str:
             "documents_confirmation": 1,
             "verification_consent": 1,
             "cancellation_right": 1,
+            "guardian_mobile_number": "55123456" if is_scholarship else None,
             "current_step": 5,
             **REGISTRATION_ATTACHMENTS,
         }
