@@ -89,6 +89,8 @@
   "private_income",
   "stock_income",
   "rent_income",
+  "father_income",
+  "mother_income",
   "family_periodic_type",
   "family_income_amount",
   "family_note",
@@ -110,6 +112,12 @@
   "rent_periodic_type",
   "rent_income_amount",
   "rent_note",
+  "father_income_periodicity",
+  "father_income_amount",
+  "father_income_note",
+  "mother_income_periodicity",
+  "mother_income_amount",
+  "mother_income_note",
   "income_notes",
   "obligation_section",
   "obligation_type",
@@ -690,6 +698,20 @@
    "mandatory_depends_on": "eval:doc.current_step >= 2"
   },
   {
+   "default": "0",
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "father_income",
+   "fieldtype": "Check",
+   "label": "Father Income"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "mother_income",
+   "fieldtype": "Check",
+   "label": "Mother Income"
+  },
+  {
    "depends_on": "eval:doc.family_income==1",
    "fieldname": "family_periodic_type",
    "fieldtype": "Select",
@@ -839,6 +861,50 @@
    "fieldname": "rent_note",
    "fieldtype": "Small Text",
    "label": "Rent Income Note"
+  },
+  {
+   "depends_on": "eval:doc.father_income==1",
+   "fieldname": "father_income_periodicity",
+   "fieldtype": "Select",
+   "label": "Father Income Periodicity",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.father_income==1)",
+   "options": "\nYearly\nMonthly\nOthers"
+  },
+  {
+   "depends_on": "eval:doc.father_income==1",
+   "fieldname": "father_income_amount",
+   "fieldtype": "Data",
+   "label": "Father Income Amount",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.father_income==1)"
+  },
+  {
+   "depends_on": "eval:doc.father_income==1",
+   "fieldname": "father_income_note",
+   "fieldtype": "Small Text",
+   "label": "Father Income Note",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.father_income==1)"
+  },
+  {
+   "depends_on": "eval:doc.mother_income==1",
+   "fieldname": "mother_income_periodicity",
+   "fieldtype": "Select",
+   "label": "Mother Income Periodicity",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.mother_income==1)",
+   "options": "\nYearly\nMonthly\nOthers"
+  },
+  {
+   "depends_on": "eval:doc.mother_income==1",
+   "fieldname": "mother_income_amount",
+   "fieldtype": "Data",
+   "label": "Mother Income Amount",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.mother_income==1)"
+  },
+  {
+   "depends_on": "eval:doc.mother_income==1",
+   "fieldname": "mother_income_note",
+   "fieldtype": "Small Text",
+   "label": "Mother Income Note",
+   "mandatory_depends_on": "eval: doc.current_step == 2 && (doc.mother_income==1)"
   },
   {
    "fieldname": "income_notes",
@@ -1482,7 +1548,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-10-18 12:00:00.000000",
+ "modified": "2026-10-18 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",

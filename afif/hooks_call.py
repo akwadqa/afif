@@ -708,7 +708,18 @@ def get_beneficiary_income_set(doc):
                 "notes": doc.family_extra_note
             }
         )
-    
+
+    for parent in ("father", "mother"):
+        if doc.get(f"{parent}_income") == 1:
+            beneficiary_income_set.append(
+                {
+                    "periodicType": get_income_periodic_type(doc.get(f"{parent}_income_periodicity")),
+                    "benIncomeType": 5,
+                    "amount": doc.get(f"{parent}_income_amount"),
+                    "notes": doc.get(f"{parent}_income_note")
+                }
+            )
+
     if doc.private_income == 1:
         beneficiary_income_set.append(
             {
