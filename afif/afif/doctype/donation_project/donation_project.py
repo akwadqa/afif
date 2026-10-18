@@ -38,11 +38,11 @@ def credit_donation(project_name, amount):
 	and recompute Percentage Raised in the same statement.
 
 	Both columns are updated in one UPDATE so they can never drift apart: a
-	separate read-recompute-write for percentage would race with concurrent
-	donations to the same project (e.g. overlapping webhook deliveries),
-	since donated_amount's own increment is atomic but a later percentage
-	write could still be based on a donated_amount snapshot that's already
-	stale by the time it's saved.
+	separate read-recompute-write would race with concurrent donations to the
+	same project (e.g. overlapping webhook deliveries).
+
+	MariaDB evaluates single-table UPDATE assignments left to right, so the
+	percentage expression already sees the incremented donated_amount.
 	"""
 	frappe.db.sql(
 		"""
@@ -50,7 +50,7 @@ def credit_donation(project_name, amount):
 		SET donated_amount = COALESCE(donated_amount, 0) + %(amount)s,
 		    percentage = CASE
 		        WHEN COALESCE(required_amount, 0) > 0
-		        THEN (COALESCE(donated_amount, 0) + %(amount)s) / required_amount * 100
+		        THEN donated_amount / required_amount * 100
 		        ELSE 0
 		    END
 		WHERE name = %(project_name)s
