@@ -748,6 +748,13 @@ def get_beneficiary_income_set(doc):
 def before_insert_request(doc, method):
     frappe.log_error("before_insert_request")
     user = frappe.session.user
+
+    # submit_scholarship_application links the request to the registration it submits in the same
+    # transaction, so that registration is not Accepted yet. Clients cannot set doc.flags.
+    if doc.flags.is_scholarship_submission:
+        doc.request_date = now_datetime()
+        return
+
     if frappe.get_value("Beneficiaries Registration", {"user": user}, "workflow_state") == "Accepted":
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 

@@ -14,6 +14,7 @@
   "beneficiary_information_tab",
   "beneficiary_section",
   "status",
+  "is_scholarship",
   "current_step",
   "ben_id",
   "registration_acceptance_date",
@@ -32,6 +33,7 @@
   "passport_number",
   "marital_status",
   "phone_number",
+  "guardian_mobile_number",
   "partners_phone_number",
   "ben_nationality",
   "cb1",
@@ -218,6 +220,15 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "is_scholarship",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Scholarship",
+   "read_only": 1
+  },
+  {
    "default": "1",
    "fieldname": "current_step",
    "fieldtype": "Int",
@@ -302,6 +313,12 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Phone Number"
+  },
+  {
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "guardian_mobile_number",
+   "fieldtype": "Data",
+   "label": "Guardian Mobile Number"
   },
   {
    "fieldname": "ben_nationality",
@@ -1465,7 +1482,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-06-18 11:33:03.827654",
+ "modified": "2026-10-18 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
