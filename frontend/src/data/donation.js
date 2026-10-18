@@ -26,6 +26,18 @@ export function isProjectClosedError(error) {
 	return error?.exc_type === "ProjectClosedError"
 }
 
+export function isAmountExceedsRemainingError(error) {
+	return error?.exc_type === "AmountExceedsRemainingError"
+}
+
+// create_donation returns the project's remaining amount as the response message alongside the error
+export function getAmountExceedsMessage(error, t) {
+	const remaining = error.messages?.find((message) => message?.remaining_amount != null)?.remaining_amount
+	const message = t("donation.amountExceedsRemaining")
+	if (remaining == null) return message
+	return `${message} ${t("donation.maxDonation")} ${remaining} ${t("donation.currency")}`
+}
+
 // Project details keyed by `${project}:${lang}`
 export const projectDetails = reactive({})
 

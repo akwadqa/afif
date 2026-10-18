@@ -165,7 +165,12 @@ import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { validateDonor, donorPayload } from '@/utils/donorValidation'
-import { isProjectClosed, isProjectClosedError } from '@/data/donation'
+import {
+  isProjectClosed,
+  isProjectClosedError,
+  isAmountExceedsRemainingError,
+  getAmountExceedsMessage,
+} from '@/data/donation'
 
 const { t, isRTL } = useLanguage()
 const { isOpen, activeProject, closeDonationDialog } = useDonationDialog()
@@ -259,6 +264,10 @@ const createDonation = createResource({
       errorMessage.value = t('donation.projectCompleted')
       return
     }
+    if (isAmountExceedsRemainingError(err)) {
+      errorMessage.value = getAmountExceedsMessage(err, t)
+      return
+    }
     errorMessage.value = extractError(err)
   },
 })
@@ -270,6 +279,11 @@ const canSubmit = computed(
 )
 
 const donorFieldsRequired = computed(() => !donorForm.isAnonymous)
+
+// The donor is correcting the amount, so the previous error no longer applies
+watch(donationAmount, () => {
+  errorMessage.value = ''
+})
 
 // Toggling the benefactor option changes which donor fields are required, so drop any stale validation error
 watch(() => donorForm.isAnonymous, () => {

@@ -6,7 +6,11 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 
 from afif import dibsy
-from afif.afif.doctype.donation_project.donation_project import STATUS_CLOSED, ProjectClosedError
+from afif.afif.doctype.donation_project.donation_project import (
+	STATUS_CLOSED,
+	AmountExceedsRemainingError,
+	ProjectClosedError,
+)
 from afif.donation_order import get_program_positions, get_project_positions, sort_by_position
 
 
@@ -202,7 +206,7 @@ def create_donation(
 	project = frappe.db.get_value(
 		"Donation Project",
 		{"name": donation_project, "published": 1},
-		["name", "status"],
+		["name", "status", "required_amount", "donated_amount"],
 		as_dict=True,
 	)
 	if not project:
@@ -216,6 +220,18 @@ def create_donation(
 	amount = frappe.utils.flt(amount)
 	if amount <= 0:
 		frappe.throw(_("Amount must be greater than 0"))
+
+	remaining = frappe.utils.flt(
+		frappe.utils.flt(project.required_amount) - frappe.utils.flt(project.donated_amount), 2
+	)
+	if frappe.utils.flt(project.required_amount) > 0 and amount > remaining:
+		# Returned alongside the error so the frontend can show the limit in the donor's language,
+		# even for projects that hide their funding figures
+		frappe.local.response["message"] = {"remaining_amount": remaining}
+		frappe.throw(
+			_("The amount is greater than the {0} still needed for this project").format(remaining),
+			AmountExceedsRemainingError,
+		)
 
 	donation = frappe.get_doc({
 		"doctype": "Donation",

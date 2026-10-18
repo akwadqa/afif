@@ -16,6 +16,10 @@ class ProjectClosedError(frappe.ValidationError):
 	"""Raised when donating to a project that already met its target; the frontend matches on its name."""
 
 
+class AmountExceedsRemainingError(frappe.ValidationError):
+	"""Raised when a donation is larger than what the project still needs; the frontend matches on its name."""
+
+
 class DonationProject(Document):
 	def validate(self):
 		self.update_percentage()

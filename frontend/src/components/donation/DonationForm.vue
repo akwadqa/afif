@@ -165,7 +165,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { validateDonor, donorPayload } from '@/utils/donorValidation'
-import { isProjectClosed, isProjectClosedError } from '@/data/donation'
+import {
+  isProjectClosed,
+  isProjectClosedError,
+  isAmountExceedsRemainingError,
+  getAmountExceedsMessage,
+} from '@/data/donation'
 
 const route = useRoute()
 const router = useRouter()
@@ -230,6 +235,10 @@ const createDonation = createResource({
     if (isProjectClosedError(err)) {
       selectedProjectData.value.status = 'Closed'
       errorMessage.value = t('donation.projectCompleted')
+      return
+    }
+    if (isAmountExceedsRemainingError(err)) {
+      errorMessage.value = getAmountExceedsMessage(err, t)
       return
     }
     errorMessage.value = extractError(err)
@@ -297,6 +306,11 @@ watch([selectedProject, () => presetAmounts.value.length], ([, count]) => {
   donationAmount.value = 0
   isCustomAmount.value = !count
 }, { immediate: true })
+
+// The donor is correcting the amount, so the previous error no longer applies
+watch(donationAmount, () => {
+  errorMessage.value = ''
+})
 
 // Toggling the benefactor option changes which donor fields are required, so drop any stale validation error
 watch(() => donorForm.isAnonymous, () => {
