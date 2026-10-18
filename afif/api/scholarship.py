@@ -11,6 +11,7 @@ from afif.api.response import gen_response
 from afif.hooks_call import get_missing_required_attachments
 
 REGISTRATION_CONSENT_FIELDS = ("documents_confirmation", "verification_consent", "cancellation_right")
+SCHOLARSHIP_REGISTRATION_REQUIRED_FIELDS = ("guardian_mobile_number", *REGISTRATION_CONSENT_FIELDS)
 REQUEST_INPUT_FIELDS = (
     "requested_amount",
     "request_summary",
@@ -62,7 +63,9 @@ def get_own_scholarship_draft(registration: str) -> Document:
 
 def validate_registration_complete(registration_doc: Document) -> None:
     missing = get_missing_required_attachments(registration_doc)
-    missing += [fieldname for fieldname in REGISTRATION_CONSENT_FIELDS if not registration_doc.get(fieldname)]
+    missing += [
+        fieldname for fieldname in SCHOLARSHIP_REGISTRATION_REQUIRED_FIELDS if not registration_doc.get(fieldname)
+    ]
     if missing:
         labels = [_(registration_doc.meta.get_label(fieldname)) for fieldname in missing]
         frappe.throw(
