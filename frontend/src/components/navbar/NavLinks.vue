@@ -40,5 +40,6 @@ const navItems = computed(() => [...navConfig].reverse().map(withLabels))
 const loggedInItems = [
   { labelKey: 'sidebar.beneficiaryProfile', routeName: 'Home' },
   { labelKey: 'sidebar.request', routeName: 'Request' },
+  { labelKey: 'sidebar.scholarship', routeName: 'Scholarship' },
 ]
 </script>

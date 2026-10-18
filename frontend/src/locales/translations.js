@@ -513,6 +513,7 @@ export default {
           'Books And Resources': 'كتب ومصادر تعليمية',
           'Educational Equipment': 'معدات تعليمية',
           'Other Educational Assistance': 'مساعدة تعليمية أخرى',
+          'Scholarship': 'منحة دراسية',
         },
         social: {
           'Garmeen': 'غارمين',
@@ -601,9 +602,49 @@ export default {
     sidebar: {
       beneficiaryProfile: 'ملف المستفيد',
       request: 'طلباتي',
+      scholarship: 'منحة الشيخ خالد بن ناصر',
       myAccount: 'حسابي',
       donate: 'التبرع',
       logout: 'تسجيل الخروج',
+    },
+    scholarship: {
+      title: 'منحة الشيخ خالد بن ناصر',
+      subtitle: 'أكمل بيانات التسجيل وبيانات الطلب لتقديم طلب المنحة',
+      steps: {
+        request: 'بيانات الطلب',
+      },
+      request: {
+        title: 'بيانات الطلب',
+        requestedAmount: 'المبلغ المطلوب',
+        amountPlaceholder: 'أدخل المبلغ المطلوب',
+        summary: 'ملخص الطلب',
+        summaryPlaceholder: 'اكتب ملخصاً مختصراً لطلبك (اختياري)',
+        attachmentsTitle: 'المرفقات المطلوبة',
+      },
+      attachments: {
+        education_invoice: 'فاتورة الجامعة',
+        grade_transcript: 'السجل التراكمي للطالب',
+        scholarship_guardian_id: 'صورة البطاقة الشخصية لولي الأمر أو مقدم الطلب',
+        scholarship_guardian_passport: 'صورة جواز السفر لولي الأمر أو مقدم الطلب',
+        scholarship_student_id: 'صورة البطاقة الشخصية للطالب',
+        scholarship_student_passport: 'صورة جواز السفر للطالب',
+        scholarship_family_ids: 'صور البطاقات الشخصية لجميع أفراد العائلة',
+        scholarship_guardian_bank_statement: 'كشف الحساب لولي الأمر',
+      },
+      declarations: {
+        is_data_accuracy_declared: 'اقر أنا مقدم الطلب بأن كافة الوثائق والبيانات المقدمة في هذا الطلب صحيحة.',
+        is_eligibility_check_accepted: 'يحق لمؤسسة عفيف التأكد من أهلية مقدم الطلب بحسب اجراءاتها المتبعة.',
+      },
+      success: {
+        title: 'تم تقديم طلب المنحة بنجاح',
+        message: 'تم استلام تسجيلك وطلب المنحة بنجاح. سيصلك إشعار عبر البريد الإلكتروني بنتيجة المراجعة.',
+        button: 'الاطلاع على ملف المستفيد',
+      },
+      blocked: {
+        title: 'لا يمكن التقديم على المنحة من هنا',
+        message: 'لديك ملف مستفيد مسجل مسبقاً، لذلك لا يمكنك بدء طلب منحة جديد من هذه الصفحة.',
+        button: 'العودة إلى ملف المستفيد',
+      },
     },
     beneficiaryList: {
       title: 'حسابي',
@@ -1441,6 +1482,7 @@ export default {
           'Books And Resources': 'Books And Resources',
           'Educational Equipment': 'Educational Equipment',
           'Other Educational Assistance': 'Other Educational Assistance',
+          'Scholarship': 'Scholarship',
         },
         social: {
           'Garmeen': 'Garmeen',
@@ -1529,9 +1571,49 @@ export default {
     sidebar: {
       beneficiaryProfile: 'Beneficiary Profile',
       request: 'My Requests',
+      scholarship: 'Sheikh Khalid bin Nasser Scholarship',
       myAccount: 'My Account',
       donate: 'Donate',
       logout: 'Logout',
+    },
+    scholarship: {
+      title: 'Sheikh Khalid bin Nasser Scholarship',
+      subtitle: 'Complete your registration and request data to apply for the scholarship',
+      steps: {
+        request: 'Request Data',
+      },
+      request: {
+        title: 'Request Data',
+        requestedAmount: 'Requested Amount',
+        amountPlaceholder: 'Enter the requested amount',
+        summary: 'Request Summary',
+        summaryPlaceholder: 'Write a short summary of your request (optional)',
+        attachmentsTitle: 'Required Attachments',
+      },
+      attachments: {
+        education_invoice: 'University invoice',
+        grade_transcript: "Student's cumulative transcript",
+        scholarship_guardian_id: 'ID card of the guardian or applicant',
+        scholarship_guardian_passport: 'Passport of the guardian or applicant',
+        scholarship_student_id: "Student's ID card",
+        scholarship_student_passport: "Student's passport",
+        scholarship_family_ids: 'ID cards of all family members',
+        scholarship_guardian_bank_statement: "Guardian's bank statement",
+      },
+      declarations: {
+        is_data_accuracy_declared: 'I, the applicant, declare that all documents and data submitted in this request are correct.',
+        is_eligibility_check_accepted: "Afif Charity may verify the applicant's eligibility according to its procedures.",
+      },
+      success: {
+        title: 'Your scholarship application was submitted',
+        message: 'We received your registration and scholarship request. You will be notified by email of the review result.',
+        button: 'View beneficiary profile',
+      },
+      blocked: {
+        title: 'You cannot apply for the scholarship here',
+        message: 'You already have a beneficiary profile, so you cannot start a new scholarship application from this page.',
+        button: 'Back to beneficiary profile',
+      },
     },
     beneficiaryList: {
       title: 'Beneficiary Profile Data',

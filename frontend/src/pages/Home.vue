@@ -97,6 +97,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
@@ -104,6 +105,7 @@ import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegist
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 
 const { t, isRTL } = useLanguage()
+const router = useRouter()
 
 const view = ref('loading')
 const registrationName = ref(null)
@@ -140,7 +142,7 @@ function fetchRegistrations() {
   myRegistrations.submit({
     doctype: 'Beneficiaries Registration',
     filters: { user: session.user },
-    fields: ['name', 'ar_name', 'en_name', 'status', 'ben_primary_idnumber'],
+    fields: ['name', 'ar_name', 'en_name', 'status', 'ben_primary_idnumber', 'is_scholarship'],
     limit_page_length: 20,
   })
 }
@@ -148,6 +150,11 @@ function fetchRegistrations() {
 onMounted(fetchRegistrations)
 
 function openRegistration(reg) {
+  // A scholarship draft can only be submitted together with its request, from the scholarship wizard.
+  if (reg.is_scholarship && reg.status === 'Draft') {
+    router.push({ name: 'Scholarship' })
+    return
+  }
   registrationName.value = reg.name
   view.value = 'view'
 }

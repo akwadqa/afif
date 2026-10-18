@@ -4,8 +4,8 @@
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div class="min-w-0">
-          <h1 class="text-xl sm:text-2xl font-bold text-[#0570B6]">{{ t('registration.title') }}</h1>
-          <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t('registration.subtitle') }}</p>
+          <h1 class="text-xl sm:text-2xl font-bold text-[#0570B6]">{{ t(isScholarshipFlow ? 'scholarship.title' : 'registration.title') }}</h1>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t(isScholarshipFlow ? 'scholarship.subtitle' : 'registration.subtitle') }}</p>
         </div>
         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
@@ -52,6 +52,10 @@
             @select-file="handleAttachmentFileSelected"
           />
         </div>
+
+        <div v-else-if="currentStep === 5 && isScholarshipFlow">
+          <ScholarshipRequestCard v-model="formData.scholarshipRequest" :invalid-fields="invalidFields" />
+        </div>
       </div>
 
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-6 py-4 text-sm">
@@ -95,7 +99,7 @@
       <FormActionsBar
         v-else
         :current-step="logicalCurrentStep"
-        :total-steps="5"
+        :total-steps="totalLogicalSteps"
         :loading="submitting"
         @next="handleNext"
         @prev="prevStep"
@@ -124,11 +128,16 @@ import IncomeDetailsCard from './IncomeDetailsCard.vue'
 import FinancialObligationsCard from './FinancialObligationsCard.vue'
 import AdditionalDataCard from './AdditionalDataCard.vue'
 import AttachmentsCard from './AttachmentsCard.vue'
+import ScholarshipRequestCard, {
+  SCHOLARSHIP_ATTACHMENT_FIELDS,
+  SCHOLARSHIP_DECLARATION_FIELDS,
+} from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
 
 const props = defineProps({
   registrationName: { type: String, default: null },
   readOnly: { type: Boolean, default: false },
+  flow: { type: String, default: 'registration', validator: value => ['registration', 'scholarship'].includes(value) },
 })
 
 const emit = defineEmits(['submitted', 'back'])
@@ -153,10 +162,16 @@ const editing = ref(false)
 
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
+const isScholarshipFlow = computed(() => props.flow === 'scholarship')
 
-const logicalCurrentStep = computed(() =>
-  currentStep.value === 4 && subStep4.value === 2 ? 5 : currentStep.value
-)
+// Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
+// 6 = scholarship request data (scholarship flow only).
+const totalLogicalSteps = computed(() => (isScholarshipFlow.value ? 6 : 5))
+const logicalCurrentStep = computed(() => {
+  if (currentStep.value === 4 && subStep4.value === 2) return 5
+  if (currentStep.value === 5) return 6
+  return currentStep.value
+})
 
 const STATUS_MAP = {
   'Draft':                { key: 'statusDraft',       cls: 'border-gray-200 text-gray-600 bg-gray-50' },
@@ -188,6 +203,7 @@ const stepsList = computed(() => [
   { number: 2, label: t('registration.steps.incomeDetails') },
   { number: 3, label: t('registration.steps.financialObligations') },
   { number: 4, label: t('registration.steps.additionalData') },
+  ...(isScholarshipFlow.value ? [{ number: 5, label: t('scholarship.steps.request') }] : []),
 ])
 
 const formData = ref({
@@ -218,6 +234,13 @@ const formData = ref({
       verificationRight: false,
       statusAwareness: false,
     },
+  },
+  // Kept in memory only: it becomes the Beneficiary Request when the application is submitted.
+  scholarshipRequest: {
+    requested_amount: '',
+    request_summary: '',
+    files: {},
+    declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false])),
   },
 })
 
@@ -256,6 +279,24 @@ const workflowAction = createResource({
   onError: onStepError,
 })
 
+const submitScholarship = createResource({
+  url: 'afif.api.scholarship.submit_scholarship_application',
+  onError: onStepError,
+})
+
+function toDocMeta(doc) {
+  return {
+    owner: doc.owner,
+    modified: doc.modified,
+    creation: doc.creation,
+    docstatus: doc.docstatus,
+    workflow_state: doc.workflow_state,
+    status: doc.status,
+    custom_notes: doc.custom_notes,
+    is_scholarship: doc.is_scholarship,
+  }
+}
+
 const getDoc = createResource({
   url: 'frappe.client.get',
   onSuccess(data) {
@@ -268,15 +309,7 @@ const getDoc = createResource({
 
 function populateFromDoc(doc) {
   docName.value = doc.name
-  docMeta.value = {
-    owner: doc.owner,
-    modified: doc.modified,
-    creation: doc.creation,
-    docstatus: doc.docstatus,
-    workflow_state: doc.workflow_state,
-    status: doc.status,
-    custom_notes: doc.custom_notes,
-  }
+  docMeta.value = toDocMeta(doc)
 
   const step = doc.current_step || 0
   const nextStep = step + 1
@@ -570,15 +603,7 @@ async function applyAction(action) {
     doc: JSON.stringify({ doctype: 'Beneficiaries Registration', name: docName.value }),
     action,
   })
-  docMeta.value = {
-    owner: result.owner,
-    modified: result.modified,
-    creation: result.creation,
-    docstatus: result.docstatus,
-    workflow_state: result.workflow_state,
-    status: result.status,
-    custom_notes: result.custom_notes,
-  }
+  docMeta.value = toDocMeta(result)
   return result
 }
 
@@ -592,6 +617,8 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
     email: session.user,
+    // frappe.client.save rebuilds the doc from this payload, so the flag must be resent every time.
+    is_scholarship: docName.value ? docMeta.value.is_scholarship : Number(isScholarshipFlow.value),
     ...(isLiveRecord ? buildMergedPayload(logicalStep) : buildFullPayload()),
   }
 
@@ -624,7 +651,8 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
 
   const result = await saveDoc.submit({ doc })
 
-  if (applyWorkflow && logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
+  // A scholarship registration is submitted together with its request by submitScholarshipApplication.
+  if (applyWorkflow && !doc.is_scholarship && logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
     return applyAction('Submit')
   }
 
@@ -919,18 +947,32 @@ function validateStep(targetStep, targetSubStep4) {
     if (!lc.statusAwareness)   { errors.push('الإقرار بطبيعة التسجيل');         fields.push('claim_statusAwareness') }
   }
 
+  if (targetStep === 5) {
+    const sr = formData.value.scholarshipRequest
+    if (!(Number(sr.requested_amount) > 0)) {
+      errors.push(t('scholarship.request.requestedAmount'))
+      fields.push('requested_amount')
+    }
+    for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
+      if (!sr.files[id]) { errors.push(t(`scholarship.attachments.${id}`)); fields.push(`attach_${id}`) }
+    }
+    for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
+      if (!sr.declarations[field]) { errors.push(t(`scholarship.declarations.${field}`)); fields.push(`claim_${field}`) }
+    }
+  }
+
   return { errors, fields }
 }
 
 function logicalStepArgs(logicalStep) {
   if (logicalStep === 4) return [4, 1]
   if (logicalStep === 5) return [4, 2]
+  if (logicalStep === 6) return [5, undefined]
   return [logicalStep, undefined]
 }
 
 function validateUpToCurrentStep() {
-  const targetLogical = Math.max(maxStepReached.value, logicalCurrentStep.value)
-  for (let logicalStep = 1; logicalStep <= targetLogical; logicalStep++) {
+  for (let logicalStep = 1; logicalStep <= logicalCurrentStep.value; logicalStep++) {
     const [step, subStep4Arg] = logicalStepArgs(logicalStep)
     const result = validateStep(step, subStep4Arg)
     if (result.errors.length > 0) {
@@ -948,15 +990,16 @@ function validateCurrentStepOnly() {
 async function handleNext() {
   error.value = ''
 
-  const isFinalStep = currentStep.value === 4 && subStep4.value === 2
-  if (isFinalStep && pendingAttachmentOps.size) {
+  const isAttachmentsStep = currentStep.value === 4 && subStep4.value === 2
+  const isScholarshipRequestStep = currentStep.value === 5
+  if (isAttachmentsStep && pendingAttachmentOps.size) {
     
     submitting.value = true
     await waitForPendingAttachmentOps()
     submitting.value = false
   }
   
-  const validation = isFinalStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
+  const validation = isAttachmentsStep || isScholarshipRequestStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
 
   const { errors, fields, step: invalidStep, subStep4: invalidSubStep4 } = validation
   if (errors.length > 0) {
@@ -973,6 +1016,12 @@ async function handleNext() {
   invalidFields.value = []
   submitting.value = true
 
+  if (isScholarshipRequestStep) {
+    await submitScholarshipApplication()
+    submitting.value = false
+    return
+  }
+
   const wasLiveRecord = Boolean(docName.value) && docMeta.value.status !== 'Draft' && snapshot.value
   function syncSnapshot() {
     if (wasLiveRecord) {
@@ -984,38 +1033,25 @@ async function handleNext() {
 
   let data
   try {
-    data = await saveStep(logicalCurrentStep.value, { applyWorkflow: !isFinalStep })
+    data = await saveStep(logicalCurrentStep.value, { applyWorkflow: !isAttachmentsStep })
   } catch (e) {
     return
   }
   docName.value = data.name
-  docMeta.value = {
-    owner: data.owner,
-    modified: data.modified,
-    creation: data.creation,
-    docstatus: data.docstatus,
-    workflow_state: data.workflow_state,
-    status: data.status,
-    custom_notes: data.custom_notes,
-  }
+  docMeta.value = toDocMeta(data)
   syncSnapshot()
 
-  if (isFinalStep) {
+  if (isAttachmentsStep) {
     try {
       const failedUploads = await uploadAllFiles()
       const finalData = await saveStep(logicalCurrentStep.value, { applyWorkflow: failedUploads.length === 0 })
-      docMeta.value = {
-        owner: finalData.owner,
-        modified: finalData.modified,
-        creation: finalData.creation,
-        docstatus: finalData.docstatus,
-        workflow_state: finalData.workflow_state,
-        status: finalData.status,
-        custom_notes: finalData.custom_notes,
-      }
+      docMeta.value = toDocMeta(finalData)
       syncSnapshot()
       if (failedUploads.length > 0) {
         error.value = `${t('registration.submitError')}: ${failedUploads.join(', ')}`
+      } else if (isScholarshipFlow.value) {
+        currentStep.value = 5
+        maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
       } else {
         emit('submitted', finalData.name)
       }
@@ -1035,8 +1071,39 @@ async function handleNext() {
   maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
 }
 
+async function submitScholarshipApplication() {
+  const sr = formData.value.scholarshipRequest
+  try {
+    for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
+      // Stored back as a URL so a retry after a failed submit reuses the upload.
+      if (sr.files[id] instanceof File) sr.files[id] = await uploadUnattachedPrivateFile(sr.files[id])
+    }
+  } catch (e) {
+    error.value = e.message || t('registration.submitError')
+    return
+  }
+
+  const request = {
+    requested_amount: sr.requested_amount,
+    request_summary: sr.request_summary,
+    ...sr.files,
+    ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
+  }
+  try {
+    await submitScholarship.submit({ registration: docName.value, request })
+  } catch (e) {
+    return
+  }
+  emit('submitted', docName.value)
+}
+
 function prevStep() {
   error.value = ''
+  if (currentStep.value === 5) {
+    currentStep.value = 4
+    subStep4.value = 2
+    return
+  }
   if (currentStep.value === 4 && subStep4.value === 2) {
     subStep4.value = 1
     return
@@ -1089,14 +1156,25 @@ async function uploadAllFiles() {
   return failures
 }
 
-async function uploadFile(file, docName, fieldname) {
+function uploadFile(file, docName, fieldname) {
+  return postFile(file, {
+    is_private: '0',
+    doctype: 'Beneficiaries Registration',
+    docname: docName,
+    fieldname,
+  })
+}
+
+// The scholarship endpoint attaches these to the request it creates, after checking they are the user's own.
+function uploadUnattachedPrivateFile(file) {
+  return postFile(file, { is_private: '1' })
+}
+
+async function postFile(file, fields) {
   const fd = new FormData()
   fd.append('file', file, file.name)
-  fd.append('is_private', '0')
   fd.append('folder', 'Home/Attachments')
-  fd.append('doctype', 'Beneficiaries Registration')
-  fd.append('docname', docName)
-  fd.append('fieldname', fieldname)
+  for (const [key, value] of Object.entries(fields)) fd.append(key, value)
 
   const headers = { 'X-Frappe-Site-Name': window.location.hostname }
   if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {
@@ -1120,15 +1198,7 @@ function queueAttachmentSave() {
   
   const run = attachmentSaveChain.then(async () => {
     const data = await saveStep(5, { applyWorkflow: false })
-    docMeta.value = {
-      owner: data.owner,
-      modified: data.modified,
-      creation: data.creation,
-      docstatus: data.docstatus,
-      workflow_state: data.workflow_state,
-      status: data.status,
-      custom_notes: data.custom_notes,
-    }
+    docMeta.value = toDocMeta(data)
     if (docMeta.value.status !== 'Draft' && snapshot.value) {
       updateSnapshotForStep(5)
     } else {
