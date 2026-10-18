@@ -383,7 +383,7 @@ export default {
       title: 'التبرع',
       description: 'ساهم في دعم الحالات المحتاجة من خلال اختيار البرنامج المناسب وإتمام عملية التبرع بسهولة وأمان.',
       donateNow: 'تبرع الآن',
-      targetReached: 'تم سداد المبلغ ضروري',
+      targetReached: 'تم سداد المبلغ',
       back: 'رجوع',
       program: 'برنامج التبرع',
       selectProgram: 'اختر البرنامج',
