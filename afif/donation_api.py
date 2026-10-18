@@ -6,7 +6,7 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 
 from afif import dibsy
-from afif.afif.doctype.donation_project.donation_project import STATUS_CLOSED
+from afif.afif.doctype.donation_project.donation_project import STATUS_CLOSED, ProjectClosedError
 from afif.donation_order import get_program_positions, get_project_positions, sort_by_position
 
 
@@ -208,7 +208,10 @@ def create_donation(
 	if not project:
 		frappe.throw(_("Donation Project not found"), frappe.DoesNotExistError)
 	if project.status == STATUS_CLOSED:
-		frappe.throw(_("This project has reached its required amount and is no longer accepting donations"))
+		frappe.throw(
+			_("This project has reached its required amount and is no longer accepting donations"),
+			ProjectClosedError,
+		)
 
 	amount = frappe.utils.flt(amount)
 	if amount <= 0:

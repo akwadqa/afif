@@ -12,6 +12,10 @@ STATUS_OPEN = "Open"
 STATUS_CLOSED = "Closed"
 
 
+class ProjectClosedError(frappe.ValidationError):
+	"""Raised when donating to a project that already met its target; the frontend matches on its name."""
+
+
 class DonationProject(Document):
 	def validate(self):
 		self.update_percentage()

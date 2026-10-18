@@ -4,7 +4,7 @@
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from afif.afif.doctype.donation_project.donation_project import credit_donation
+from afif.afif.doctype.donation_project.donation_project import ProjectClosedError, credit_donation
 from afif.donation_api import create_donation
 
 
@@ -61,6 +61,6 @@ class TestDonationProject(FrappeTestCase):
 	def test_closed_project_rejects_donations(self):
 		credit_donation(self.project.name, 1000)
 
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaises(ProjectClosedError):
 			create_donation(self.project.name, 50, is_anonymous=1)
 		self.assertFalse(frappe.db.exists("Donation", {"donation_project": self.project.name}))

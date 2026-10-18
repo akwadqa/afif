@@ -21,6 +21,11 @@ export function isProjectClosed(project) {
 	return project?.status === "Closed"
 }
 
+// The project filled up while the donor was still on the form
+export function isProjectClosedError(error) {
+	return error?.exc_type === "ProjectClosedError"
+}
+
 // Project details keyed by `${project}:${lang}`
 export const projectDetails = reactive({})
 

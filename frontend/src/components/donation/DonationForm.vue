@@ -165,7 +165,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { validateDonor, donorPayload } from '@/utils/donorValidation'
-import { isProjectClosed } from '@/data/donation'
+import { isProjectClosed, isProjectClosedError } from '@/data/donation'
 
 const route = useRoute()
 const router = useRouter()
@@ -227,6 +227,11 @@ const createDonation = createResource({
     window.location.href = data.payment_url
   },
   onError(err) {
+    if (isProjectClosedError(err)) {
+      selectedProjectData.value.status = 'Closed'
+      errorMessage.value = t('donation.projectCompleted')
+      return
+    }
     errorMessage.value = extractError(err)
   },
 })
