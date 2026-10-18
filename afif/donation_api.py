@@ -6,6 +6,7 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 
 from afif import dibsy
+from afif.afif.doctype.donation_project.donation_project import STATUS_CLOSED
 from afif.donation_order import get_program_positions, get_project_positions, sort_by_position
 
 
@@ -83,6 +84,7 @@ def get_projects(program, lang=None):
 			"title",
 			"quote",
 			"body",
+			"status",
 			"show_progress",
 			"required_amount",
 			"donated_amount",
@@ -125,6 +127,7 @@ def get_donation_landing(lang=None):
 				"title",
 				"image",
 				"location",
+				"status",
 				"show_progress",
 				"required_amount",
 				"donated_amount",
@@ -160,6 +163,7 @@ def get_project_detail(project_name, lang=None):
 			"body",
 			"image",
 			"location",
+			"status",
 			"show_progress",
 			"required_amount",
 			"donated_amount",
@@ -198,11 +202,13 @@ def create_donation(
 	project = frappe.db.get_value(
 		"Donation Project",
 		{"name": donation_project, "published": 1},
-		["name"],
+		["name", "status"],
 		as_dict=True,
 	)
 	if not project:
 		frappe.throw(_("Donation Project not found"), frappe.DoesNotExistError)
+	if project.status == STATUS_CLOSED:
+		frappe.throw(_("This project has reached its required amount and is no longer accepting donations"))
 
 	amount = frappe.utils.flt(amount)
 	if amount <= 0:

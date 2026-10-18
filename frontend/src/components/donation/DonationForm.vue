@@ -151,7 +151,7 @@
         :disabled="!canSubmit || createDonation.loading"
         @click="submitDonation"
       >
-        {{ createDonation.loading ? t('donation.submitting') : `${t('donation.confirmDonate')} ${donationAmount || 0} ${t('donation.currency')}` }}
+        {{ isSelectedProjectClosed ? t('donation.targetReached') : createDonation.loading ? t('donation.submitting') : `${t('donation.confirmDonate')} ${donationAmount || 0} ${t('donation.currency')}` }}
       </button>
     </div>
 
@@ -165,6 +165,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { validateDonor, donorPayload } from '@/utils/donorValidation'
+import { isProjectClosed } from '@/data/donation'
 
 const route = useRoute()
 const router = useRouter()
@@ -248,8 +249,10 @@ const coveragePercentage = computed(() => {
 
 const donorFieldsRequired = computed(() => !donorForm.isAnonymous)
 
+const isSelectedProjectClosed = computed(() => isProjectClosed(selectedProjectData.value))
+
 const canSubmit = computed(
-  () => !!selectedProject.value && !!donationAmount.value && donationAmount.value > 0
+  () => !!selectedProject.value && !isSelectedProjectClosed.value && !!donationAmount.value && donationAmount.value > 0
 )
 
 

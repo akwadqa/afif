@@ -8,10 +8,14 @@ from frappe.utils import flt
 
 MAX_DONATION_AMOUNTS = 6
 
+STATUS_OPEN = "Open"
+STATUS_CLOSED = "Closed"
+
 
 class DonationProject(Document):
 	def validate(self):
 		self.update_percentage()
+		self.update_status()
 		self.validate_donation_amounts()
 
 	def validate_donation_amounts(self):
@@ -32,17 +36,23 @@ class DonationProject(Document):
 		else:
 			self.percentage = 0
 
+	def update_status(self):
+		# Derived from the funding figures (same rule as credit_donation), so raising the
+		# Required Amount on a closed project reopens it
+		is_target_met = flt(self.required_amount) > 0 and flt(self.donated_amount) >= flt(self.required_amount)
+		self.status = STATUS_CLOSED if is_target_met else STATUS_OPEN
+
 
 def credit_donation(project_name, amount):
 	"""Atomically add a paid donation's amount to its project's Donated Amount
-	and recompute Percentage Raised in the same statement.
+	and recompute Percentage Raised and Status in the same statement.
 
-	Both columns are updated in one UPDATE so they can never drift apart: a
+	All columns are updated in one UPDATE so they can never drift apart: a
 	separate read-recompute-write would race with concurrent donations to the
 	same project (e.g. overlapping webhook deliveries).
 
 	MariaDB evaluates single-table UPDATE assignments left to right, so the
-	percentage expression already sees the incremented donated_amount.
+	percentage and status expressions already see the incremented donated_amount.
 	"""
 	frappe.db.sql(
 		"""
@@ -52,8 +62,13 @@ def credit_donation(project_name, amount):
 		        WHEN COALESCE(required_amount, 0) > 0
 		        THEN donated_amount / required_amount * 100
 		        ELSE 0
+		    END,
+		    status = CASE
+		        WHEN COALESCE(required_amount, 0) > 0 AND donated_amount >= required_amount
+		        THEN %(closed)s
+		        ELSE %(open)s
 		    END
 		WHERE name = %(project_name)s
 		""",
-		{"amount": flt(amount), "project_name": project_name},
+		{"amount": flt(amount), "project_name": project_name, "open": STATUS_OPEN, "closed": STATUS_CLOSED},
 	)

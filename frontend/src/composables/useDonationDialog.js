@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { isProjectClosed } from '@/data/donation'
 
 // Shared across the whole /donate section - a single <DonationDialog /> instance
 // lives in DefaultLayout.vue and any project card/detail page just calls
@@ -8,6 +9,7 @@ const activeProject = ref(null)
 
 export function useDonationDialog() {
   function openDonationDialog(project) {
+    if (isProjectClosed(project)) return
     activeProject.value = project
     isOpen.value = true
   }

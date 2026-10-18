@@ -10,6 +10,7 @@
   "program",
   "title",
   "published",
+  "status",
   "content_section",
   "image",
   "location",
@@ -49,6 +50,18 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Published"
+  },
+  {
+   "default": "Open",
+   "description": "Closes automatically once the Donated Amount reaches the Required Amount",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Open\nClosed",
+   "read_only": 1
   },
   {
    "fieldname": "content_section",
@@ -134,7 +147,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-11 16:00:00.000000",
+ "modified": "2026-10-18 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project",

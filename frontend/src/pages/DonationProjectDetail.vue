@@ -48,8 +48,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0-12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Zm0 12.814a2.25 2.25 0 1 0 4.5 0 2.25 2.25 0 0 0-4.5 0Z" />
             </svg>
           </button>
-          <button type="button" class="primary-btn compact-donate" @click="openDonationDialog(project)">
-            {{ t('donation.donateNow') }}
+          <button type="button" class="primary-btn compact-donate" :disabled="isClosed" @click="openDonationDialog(project)">
+            {{ isClosed ? t('donation.targetReached') : t('donation.donateNow') }}
           </button>
         </div>
       </div>
@@ -92,8 +92,8 @@
         </div>
 
         <div class="action-area">
-          <button type="button" class="primary-btn" @click="openDonationDialog(project)">
-            {{ t('donation.donateNow') }}
+          <button type="button" class="primary-btn" :disabled="isClosed" @click="openDonationDialog(project)">
+            {{ isClosed ? t('donation.targetReached') : t('donation.donateNow') }}
           </button>
         </div>
       </div>
@@ -113,7 +113,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { projectDetail, projectDetails, loadProjectDetail } from '@/data/donation'
+import { projectDetail, projectDetails, loadProjectDetail, isProjectClosed } from '@/data/donation'
 import { useSidebar } from '@/composables/useSidebar'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
@@ -131,6 +131,7 @@ const { openDonationDialog } = useDonationDialog()
 const detail = projectDetail
 const project = computed(() => projectDetails[`${route.params.name}:${currentLang.value}`] || null)
 
+const isClosed = computed(() => isProjectClosed(project.value))
 const hasProgress = computed(() => project.value?.show_progress !== 0)
 
 const coveragePercentage = computed(() => Math.min(Math.round(project.value?.percentage || 0), 100))
@@ -504,6 +505,10 @@ async function share() {
 .primary-btn {
   @apply w-full h-[52px] sm:h-[60px] flex items-center justify-center text-white text-base sm:text-lg font-bold rounded-xl transition-opacity hover:opacity-90 border-none;
   background-color: #00adef;
+}
+
+.primary-btn:disabled {
+  @apply opacity-50 cursor-not-allowed hover:opacity-50;
 }
 
 .not-found {

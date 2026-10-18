@@ -16,6 +16,11 @@ export function loadDonationLanding(lang) {
 	donationLanding.submit({ lang })
 }
 
+// The server closes a project once its Required Amount is reached and rejects further donations
+export function isProjectClosed(project) {
+	return project?.status === "Closed"
+}
+
 // Project details keyed by `${project}:${lang}`
 export const projectDetails = reactive({})
 
