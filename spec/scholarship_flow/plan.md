@@ -25,7 +25,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | # | Decision |
 |---|---|
 | D1 | Add a read-only Check `is_scholarship` to `Beneficiaries Registration` and to `Beneficiary Request`. It shows in the list view and as a standard filter. It can only be set on insert; `validate` throws if it changes afterwards. |
-| D2 | The request is a normal `Beneficiary Request` with a new `request_category` option, `Scholarship`, plus 8 new Attach fields. There is no new DocType. |
+| D2 | The request is a normal `Beneficiary Request` with a new `request_category` option, `Scholarship`, plus 8 new Attach fields. There is no new DocType. `Scholarship` is treated like every existing category everywhere a category is listed (§3, "Where categories live"). |
 | D3 | Wizard steps: 1 البيانات الشخصية · 2 تفاصيل الدخل · 3 الالتزامات المالية · 4 بيانات إضافية, followed by the **same registration attachments sub-step** as the normal flow · 5 بيانات الطلب. |
 | D4 | Step 5 has 8 required attachments: guardian/applicant ID, guardian/applicant passport, student ID, student passport, IDs of all family members, university invoice, student transcript, and the guardian's bank statement. This list replaces the older attachment list in Figma. |
 | D5 | Drafts are saved step by step, exactly as today. A single whitelisted endpoint, `submit_scholarship_application`, then validates **all** registration attachments and consents and **all** request attachments. In one transaction it submits the registration and creates the request. If anything is missing, nothing is submitted. |
@@ -68,6 +68,19 @@ The normal registration flow and the normal aid request flow stay unchanged.
 
 All Attach fields use `depends_on: eval:doc.request_category=="Scholarship"`. They are required for that category, and the server enforces this.
 
+### Where categories live
+
+There is no single source for the categories; each place below holds its own copy. `Scholarship` must be added to all of them:
+
+| Place | What to add |
+|---|---|
+| `beneficiary_request.json` → `request_category` (Select) | option `Scholarship` |
+| `Categories` (custom tree DocType, DB only; Beneficiary Aid's `request_category` links to it) | top-level record `Scholarship` (`is_group=1`, like the others), created by an idempotent patch, `afif.patches.add_scholarship_category`. Fixtures aren't allowed. |
+| `frontend/src/components/request/BeneficiaryRequest.vue` → `categories` | `{ value: 'Scholarship', label: t('request.categories.scholarship') }` |
+| `frontend/src/pages/Request.vue` → category label map (requests list) | `Scholarship → request.categories.scholarship` |
+| `locales/translations.js` | `request.categories.scholarship` (AR منحة دراسية / EN Scholarship) |
+| `hooks_call.py` → `get_aid_lookup_parent_id` | a `Scholarship` branch with the Sanadi lookup id (OQ6) |
+
 ### Field mapping in scholarship mode
 
 | Existing field(s) | Scholarship behaviour |
@@ -91,6 +104,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
   - `beneficiaries_registration.json` and `beneficiary_request.json`
   - `afif/hooks_call.py`: `before_insert_request`, `get_beneficiary_income_set`, and the request transition hooks in Phase 3
   - new `afif/api/scholarship.py`
+  - new patch `afif/patches/add_scholarship_category.py`, registered in `patches.txt`, which creates the `Categories` record
 - **Desk:** `beneficiary_request.js`, where the `check_beneficiary_id` guard is skipped for scholarship in Phase 3.
 - **Frontend (`frontend/src`):**
   - `router.js`
@@ -119,6 +133,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ6 | What is the Sanadi lookup id for the Scholarship category in `get_aid_lookup_parent_id`? | Phase 3 |
 | OQ7 | Are the father and mother incomes right as new fields, rather than relabelling `family_income` / `family_extra`? | Phase 2 |
 | OQ8 | In Figma, the step-5 declarations repeat the registration consents. The third one also says "this is not an aid request". Should step 5 show one request-level declaration (the default), or something else? | Phase 1 |
+| OQ9 | Every other category has a subcategory Select, such as `educational_assistance`. Does Scholarship need subcategories? The default is none. | Phase 1 |
 
 ## 7. Phases
 
