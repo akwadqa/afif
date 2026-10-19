@@ -68,6 +68,7 @@ export default {
         visaNumber: 'رقم التأشيرة',
         male: 'ذكر',
         female: 'أنثى',
+        single: 'أعزب / عزباء',
         married: 'متزوج / متزوجة',
         divorced: 'مطلق / مطلقة',
         widowed: 'أرمل / أرملة',
@@ -617,11 +618,7 @@ export default {
         guardianMobile: 'رقم جوال ولي الأمر',
       },
       incomeDetails: {
-        benIncomeLabel: 'هل يوجد راتب لولي الأمر؟',
-        benIncomeTitle: 'معلومات إضافية عن راتب ولي الأمر',
-        benPeriodicLabel: 'آلية صرف راتب ولي الأمر',
-        salaryAmount: 'راتب ولي الأمر',
-        benNoteLabel: 'ملاحظات',
+        benIncomeLabel: 'هل لديك (دخل/راتب)؟',
         fatherIncomeLabel: 'هل لديك دخل ولي الأمر (الأب)؟',
         fatherIncomeTitle: 'معلومات إضافية عن دخل الأب',
         fatherPeriodicLabel: 'آلية صرف دخل الأب',
@@ -641,6 +638,9 @@ export default {
         debtLabel: 'هل لدى الأسرة ديون بنكية أو شخصية؟',
         tuitionLabel: 'هل لدى الأسرة التزامات بمصاريف مدرسية وجامعية؟',
       },
+      additionalData: {
+        bankLoans: 'هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟',
+      },
       request: {
         title: 'بيانات الطلب',
         requestedAmount: 'المبلغ المطلوب',
@@ -658,6 +658,8 @@ export default {
         scholarship_student_passport: 'صورة جواز السفر للطالب',
         scholarship_family_ids: 'صور البطاقات الشخصية لجميع أفراد العائلة',
         scholarship_guardian_bank_statement: 'كشف الحساب لولي الأمر',
+        scholarship_mother_bank_statement: 'كشف حساب الأم',
+        scholarship_student_bank_statement: 'كشف حساب الطالب',
       },
       declarations: {
         is_data_accuracy_declared: 'اقر أنا مقدم الطلب بأن كافة الوثائق والبيانات المقدمة في هذا الطلب صحيحة.',
@@ -1069,6 +1071,7 @@ export default {
         visaNumber: 'Visa Number',
         male: 'Male',
         female: 'Female',
+        single: 'Single',
         married: 'Married',
         divorced: 'Divorced',
         widowed: 'Widowed',
@@ -1618,11 +1621,7 @@ export default {
         guardianMobile: "Guardian's Mobile Number",
       },
       incomeDetails: {
-        benIncomeLabel: 'Does the guardian have a salary?',
-        benIncomeTitle: "Additional details about the guardian's salary",
-        benPeriodicLabel: "Guardian's salary payment frequency",
-        salaryAmount: "Guardian's salary",
-        benNoteLabel: 'Notes',
+        benIncomeLabel: 'Do you have an income (salary)?',
         fatherIncomeLabel: 'Do you have income from the guardian (father)?',
         fatherIncomeTitle: "Additional details about the father's income",
         fatherPeriodicLabel: "Father's income payment frequency",
@@ -1642,6 +1641,9 @@ export default {
         debtLabel: 'Does the family have bank or personal debts?',
         tuitionLabel: 'Does the family have school or university expenses?',
       },
+      additionalData: {
+        bankLoans: 'Do you or the head of the family have bank obligations or debts?',
+      },
       request: {
         title: 'Request Data',
         requestedAmount: 'Requested Amount',
@@ -1659,6 +1661,8 @@ export default {
         scholarship_student_passport: "Student's passport",
         scholarship_family_ids: 'ID cards of all family members',
         scholarship_guardian_bank_statement: "Guardian's bank statement",
+        scholarship_mother_bank_statement: "Mother's bank statement",
+        scholarship_student_bank_statement: "Student's bank statement",
       },
       declarations: {
         is_data_accuracy_declared: 'I, the applicant, declare that all documents and data submitted in this request are correct.',

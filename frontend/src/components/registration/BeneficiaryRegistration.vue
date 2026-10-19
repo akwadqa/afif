@@ -41,7 +41,7 @@
         </div>
 
         <div v-else-if="currentStep === 4">
-          <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
+          <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :flow="flow" :invalid-fields="invalidFields" />
           <AttachmentsCard
             v-else-if="subStep4 === 2"
             v-model="formData.attachments"

@@ -211,7 +211,7 @@ function validateAdditionalDataStep(check, ad, t) {
   check.require(ad.housing_description, 'housing_description', t('registration.additionalData.housingDescription'))
   check.require(ad.has_afif_employee_relation, 'has_afif_employee_relation', t('registration.additionalData.afifRelation'))
   check.require(ad.has_housemates, 'has_housemates', t('registration.additionalData.housemates'))
-  check.require(ad.has_bank_loans, 'has_bank_loans', t('registration.additionalData.bankLoans'))
+  check.require(ad.has_bank_loans, 'has_bank_loans', t(check.variant.labelKeys.bankLoans))
   if (ad.has_bank_loans === 'Yes') check.require(ad.court_tried, 'court_tried', t('registration.additionalData.courtTried'))
   check.require(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
   if (ad.has_other_info === 'Yes') {

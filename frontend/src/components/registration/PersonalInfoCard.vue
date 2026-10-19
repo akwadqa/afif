@@ -215,10 +215,9 @@
           :class="isInvalid('marital_status') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.personalInfo.maritalStatusPlaceholder') }}</option>
-          <option value="Married">{{ t('registration.personalInfo.married') }}</option>
-          <option value="Divorced">{{ t('registration.personalInfo.divorced') }}</option>
-          <option value="Widowed">{{ t('registration.personalInfo.widowed') }}</option>
-          <option value="Separated">{{ t('registration.personalInfo.separated') }}</option>
+          <option v-for="status in variant.maritalStatuses" :key="status" :value="status">
+            {{ t(`registration.personalInfo.${status.toLowerCase()}`) }}
+          </option>
         </select>
       </div>
 

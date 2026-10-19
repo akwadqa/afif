@@ -11,6 +11,8 @@ export const SCHOLARSHIP_ATTACHMENT_FIELDS = [
   'scholarship_student_passport',
   'scholarship_family_ids',
   'scholarship_guardian_bank_statement',
+  'scholarship_mother_bank_statement',
+  'scholarship_student_bank_statement',
 ]
 export const SCHOLARSHIP_DECLARATION_FIELDS = ['is_data_accuracy_declared', 'is_eligibility_check_accepted']
 
@@ -67,8 +69,12 @@ const OBLIGATION_LABEL_KEYS = {
   tuition_obligation: 'tuitionLabel',
 }
 
+const MARITAL_STATUSES = ['Married', 'Divorced', 'Widowed', 'Separated']
+
 const REGISTRATION_VARIANT = {
   hiddenFields: new Set(['guardian_mobile_number']),
+  maritalStatuses: MARITAL_STATUSES,
+  labelKeys: { bankLoans: 'registration.additionalData.bankLoans' },
   incomeSources: Object.values(INCOME),
   obligationLabelKeys: Object.fromEntries(
     OBLIGATION_FIELDS.map(field => [field, `registration.financialObligations.${OBLIGATION_LABEL_KEYS[field]}`]),
@@ -86,15 +92,12 @@ const SCHOLARSHIP_VARIANT = {
     'children_school_information', 'children_special_needs',
     'afif_charity_assistance', 'affif_assistance',
   ]),
+  // The server refuses Single on a normal registration.
+  maritalStatuses: ['Single', ...MARITAL_STATUSES],
+  labelKeys: { bankLoans: 'scholarship.additionalData.bankLoans' },
   incomeSources: [
-    {
-      ...INCOME.ben_income,
-      labelKey: `${SCHOLARSHIP_INCOME}.benIncomeLabel`,
-      sectionTitleKey: `${SCHOLARSHIP_INCOME}.benIncomeTitle`,
-      periodicLabelKey: `${SCHOLARSHIP_INCOME}.benPeriodicLabel`,
-      amountLabelKey: `${SCHOLARSHIP_INCOME}.salaryAmount`,
-      noteLabelKey: `${SCHOLARSHIP_INCOME}.benNoteLabel`,
-    },
+    // The applicant's own income; the guardian's comes through the father and mother incomes.
+    { ...INCOME.ben_income, labelKey: `${SCHOLARSHIP_INCOME}.benIncomeLabel` },
     SCHOLARSHIP_ONLY_INCOME.father_income,
     SCHOLARSHIP_ONLY_INCOME.mother_income,
     { ...INCOME.private_income, labelKey: `${SCHOLARSHIP_INCOME}.privateIncomeLabel` },
