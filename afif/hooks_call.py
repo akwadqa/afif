@@ -419,10 +419,9 @@ def create_new_beneficiary(doc, method):
 
                     if not doc.ben_id and response_ben.json().get('rs').get('first') == 'SAVED':
                         ben_id = response_ben.json().get('rs').get('second').get('id')
-                        query = f"""update `tabBeneficiaries Registration` set `ben_id`={ben_id}
-                            where name="{doc.name}" """
-                        frappe.db.sql(query)
-                        frappe.db.commit()
+                        # No commit here: a scholarship approval accepts the registration and approves its
+                        # request in one transaction, so a later failure must roll both back.
+                        frappe.db.set_value("Beneficiaries Registration", doc.name, "ben_id", ben_id)
 
                 else:
                     msg = f"Beneficiary response fail: {response_ben.json()}"
