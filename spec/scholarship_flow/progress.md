@@ -5,7 +5,7 @@
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
 | [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
-| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 answered: normal rules apply) | |
+| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | in progress | |
 
 ## Phase 3 — log (2026-10-19)
 
