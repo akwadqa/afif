@@ -50,6 +50,25 @@ def submit_scholarship_application(registration: str, request: dict | str) -> No
     )
 
 
+@frappe.whitelist(methods=["POST"])
+def create_scholarship_request(request: dict | str) -> None:
+    """Create an Education / Scholarship request for an accepted beneficiary, with its attachments.
+
+    The scholarship validation needs every attachment at insert time, so the files are uploaded
+    first and attached here once the request exists.
+    """
+    request_doc = new_scholarship_subcategory_request(frappe.parse_json(request))
+    request_doc.validate_scholarship_request()
+    request_files = get_unattached_own_files(request_doc)
+
+    # Normal permissions and before_insert_request apply: accepted beneficiaries only, and the
+    # pending-request and cooldown rules (OQ5). The registration is already accepted, so no cascade.
+    request_doc.insert()
+    attach_files_to_request(request_files, request_doc)
+
+    gen_response(200, _("Scholarship request submitted"), {"request": request_doc.name})
+
+
 def get_own_scholarship_draft(registration: str) -> Document:
     registration_doc = frappe.get_doc("Beneficiaries Registration", registration)
     if registration_doc.user != frappe.session.user:
@@ -75,17 +94,16 @@ def validate_registration_complete(registration_doc: Document) -> None:
 
 
 def build_scholarship_request(registration_doc: Document, request: dict) -> Document:
+    request_doc = new_scholarship_subcategory_request(request)
+    request_doc.update({"is_scholarship": 1, "beneficiaries": registration_doc.name})
+    request_doc.flags.is_scholarship_submission = True
+    return request_doc
+
+
+def new_scholarship_subcategory_request(request: dict) -> Document:
     request_doc = frappe.new_doc("Beneficiary Request")
     request_doc.update({fieldname: request.get(fieldname) for fieldname in REQUEST_INPUT_FIELDS})
-    request_doc.update(
-        {
-            "request_category": "Education Assistance",
-            "educational_assistance": "Scholarship",
-            "is_scholarship": 1,
-            "beneficiaries": registration_doc.name,
-        }
-    )
-    request_doc.flags.is_scholarship_submission = True
+    request_doc.update({"request_category": "Education Assistance", "educational_assistance": "Scholarship"})
     return request_doc
 
 
