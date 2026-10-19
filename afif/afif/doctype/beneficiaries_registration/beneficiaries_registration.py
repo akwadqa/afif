@@ -16,10 +16,15 @@ class ScholarshipSubmissionError(frappe.ValidationError):
     pass
 
 
+class ScholarshipDecisionError(frappe.ValidationError):
+    pass
+
+
 class BeneficiariesRegistration(Document):
     def validate(self):
         self.validate_scholarship_flag_unchanged()
         self.validate_scholarship_leaves_draft_with_request()
+        self.validate_scholarship_decided_through_request()
         self.validate_guardian_mobile_number()
 
     def validate_scholarship_flag_unchanged(self):
@@ -40,6 +45,30 @@ class BeneficiariesRegistration(Document):
             frappe.throw(
                 _("A scholarship registration can only be submitted together with its scholarship request."),
                 ScholarshipSubmissionError,
+            )
+
+    def validate_scholarship_decided_through_request(self):
+        # While its scholarship request is pending, the Supervisor decides on the request and the
+        # registration follows (plan OQ4). Once the request is closed, the normal workflow applies.
+        if not self.is_scholarship or self.is_new() or self.flags.is_scholarship_decision:
+            return
+
+        previous = self.get_doc_before_save()
+        if not previous or previous.workflow_state == self.workflow_state:
+            return
+        if self.workflow_state not in ("Accepted", "Not Accepted"):
+            return
+
+        pending_request = frappe.db.get_value(
+            "Beneficiary Request",
+            {"beneficiaries": self.name, "is_scholarship": 1, "workflow_state": "Pending Supervisor Approval"},
+        )
+        if pending_request:
+            frappe.throw(
+                _("Approve or reject the scholarship request {0}; this registration follows its decision.").format(
+                    pending_request
+                ),
+                ScholarshipDecisionError,
             )
 
     def validate_guardian_mobile_number(self):
