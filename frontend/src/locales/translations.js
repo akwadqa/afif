@@ -672,6 +672,10 @@ export default {
         title: 'لا يمكن التقديم على المنحة من هنا',
         message: 'لديك ملف مستفيد مسجل مسبقاً، لذلك لا يمكنك بدء طلب منحة جديد من هذه الصفحة.',
         button: 'العودة إلى ملف المستفيد',
+        submittedTitle: 'تم تقديم طلب المنحة',
+        statusLabel: 'حالة ملف المستفيد:',
+        acceptedMessage: 'ملف المستفيد الخاص بك مقبول، ويمكنك التقديم على المنحة كطلب مساعدة تعليمية من صفحة طلباتي.',
+        applyButton: 'التقديم على المنحة من طلباتي',
       },
     },
     beneficiaryList: {
@@ -1669,6 +1673,10 @@ export default {
         title: 'You cannot apply for the scholarship here',
         message: 'You already have a beneficiary profile, so you cannot start a new scholarship application from this page.',
         button: 'Back to beneficiary profile',
+        submittedTitle: 'Your scholarship application was submitted',
+        statusLabel: 'Beneficiary profile status:',
+        acceptedMessage: 'Your beneficiary profile is accepted, so you can apply for the scholarship as an education assistance request from My Requests.',
+        applyButton: 'Apply from My Requests',
       },
     },
     beneficiaryList: {

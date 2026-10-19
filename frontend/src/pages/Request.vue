@@ -112,6 +112,8 @@
   <BeneficiaryRequest
     v-else-if="view === 'form'"
     :beneficiary-name="beneficiaryName"
+    :initial-category="preset.category"
+    :initial-subcategory="preset.subcategory"
     @submitted="onRequestSubmitted"
     @back="onBackToList"
   />
@@ -146,6 +148,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
@@ -154,12 +157,15 @@ import BeneficiaryRequest from '@/components/request/BeneficiaryRequest.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 
 const { t, isRTL } = useLanguage()
+const route = useRoute()
 
 const view = ref('loading')
 const beneficiaryName = ref('')
 const beneficiaryDisplayName = ref('')
 const requests = ref([])
 const selectedRequestName = ref('')
+// Set by links such as the scholarship page's "apply from My Requests" (?category=…&subcategory=…).
+const preset = ref({ category: route.query.category || '', subcategory: route.query.subcategory || '' })
 
 const PENDING_STATUSES = ['Pending Supervisor Approval', 'Pending Specialist Approval', 'Saved']
 const FINAL_STATUSES = ['Rejected by Supervisor', 'Rejected', 'Approved', 'Approved For Aid']
@@ -249,7 +255,7 @@ const myRequests = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
     requests.value = rows
-    view.value = 'list'
+    view.value = preset.value.category && canCreateRequest.value ? 'form' : 'list'
   },
   onError() {
     requests.value = []
@@ -289,6 +295,8 @@ function onRequestSubmitted() {
 }
 
 function onBackToList() {
+  // The preset applies to the first form only; later visits to the list stay on it.
+  preset.value = { category: '', subcategory: '' }
   fetchRequests()
 }
 

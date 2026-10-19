@@ -20,14 +20,35 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
         </svg>
       </div>
-      <h2 class="text-lg font-bold text-gray-800">{{ t('scholarship.blocked.title') }}</h2>
-      <p class="text-sm text-gray-500 leading-relaxed">{{ t('scholarship.blocked.message') }}</p>
-      <button
-        @click="goHome"
-        class="px-6 py-3 bg-[#34B0EE] text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
-      >
-        {{ t('scholarship.blocked.button') }}
-      </button>
+      <h2 class="text-lg font-bold text-gray-800">
+        {{ existingRegistration?.is_scholarship ? t('scholarship.blocked.submittedTitle') : t('scholarship.blocked.title') }}
+      </h2>
+      <p v-if="existingRegistration?.is_scholarship" class="text-sm text-gray-500">
+        {{ t('scholarship.blocked.statusLabel') }}
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700">
+          {{ t(`statuses.registration.${existingRegistration.status}`) }}
+        </span>
+      </p>
+      <p v-if="isAccepted" class="text-sm text-gray-500 leading-relaxed">{{ t('scholarship.blocked.acceptedMessage') }}</p>
+      <p v-else-if="!existingRegistration?.is_scholarship" class="text-sm text-gray-500 leading-relaxed">
+        {{ t('scholarship.blocked.message') }}
+      </p>
+      <div class="flex flex-col gap-3">
+        <button
+          v-if="isAccepted"
+          @click="goToScholarshipRequest"
+          class="px-6 py-3 bg-[#34B0EE] text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
+        >
+          {{ t('scholarship.blocked.applyButton') }}
+        </button>
+        <button
+          @click="goHome"
+          class="px-6 py-3 rounded-2xl font-bold active:scale-[0.98] transition-all"
+          :class="isAccepted ? 'border border-sky-200 text-sky-600 hover:bg-sky-50' : 'bg-[#34B0EE] text-white hover:opacity-90'"
+        >
+          {{ t('scholarship.blocked.button') }}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -54,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
@@ -67,6 +88,9 @@ const router = useRouter()
 
 const view = ref('loading')
 const registrationName = ref(null)
+// The registration that keeps this user out of the wizard, shown in the blocked view.
+const existingRegistration = ref(null)
+const isAccepted = computed(() => existingRegistration.value?.status === 'Accepted')
 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',
@@ -80,6 +104,7 @@ const myRegistrations = createResource({
       registrationName.value = draft.name
       view.value = 'wizard'
     } else {
+      existingRegistration.value = rows[0]
       view.value = 'blocked'
     }
   },
@@ -100,5 +125,9 @@ onMounted(() => {
 
 function goHome() {
   router.push({ name: 'Home' })
+}
+
+function goToScholarshipRequest() {
+  router.push({ name: 'Request', query: { category: 'Education Assistance', subcategory: 'Scholarship' } })
 }
 </script>

@@ -166,6 +166,29 @@
               </div>
             </Transition>
 
+            <!-- 6) Scholarship declarations -->
+            <Transition name="fade-slide">
+              <div v-if="isScholarship" class="space-y-3">
+                <label
+                  v-for="field in SCHOLARSHIP_DECLARATION_FIELDS"
+                  :key="field"
+                  class="flex items-start gap-3 select-none rounded-xl p-2 -mx-2 transition-colors"
+                  :class="[isInvalid('claim_' + field) ? 'bg-red-50 ring-1 ring-red-300' : '', readOnly ? '' : 'cursor-pointer']"
+                >
+                  <input
+                    type="checkbox"
+                    v-model="declarations[field]"
+                    class="custom-checkbox mt-0.5 shrink-0"
+                    :disabled="readOnly"
+                  />
+                  <span class="text-xs font-semibold text-gray-700 leading-relaxed">
+                    {{ t(`scholarship.declarations.${field}`) }}
+                    <span v-if="!readOnly" class="text-red-500">*</span>
+                  </span>
+                </label>
+              </div>
+            </Transition>
+
           </div>
         </div>
 
@@ -233,11 +256,16 @@ import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
+import { SCHOLARSHIP_DECLARATION_FIELDS } from '@/components/registration/registrationVariant'
+import { REQUEST_ATTACHMENT_FIELDS, getRequiredRequestDocs, isScholarshipSubcategory } from './requestAttachments'
 
 const props = defineProps({
   beneficiaryName: { type: String, required: true },
   requestName: { type: String, default: '' },
   readOnly: { type: Boolean, default: false },
+  // Preselects a new request, e.g. Education Assistance → Scholarship from the scholarship page.
+  initialCategory: { type: String, default: '' },
+  initialSubcategory: { type: String, default: '' },
 })
 const emit = defineEmits(['submitted', 'back'])
 
@@ -269,11 +297,11 @@ const form = ref({
 })
 
 const files = ref({})
+const declarations = ref(makeEmptyDeclarations())
 
-const REQUEST_ATTACHMENT_FIELDS = [
-  'medical_bill', 'education_invoice', 'grade_transcript', 'garmeen_proof', 'garmeen_disclosure',
-  'travel_ticket_doc', 'rent_contract', 'onwer_qid', 'late_letter', 'estate_pruchase',
-]
+function makeEmptyDeclarations() {
+  return Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false]))
+}
 
 const requestStatusLabel = computed(() => {
   if (loadedStatus.value) {
@@ -323,11 +351,18 @@ function populateFromDoc(doc) {
     if (doc[field]) existingFiles[field] = doc[field]
   }
   files.value = existingFiles
+  declarations.value = Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!doc[field]]))
 }
 
 onMounted(() => {
   if (props.requestName) {
     getDoc.submit({ doctype: 'Beneficiary Request', name: props.requestName })
+    return
+  }
+  const preset = SUBCATEGORY_MAP[props.initialCategory]
+  if (preset) {
+    form.value.request_category = props.initialCategory
+    if (preset.options.includes(props.initialSubcategory)) form.value[preset.field] = props.initialSubcategory
   }
 })
 
@@ -352,7 +387,7 @@ const SUBCATEGORY_MAP = {
   'Education Assistance': {
     field: 'educational_assistance',
     key: 'education',
-    options: ['Tuition Fees', 'Transportation Fees', 'Books And Resources', 'Educational Equipment', 'Other Educational Assistance'],
+    options: ['Tuition Fees', 'Transportation Fees', 'Books And Resources', 'Educational Equipment', 'Other Educational Assistance', 'Scholarship'],
   },
   'Social Assistance': {
     field: 'social_assistance',
@@ -403,6 +438,8 @@ const currentSubcategory = computed(() => {
   return subcategoryField.value ? form.value[subcategoryField.value] : ''
 })
 
+const isScholarship = computed(() => isScholarshipSubcategory(form.value.request_category, currentSubcategory.value))
+
 function onAmountInput(event) {
   const raw = event.target.value
   const val = raw.replace(/[a-zA-Z؀-ۿ]/g, '')
@@ -425,36 +462,7 @@ function onCategoryChange() {
 
 // ── Conditional attachments ──
 
-const requiredDocs = computed(() => {
-  const docs = []
-  const cat = form.value.request_category
-  const sub = currentSubcategory.value
-
-  if (cat === 'Medical Assistance') {
-    docs.push({ id: 'medical_bill', labelKey: 'request.attachments.docs.medicalBill' })
-  }
-  if (cat === 'Education Assistance') {
-    docs.push({ id: 'education_invoice', labelKey: 'request.attachments.docs.educationInvoice' })
-    docs.push({ id: 'grade_transcript', labelKey: 'request.attachments.docs.gradeTranscript' })
-  }
-  if (cat === 'Social Assistance' && sub === 'Garmeen') {
-    docs.push({ id: 'garmeen_proof', labelKey: 'request.attachments.docs.garmeenProof' })
-    docs.push({ id: 'garmeen_disclosure', labelKey: 'request.attachments.docs.garmeenDisclosure' })
-  }
-  if (cat === 'Social Assistance' && sub === 'Travel ticket assistance') {
-    docs.push({ id: 'travel_ticket_doc', labelKey: 'request.attachments.docs.travelTicketDoc' })
-  }
-  if (cat === 'Housing Assistance') {
-    docs.push({ id: 'rent_contract', labelKey: 'request.attachments.docs.rentContract' })
-    docs.push({ id: 'onwer_qid', labelKey: 'request.attachments.docs.ownerQid' })
-    docs.push({ id: 'late_letter', labelKey: 'request.attachments.docs.lateLetter' })
-    if (sub === 'Real estate purchase') {
-      docs.push({ id: 'estate_pruchase', labelKey: 'request.attachments.docs.estatePurchase' })
-    }
-  }
-
-  return docs
-})
+const requiredDocs = computed(() => getRequiredRequestDocs(form.value.request_category, currentSubcategory.value))
 
 function isInvalid(field) {
   return invalidFields.value.includes(field)
@@ -521,6 +529,15 @@ function validate() {
     }
   }
 
+  if (isScholarship.value) {
+    for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
+      if (!declarations.value[field]) {
+        errors.push(t(`scholarship.declarations.${field}`))
+        fields.push('claim_' + field)
+      }
+    }
+  }
+
   return { errors, fields }
 }
 
@@ -549,6 +566,13 @@ const insertDoc = createResource({
   },
 })
 
+const createScholarshipRequest = createResource({
+  url: 'afif.api.scholarship.create_scholarship_request',
+  onError(err) {
+    error.value = extractError(err)
+  },
+})
+
 const setFieldValue = createResource({
   url: 'frappe.client.set_value',
   onError(err) {
@@ -571,6 +595,12 @@ async function handleSubmit() {
   invalidFields.value = []
   submitting.value = true
 
+  if (isScholarship.value) {
+    await submitScholarshipRequest()
+    submitting.value = false
+    return
+  }
+
   const f = form.value
   const doc = {
     doctype: 'Beneficiary Request',
@@ -589,9 +619,10 @@ async function handleSubmit() {
 
     const docName = result.name
 
-    for (const [fieldname, file] of Object.entries(files.value)) {
+    for (const { id: fieldname } of requiredDocs.value) {
+      const file = files.value[fieldname]
       if (file instanceof File) {
-        const fileUrl = await uploadFile(file, docName, fieldname)
+        const fileUrl = await uploadFile(file, { is_private: '0', doctype: 'Beneficiary Request', docname: docName, fieldname })
         await setFieldValue.submit({
           doctype: 'Beneficiary Request',
           name: docName,
@@ -612,14 +643,39 @@ async function handleSubmit() {
   submitting.value = false
 }
 
-async function uploadFile(file, docName, fieldname) {
+// The scholarship validation needs every attachment when the request is created, so the files are
+// uploaded first, unattached, and the endpoint attaches them after checking they are the user's own.
+async function submitScholarshipRequest() {
+  try {
+    for (const { id } of requiredDocs.value) {
+      // Stored back as a URL so a retry after a failed submit reuses the upload.
+      if (files.value[id] instanceof File) files.value[id] = await uploadFile(files.value[id], { is_private: '1' })
+    }
+  } catch (e) {
+    error.value = e.message || t('request.submitError')
+    return
+  }
+
+  const request = {
+    requested_amount: form.value.requested_amount,
+    request_summary: form.value.request_summary,
+    ...Object.fromEntries(requiredDocs.value.map(({ id }) => [id, files.value[id]])),
+    ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, declarations.value[field] ? 1 : 0])),
+  }
+  try {
+    await createScholarshipRequest.submit({ request })
+  } catch {
+    return
+  }
+  submitted.value = true
+  emit('submitted')
+}
+
+async function uploadFile(file, fields) {
   const fd = new FormData()
   fd.append('file', file, file.name)
-  fd.append('is_private', '0')
   fd.append('folder', 'Home/Attachments')
-  fd.append('doctype', 'Beneficiary Request')
-  fd.append('docname', docName)
-  fd.append('fieldname', fieldname)
+  for (const [key, value] of Object.entries(fields)) fd.append(key, value)
 
   const headers = { 'X-Frappe-Site-Name': window.location.hostname }
   if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {
@@ -651,6 +707,7 @@ function resetForm() {
     request_summary: '',
   }
   files.value = {}
+  declarations.value = makeEmptyDeclarations()
   submitted.value = false
   error.value = ''
   invalidFields.value = []
@@ -689,6 +746,10 @@ function resetForm() {
 .custom-select:disabled {
   @apply opacity-75 cursor-default;
   background-color: #f9fafb;
+}
+
+.custom-checkbox {
+  @apply w-4 h-4 rounded border-gray-300 text-[#34B0EE] focus:ring-[#34B0EE] transition-all;
 }
 
 .read-only-form select,
