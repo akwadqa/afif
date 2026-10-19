@@ -104,10 +104,36 @@ describe('step 2 (income)', () => {
     expect(normal.errors).toEqual([t('registration.validation.atLeastOneIncome')])
   })
 
-  it('uses the scholarship labels in the error popup', () => {
+  it("asks for the applicant's own income first, with the beneficiary wording", () => {
+    const [first] = getRegistrationVariant('scholarship').incomeSources
     const { errors } = validate({ incomeDetails: { ben_income: 1 } }, 2, 'scholarship')
 
-    expect(errors).toContain('راتب ولي الأمر')
+    expect(first.field).toBe('ben_income')
+    expect(t(first.labelKey)).toBe('هل لديك (دخل/راتب)؟')
+    expect(errors).toEqual(['آلية صرف دخل المستفيد', 'راتب المستفيد', 'ملاحظة دخل المستفيد'])
+  })
+})
+
+describe('marital status options', () => {
+  it('offers Single only in the scholarship flow', () => {
+    expect(getRegistrationVariant('scholarship').maritalStatuses).toEqual(['Single', 'Married', 'Divorced', 'Widowed', 'Separated'])
+    expect(getRegistrationVariant('registration').maritalStatuses).not.toContain('Single')
+  })
+
+  it('needs no partner details for a single applicant', () => {
+    const formData = makeScholarshipStep1()
+    formData.personalInfo.marital_status = 'Single'
+
+    expect(validate(formData, 1, 'scholarship')).toEqual({ errors: [], fields: [] })
+  })
+})
+
+describe('step 4 (additional data)', () => {
+  it.each([
+    ['scholarship', 'هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟'],
+    ['registration', 'هل لديك قروض بنكية ومديونيات؟'],
+  ])('labels the bank debts question for the %s flow', (flow, label) => {
+    expect(validate({ additionalData: {} }, 4, flow, 1).errors).toContain(label)
   })
 })
 
@@ -142,6 +168,14 @@ describe('step 5 (scholarship request data)', () => {
     expect(validate(completeRequest(), 5, 'scholarship')).toEqual({ errors: [], fields: [] })
   })
 
+  it("requires the mother's and the student's bank statements", () => {
+    const formData = completeRequest()
+    formData.scholarshipRequest.files.scholarship_mother_bank_statement = null
+    formData.scholarshipRequest.files.scholarship_student_bank_statement = null
+
+    expect(validate(formData, 5, 'scholarship').errors).toEqual(['كشف حساب الأم', 'كشف حساب الطالب'])
+  })
+
   it('requires the request summary', () => {
     for (const summary of ['', '   ']) {
       const formData = completeRequest()
@@ -158,6 +192,9 @@ describe('variant translations', () => {
     return [
       ...variant.incomeSources.flatMap(src => [src.labelKey, src.sectionTitleKey, src.periodicLabelKey, src.amountLabelKey, src.noteLabelKey]),
       ...Object.values(variant.obligationLabelKeys),
+      ...Object.values(variant.labelKeys),
+      ...variant.maritalStatuses.map(status => `registration.personalInfo.${status.toLowerCase()}`),
+      ...SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => `scholarship.attachments.${id}`),
     ]
   })
 

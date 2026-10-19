@@ -10,7 +10,7 @@ function lookup(language, key) {
 const ids = docs => docs.map(doc => doc.id)
 
 describe('getRequiredRequestDocs', () => {
-  it('requires all 8 scholarship documents for Education Assistance → Scholarship', () => {
+  it('requires all the scholarship documents for Education Assistance → Scholarship', () => {
     expect(ids(getRequiredRequestDocs('Education Assistance', 'Scholarship'))).toEqual(SCHOLARSHIP_ATTACHMENT_FIELDS)
   })
 
