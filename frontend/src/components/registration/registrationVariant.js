@@ -76,9 +76,10 @@ const REGISTRATION_VARIANT = {
 }
 
 const SCHOLARSHIP_VARIANT = {
+  // The passport number and the secondary-ID group stay visible: Sanadi gets the passport through
+  // them, and no beneficiary has been accepted without one.
   hiddenFields: new Set([
-    'passport_number', 'id_expiry_date', 'partners_phone_number',
-    'ben_sec_idtype', 'ben_sec_nationality', 'ben_sec_gulf_country',
+    'id_expiry_date', 'partners_phone_number',
     'worked_before',
     'family_visa_type', 'visa_dependent', 'names_and_relation_to_sponsored',
     'have_children', 'children_above_eighteen', 'children_in_school', 'children_school',

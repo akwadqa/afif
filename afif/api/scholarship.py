@@ -11,7 +11,7 @@ from afif.api.response import gen_response
 from afif.hooks_call import get_missing_required_attachments
 
 REGISTRATION_CONSENT_FIELDS = ("documents_confirmation", "verification_consent", "cancellation_right")
-SCHOLARSHIP_REGISTRATION_REQUIRED_FIELDS = ("guardian_mobile_number", *REGISTRATION_CONSENT_FIELDS)
+SCHOLARSHIP_REGISTRATION_REQUIRED_FIELDS = ("passport_number", "guardian_mobile_number", *REGISTRATION_CONSENT_FIELDS)
 REQUEST_INPUT_FIELDS = (
     "requested_amount",
     "request_summary",
