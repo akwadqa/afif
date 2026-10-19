@@ -27,7 +27,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | D1 | Add a read-only Check `is_scholarship` to `Beneficiaries Registration` and to `Beneficiary Request`. It shows in the list view and as a standard filter. It can only be set on insert; `validate` throws if it changes afterwards. On the request it means "created through the scholarship flow", and that is what triggers the approval cascade (D11). |
 | D2 | A scholarship is a **subcategory of Education Assistance**: `request_category = "Education Assistance"` and `educational_assistance = "Scholarship"`. There is no new category and no new DocType. The `Categories` tree already has `Education Assistance`, so it is not touched. |
 | D3 | Wizard steps: 1 البيانات الشخصية · 2 تفاصيل الدخل · 3 الالتزامات المالية · 4 بيانات إضافية, followed by the **same registration attachments sub-step** as the normal flow · 5 بيانات الطلب. |
-| D4 | Step 5 belongs entirely to the **request**: the requested amount, the request summary (OQ1b), 8 required attachments and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the 8 attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
+| D4 | Step 5 belongs entirely to the **request**: the requested amount, the request summary (OQ1b), 10 required attachments (8 at first; 2 bank statements added in Phase 5) and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
 | D5 | Drafts are saved step by step, exactly as today. A single whitelisted endpoint, `submit_scholarship_application`, validates **all** registration attachments and consents **and** all step-5 data. In one transaction it submits the registration and creates the request. If anything is missing, nothing is submitted. |
 | D6 | The existing DB Workflows stay as they are. The cascade logic lives in server hooks. Moving to status-only workflows is out of scope. |
 | D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Users who are already Accepted pick Education Assistance → Scholarship on the normal request page (Phase 4). |
@@ -66,10 +66,12 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | `scholarship_student_passport` | new Attach | صورة جواز السفر للطالب |
 | `scholarship_family_ids` | new Attach | صور البطاقات الشخصية لجميع أفراد العائلة |
 | `scholarship_guardian_bank_statement` | new Attach | كشف الحساب لولي الأمر |
+| `scholarship_mother_bank_statement` | new Attach (Phase 5) | كشف حساب الأم |
+| `scholarship_student_bank_statement` | new Attach (Phase 5) | كشف حساب الطالب |
 | `is_data_accuracy_declared` | new Check | اقر أنا مقدم الطلب بأن كافة الوثائق والبيانات المقدمة في هذا الطلب صحيحة. |
 | `is_eligibility_check_accepted` | new Check | يحق لمؤسسة عفيف التأكد من أهلية مقدم الطلب بحسب اجراءاتها المتبعة. |
 
-- **Visibility.** The new Attach fields use `depends_on: eval:doc.request_category=="Education Assistance" && doc.educational_assistance=="Scholarship"`. For that subcategory, all 8 attachments, the amount, the summary and both declarations are required, and the server enforces it.
+- **Visibility.** The new Attach fields use `depends_on: eval:doc.request_category=="Education Assistance" && doc.educational_assistance=="Scholarship"`. For that subcategory, all 10 attachments, the amount, the summary and both declarations are required, and the server enforces it.
 - **Third Figma declaration dropped.** It says "this is only a registration, not an aid request", which is a registration consent and is already covered by the registration attachments sub-step.
 
 ### Where the Scholarship subcategory must be added
@@ -88,7 +90,9 @@ There is no single source for subcategories; each place below holds its own copy
 
 | Existing field(s) | Scholarship behaviour |
 |---|---|
-| `ben_income` | reused. Labels: آلية صرف راتب ولي الأمر / راتب ولي الأمر / ملاحظات |
+| `ben_income` | reused, for the applicant's own income (Phase 5). Label: هل لديك (دخل/راتب)؟; sub-fields keep the beneficiary wording |
+| `marital_status` | option `Single` (أعزب) added, offered only in the scholarship wizard; the server refuses it on a normal registration (Phase 5) |
+| `bank_loans` | relabelled: هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟ (Phase 5) |
 | `private_income` | reused. Label: هل يوجد دخل للأسرة من عمل خاص أو تجارة منزلية؟ |
 | `stock_income` | reused unchanged |
 | `family_income`, `family_extra`, `children_income`, `rent_income` | hidden (replaced by the new `father_income` / `mother_income`) |
@@ -174,6 +178,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | # | Question | Blocks |
 |---|---|---|
 | OQ13 | After a scholarship rejection, the applicant can fix and resubmit the registration through the normal wizard (as for any `Not Accepted` registration). It is then reviewed as a normal registration, and no new scholarship request is created; once accepted, they can apply through the normal request page (Phase 4). Is that the intended path, or should a rejected applicant be able to reapply through `/scholarship`? | — |
+| OQ14 | Years of residence: the wizard shows and requires it for every applicant, Qatari nationals included (the desk hides it for Qatar). Should the scholarship wizard hide it for Qatari applicants, or ask it only for them? Left unchanged until answered. | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 
 ## 8. Phases
@@ -182,5 +187,6 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 2. [Phase 2 — Scholarship field variants](phase-2-field-variants.md)
 3. [Phase 3 — Approval and rejection cascade](phase-3-approval-cascade.md)
 4. [Phase 4 — Accepted users and desk polish](phase-4-accepted-users-desk.md)
+5. [Phase 5 — Review edits](phase-5-review-edits.md)
 
 Progress: [progress.md](progress.md)
