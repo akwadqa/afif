@@ -85,6 +85,8 @@ class BeneficiaryRequest(Document):
     def get_missing_scholarship_fields(self) -> list[str]:
         required = [*SCHOLARSHIP_ATTACHMENT_FIELDS, *SCHOLARSHIP_DECLARATION_FIELDS]
         missing = [fieldname for fieldname in required if not self.get(fieldname)]
+        if not (self.request_summary or "").strip():
+            missing.insert(0, "request_summary")
         if flt(self.requested_amount) <= 0:
             missing.insert(0, "requested_amount")
         return [_(self.meta.get_label(fieldname)) for fieldname in missing]

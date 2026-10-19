@@ -273,6 +273,7 @@ function validateAttachmentsStep(check, formData, t) {
 
 function validateScholarshipRequestStep(check, sr, t) {
   if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
+  if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
     if (!sr.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
   }

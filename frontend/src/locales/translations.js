@@ -646,7 +646,7 @@ export default {
         requestedAmount: 'المبلغ المطلوب',
         amountPlaceholder: 'أدخل المبلغ المطلوب',
         summary: 'ملخص الطلب',
-        summaryPlaceholder: 'اكتب ملخصاً مختصراً لطلبك (اختياري)',
+        summaryPlaceholder: 'اكتب ملخصاً مختصراً لطلبك',
         attachmentsTitle: 'المرفقات المطلوبة',
       },
       attachments: {
@@ -1643,7 +1643,7 @@ export default {
         requestedAmount: 'Requested Amount',
         amountPlaceholder: 'Enter the requested amount',
         summary: 'Request Summary',
-        summaryPlaceholder: 'Write a short summary of your request (optional)',
+        summaryPlaceholder: 'Write a short summary of your request',
         attachmentsTitle: 'Required Attachments',
       },
       attachments: {

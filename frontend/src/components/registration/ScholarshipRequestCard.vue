@@ -28,7 +28,7 @@
         </div>
 
         <div class="space-y-1.5">
-          <label class="input-label">{{ t('scholarship.request.summary') }}</label>
+          <label class="input-label">{{ t('scholarship.request.summary') }} <span class="text-red-500">*</span></label>
           <textarea
             rows="4"
             maxlength="1000"
