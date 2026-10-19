@@ -6,7 +6,42 @@
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
 | [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
-| [5 — Review edits](phase-5-review-edits.md) | in progress | |
+| [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
+
+## Phase 5 — log (2026-10-19)
+
+Review edits to the scholarship wizard. Answers on the ambiguous points: Single is for the scholarship flow only, the two new statements are required, and years of residence is an open question (OQ14, no change).
+
+### What was built
+- **Marital status `Single` (أعزب / عزباء).** New option on `marital_status`. The scholarship wizard offers it first (variant `maritalStatuses`); the normal wizard keeps its 4 options. `validate` refuses *setting* Single on a normal registration (`SingleMaritalStatusError`); the 3 older normal registrations that already hold Single (`SA-5652-2024`, `SA-6606-2026`, `SA-6607-2026`) can still be saved. Sanadi already maps Single → 1.
+- **Income, first option.** The scholarship wizard asks "هل لديك (دخل/راتب)؟" on `ben_income`, with the beneficiary wording for its sub-fields (آلية صرف دخل المستفيد / راتب المستفيد / ملاحظة دخل المستفيد). The guardian wording from Phase 2 and its 4 translation keys are gone.
+- **Bank debts.** In the scholarship wizard `bank_loans` reads "هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟", in the card and in the validation popup (variant `labelKeys.bankLoans`).
+- **Two more required documents.** `scholarship_mother_bank_statement` (كشف حساب الأم) and `scholarship_student_bank_statement` (كشف حساب الطالب) on Beneficiary Request, in `SCHOLARSHIP_ATTACHMENT_FIELDS` on both sides. Both entry points (step 5 and the request page's Scholarship option) now require 10 documents.
+- **Years of residence:** unchanged (OQ14).
+
+### Tests
+- **Backend:** `test_scholarship` **22 OK** (3 new for Single: scholarship accepted and sent as 1, normal refused, older Single still saves; 2 new incomplete cases for the statements); `test_scholarship_accepted` **12 OK** (new statement case added); `test_scholarship_decision` **13 OK**.
+- **Mutation check.** Always refusing Single fails the older-record test; never refusing it fails the normal-registration test.
+- **Frontend:** `yarn test:run` **27 OK** (5 new: Single per flow, a single applicant needs no partner data, bank-debts label per flow, the 2 statements are required, the income label and sub-labels; the translation check now also covers the label keys, marital options and attachments). Biome lint clean. `migrate` and `yarn build` done.
+
+### Browser run (agent-browser, temporary `bench serve` on :8010, stopped afterwards)
+`scholarship.demo.phase5.draft@example.com` (Draft `SA-6627-2026`, copied from `SA-6619-2026`):
+- Step 1: marital options أعزب / متزوج / مطلق / أرمل / منفصل; Single chosen. The copied Draft predates OQ12, so the wizard asked for the passport number and secondary nationality, which were filled in.
+- Step 2: first question هل لديك (دخل/راتب)؟, sub-fields with the beneficiary wording, then father, mother, private business, stock market.
+- Step 4: هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟
+- Step 5: 10 documents, the last two كشف حساب الأم and كشف حساب الطالب. Submitted → success view.
+- Result: `SA-6627-2026` New Registration, `marital_status = Single`; `REQ3889` Education / Scholarship, `is_scholarship=1`, Pending Supervisor Approval, 21000, both new statements set, 10 private files attached.
+- Normal wizard (`scholarship.demo.new@example.com`): no Single option.
+- Ticking both declarations from one script call lost the first one (the known "two updates in the same tick" note below); single clicks work.
+
+### Demo data added on the dev site (on purpose)
+Password: `Scholarship@2026`.
+
+| User | State |
+|---|---|
+| `scholarship.demo.phase5.draft@example.com` | submitted through the browser: `SA-6627-2026` (Single) + `REQ3889` (10 documents) |
+
+Older scholarship requests (`REQ3881`–`REQ3888`) were created with 8 documents. The new rule applies when a request is saved, so editing one of them in the desk now asks for the 2 statements.
 
 ## Phase 4 — log (2026-10-19)
 
@@ -266,7 +301,8 @@ Password for all of them: `Scholarship@2026`.
 - **Supervisor approval on the dev site.** Only `Administrator` has Sanadi Integration Settings (pointing at staging, `stgapi.raca.gov.qa`). Any other Supervisor, including the demo one, gets "Sanadi Integration Settings not available for current user." when approving any request, normal or scholarship. Approving `REQ3884` as Administrator would create a real beneficiary and request in Sanadi staging, so it was **not done**. It needs a go-ahead, or Sanadi settings for the demo Supervisor.
 - **OQ13 — after a scholarship rejection (new, for the mentor).** The applicant can fix and resubmit through the normal wizard, and the registration is then reviewed as a normal one with no scholarship request. Is that intended, or should they be able to reapply through `/scholarship`?
 - **OQ6 is temporary.** Scholarship shares Sanadi code `1001050` with Other Educational Assistance, so Sanadi reports can't tell the two apart until a dedicated code exists.
-- Still open with the mentor: OQ10 (to check later) and OQ13. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
+- Still open with the mentor: OQ10 (to check later), OQ13 and OQ14 (years of residence for Qatari applicants; the wizard asks it of everyone, the desk hides it for Qatar).
+- **Older scholarship requests and the new statements.** `REQ3881`–`REQ3888` have 8 documents; saving one in the desk now fails until the mother's and student's statements are added. Fine for demo data; check before go-live whether real requests exist by then. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
 - **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.
 - **Resolved in Phase 4:** the desk now hides the fields the wizard skips; the request page uploads before creating a Scholarship request.
