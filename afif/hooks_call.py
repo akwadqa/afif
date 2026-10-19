@@ -967,7 +967,12 @@ def new_subvention_request(doc, method):
 
 
 
+class UnmappedAidLookupError(frappe.ValidationError):
+    pass
+
+
 def get_aid_lookup_parent_id(doc):
+    aid_lookup_parent_id = aid_lookup_id = None
     if doc.request_category == "Medical Assistance":
         aid_lookup_parent_id = 10020
         if doc.medical_assistance == "Medication":
@@ -1022,7 +1027,8 @@ def get_aid_lookup_parent_id(doc):
              aid_lookup_id = 1001030
         elif doc.educational_assistance == "Educational Equipment":
              aid_lookup_id = 1001040
-        elif doc.educational_assistance == "Other Educational Assistance":
+        # Temporarily sent as Other Educational Assistance until Sanadi has a Scholarship code (plan OQ6).
+        elif doc.educational_assistance in ("Other Educational Assistance", "Scholarship"):
              aid_lookup_id = 1001050
 
     elif doc.request_category == "Family Assistance":
@@ -1100,6 +1106,14 @@ def get_aid_lookup_parent_id(doc):
              aid_lookup_id = 3002070
         elif doc.awareness_assistance == "Other Awareness Assistance":
              aid_lookup_id = 3002080
+
+    if not (aid_lookup_parent_id and aid_lookup_id):
+        frappe.throw(
+            frappe._("No Sanadi aid lookup id is mapped for this {0} subcategory.").format(
+                frappe._(doc.request_category or "")
+            ),
+            UnmappedAidLookupError,
+        )
 
     return aid_lookup_parent_id, aid_lookup_id
 
