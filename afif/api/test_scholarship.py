@@ -90,6 +90,14 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
         self.assert_nothing_submitted()
 
+    def test_missing_passport_number_creates_nothing(self):
+        frappe.db.set_value("Beneficiaries Registration", self.registration, "passport_number", None)
+
+        with self.assertRaises(IncompleteScholarshipApplicationError):
+            submit_scholarship_application(self.registration, self.request_data)
+
+        self.assert_nothing_submitted()
+
     def test_missing_guardian_mobile_number_creates_nothing(self):
         frappe.db.set_value("Beneficiaries Registration", self.registration, "guardian_mobile_number", None)
 
@@ -323,6 +331,7 @@ def make_registration(is_scholarship: int) -> str:
             "email": frappe.session.user,
             "ben_primary_idtype": "Qatari Id",
             "ben_primary_idnumber": str(random.randint(10**10, 10**11 - 1)),
+            "passport_number": "A1234567",
             "marital_status": "Separated",
             "currently_working": "Yes",
             "documents_confirmation": 1,

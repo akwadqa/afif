@@ -10,7 +10,7 @@ function lookup(language, key) {
 const t = key => lookup('ar', key) ?? key
 
 const SCHOLARSHIP_HIDDEN_STEP_1_FIELDS = [
-  'passport_number', 'id_expiry_date', 'partners_phone_number', 'ben_sec_nationality',
+  'id_expiry_date', 'partners_phone_number',
   'family_visa_type', 'have_children', 'afif_charity_assistance',
 ]
 
@@ -22,6 +22,7 @@ function makeScholarshipStep1() {
       en_name: 'Scholarship Student',
       ben_primary_idtype: 'Qatari Id',
       ben_primary_idnumber: '28763400001',
+      passport_number: 'A1234567',
       ben_nationality: 'Qatar',
       gender: 'Male',
       date_of_birth: '1990-01-01',
@@ -34,6 +35,7 @@ function makeScholarshipStep1() {
     additionalInfo: {
       ben_requestor_relationtype: 'The same subvention requestor',
       ben_sec_idtype: 'Passport',
+      ben_sec_nationality: 'Qatar',
       currently_working: 'No',
       education_level: 'High Education Level',
     },
@@ -67,14 +69,20 @@ describe('step 1 (personal data)', () => {
     expect(validate(missing, 1, 'registration').fields).not.toContain('guardian_mobile_number')
   })
 
+  it('requires the passport number and the secondary ID in scholarship mode, as in the normal flow', () => {
+    const formData = makeScholarshipStep1()
+    formData.personalInfo.passport_number = ''
+    formData.additionalInfo.ben_sec_nationality = ''
+
+    expect(validate(formData, 1, 'scholarship').fields).toEqual(['passport_number', 'ben_sec_nationality'])
+  })
+
   it('accepts the normal flow once the hidden fields are filled in', () => {
     const formData = makeScholarshipStep1()
     Object.assign(formData.personalInfo, {
-      passport_number: 'A1234567',
       id_expiry_date: '2030-01-01',
       partners_phone_number: '55111222',
     })
-    formData.additionalInfo.ben_sec_nationality = 'Qatar'
     Object.assign(formData.familyDetails, { family_visa_type: 'Residence', have_children: 'No', afif_charity_assistance: 'No' })
 
     expect(validate(formData, 1, 'registration')).toEqual({ errors: [], fields: [] })
