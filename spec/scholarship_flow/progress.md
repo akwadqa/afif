@@ -4,8 +4,55 @@
 |---|---|---|
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
-| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ6; OQ3, OQ4 and OQ12 answered) | |
+| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 answered: normal rules apply) | |
+
+## Phase 3 — log (2026-10-19)
+
+### What was built
+- **Approve cascade.** `BeneficiaryRequest.on_update` (it runs before the `on_update` doc_events) accepts the linked `New Registration` when a scholarship request moves from `Pending Supervisor Approval` to `Pending Specialist Approval`. `create_new_beneficiary` then registers the beneficiary in Sanadi and sets `ben_id`, and only after that does `new_subvention_request` send the request. If `ben_id` is still empty afterwards, `ScholarshipCascadeError` rolls the whole action back.
+- **Reject cascade.** `Rejected by Supervisor` sets the registration to `Not Accepted`, with `custom_notes` = "Scholarship request REQxxxx was rejected."
+- **Registration guard (OQ4).** `ScholarshipDecisionError` blocks a direct change to `Accepted` / `Not Accepted` while the registration has a scholarship request pending with the Supervisor.
+- **Sanadi lookup (OQ6).** Scholarship → `(10010, 1001050)`, the same code as Other Educational Assistance. An unmapped category or subcategory raises `UnmappedAidLookupError`, and the scholarship approval checks the mapping in `validate`, before any Sanadi call.
+- **Desk.** `check_beneficiary_id` returns success for a scholarship request whose registration is still `New Registration`.
+- **Commit removed** from `create_new_beneficiary` (see the deviations below).
+
+### Tests
+- **New:** `bench --site afif.akwad.qa run-tests --module afif.api.test_scholarship_decision`: **13 tests, OK.**
+  - Sanadi is faked by URL: it records the calls and can fail one endpoint.
+  - Approve: registration Accepted with `ben_id`, request in Pending Specialist Approval with `request_id`, and the beneficiary call made before the subvention request, which sends `benId` and `(10010, 1001050)`.
+  - Reject: registration Not Accepted with the note, and no Sanadi call.
+  - Sanadi failure (the beneficiary call fails, or authentication fails), rolled back to a savepoint as the request handler would: both documents unchanged.
+  - Direct Approve/Reject on the registration is blocked. A rejected applicant who resubmits can be approved directly.
+  - No declaration → `Not a valid Workflow Action`, and nothing changes.
+  - Unmapped subcategory → error before any Sanadi call.
+  - Lookup mapping (Scholarship, Tuition Fees unchanged, unknown subcategory or category); `new_aid_request` sends `(10010, 1001050)`; the `check_beneficiary_id` pass-through; a normal request approval leaves the registration alone.
+- **Existing:** `--module afif.api.test_scholarship`: **19 tests, OK.**
+- **Mutation check.** Each of these fails the suite: dropping the cascade call (5 tests), the registration guard (3), the fail-fast lookup (1), or the `ben_id` check (1).
+- Frontend untouched (no Vitest or build change).
+
+### Desk run (temporary `bench serve` on :8010, stopped afterwards)
+The headless browser could not start (`libasound.so.2` is missing on the server). The desk actions were driven through the same endpoints the desk buttons call (`frappe.model.workflow.apply_workflow`, `run_doc_method`), logged in as `scholarship.demo.supervisor@example.com`:
+
+| Action | Result |
+|---|---|
+| `check_beneficiary_id` on `REQ3884` | `success: true` |
+| Approve / Reject `SA-6621-2026` directly | blocked: "Approve or reject the scholarship request REQ3884; this registration follows its decision." |
+| Approve `REQ3886` (no declaration) | `Not a valid Workflow Action` |
+| Reject `REQ3885` | request `Rejected by Supervisor`; `SA-6622-2026` `Not Accepted` with the note |
+| Approve `REQ3884` | stops at "Sanadi Integration Settings not available for current user." (see the blockers) |
+
+### Demo data added on the dev site (on purpose)
+Password: `Scholarship@2026`. Each applicant was submitted through the endpoint and has the Sanadi profile fields (gender, education level, relation type, city) filled in.
+
+| User | State |
+|---|---|
+| `scholarship.demo.supervisor@example.com` | System User with the `Supervisor` role, for the desk |
+| `scholarship.demo.phase3.approve@example.com` | `SA-6621-2026` + `REQ3884`, declaration uploaded: ready to **approve** |
+| `scholarship.demo.phase3.reject@example.com` | `SA-6622-2026` + `REQ3885`: **rejected** in the desk run (registration Not Accepted) |
+| `scholarship.demo.phase3.nodeclaration@example.com` | `SA-6623-2026` + `REQ3886`, **no declaration**: approval is blocked until one is uploaded |
+
+The registration attachments on these records point to placeholder `/files/test-*.pdf` URLs, as in the test fixtures.
 
 ## Phase 2 — log (2026-10-18)
 
@@ -135,7 +182,18 @@ Password for all of them: `Scholarship@2026`.
 - **Obligation sub-field labels** (amount, periodicity, …) keep the normal wording; only the 5 checkbox labels change, as plan §3 lists.
 - The obligation sub-field list is still duplicated between `FinancialObligationsCard` and the validation. The plan only asked to deduplicate the income list.
 
+### Phase 3
+- **Cascade location.** The cascade lives in the request controller (`validate` + `on_update`), not in `hooks_call.py`. The controller's methods run before the doc_events, which gives the order D11 needs without reordering `hooks.py`.
+- **Order of Sanadi calls.** `validate_subvention_request` (a read-only "active requests" search) still runs in `validate`, so it happens *before* the registration is accepted. The plan listed it after. It doesn't need `ben_id`, and running it first means a beneficiary with an active Sanadi request is rejected before a Sanadi beneficiary is created.
+- **The `ben_id` check.** `create_new_beneficiary` only logs an authentication or token failure, and the registration would be Accepted without `ben_id`. The cascade therefore requires `ben_id` after accepting, and fails otherwise.
+- **Rejection note.** The request has no notes field to copy, so the registration gets a fixed note naming the request.
+- **Guard scope.** OQ4 is enforced while a scholarship request is pending, not for every scholarship registration. Without this, a rejected applicant who resubmits through the normal wizard (`Not Accepted` → `New Registration`) could never be approved. Recorded as OQ13.
+- **Desk guard.** Changed on the server, in `check_beneficiary_id`, instead of in `beneficiary_request.js`. The JS keeps calling it, and the rule stays on the server.
+- **Known risk resolved.** Frappe v16 ignores `frappe.db.commit()` inside doc_event hooks (`_disable_transaction_control`), so the commit in `create_new_beneficiary` never broke atomicity. It was removed anyway, and its raw SQL was replaced by `frappe.db.set_value`. `new_subvention_request` has the same ignored commit; it was left alone. Sanadi itself can't roll back: if the request step fails after Sanadi created the beneficiary, the beneficiary stays in Sanadi.
+- **Unmapped lookup.** Uses `UnmappedAidLookupError` for every category, which also covers the normal flow (it used to crash with `UnboundLocalError`).
+
 ## Mentor answers — 2026-10-19
+- **OQ6:** for now Scholarship is sent to Sanadi as `1001050` (Other Educational Assistance) under Education `10010`, for both the request and the Aid. Swap the code in `get_aid_lookup_parent_id` once Sanadi has a dedicated Scholarship code.
 - **OQ1b:** the request summary is required in step 5. Done in the server validation (`get_missing_scholarship_fields`, empty or blank fails), the wizard validation and the card (asterisk; "(optional)" dropped from the placeholder). Tests: 2 new backend sub-cases (missing and blank summary) → `bench run-tests --module afif.api.test_scholarship` **18 tests, OK**; 2 new Vitest cases for step 5 → `vitest run` **12 tests, OK**. `yarn build` redone on the dev site; the Python part goes live with `bench restart`.
 - **OQ3:** same as today: the office uploads the declaration, then the Supervisor approves. No workflow change (Phase 3 adds a test that approval without it is blocked).
 - **OQ4:** block direct Approve/Reject on a scholarship registration (Phase 3).
@@ -146,8 +204,11 @@ Password for all of them: `Scholarship@2026`.
 - **OQ12:** today's rule stays. All 618 accepted registrations have a passport number, and none was accepted without one. So the scholarship wizard shows and requires the passport number and the secondary-ID group again (removed from the scholarship `hiddenFields`), and `submit_scholarship_application` also requires `passport_number`. Tests: Vitest **13 OK** (new: the passport number and secondary ID are required in scholarship mode; it fails if they are hidden again); backend **19 OK** (new: a missing passport number creates nothing). `yarn build` redone; the endpoint check goes live with `bench restart`.
 
 ## Open issues / blockers
-- **Go-live for Phases 1–2.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check) and income mapping. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already.
-- Still open with the mentor: OQ6, and OQ10 (to check later). OQ1b, OQ3, OQ4, OQ5, OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
+- **Go-live for Phases 1–3.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check), income mapping and none of the Phase 3 cascade. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already. Phase 3 has no migrate or build step.
+- **Supervisor approval on the dev site.** Only `Administrator` has Sanadi Integration Settings (pointing at staging, `stgapi.raca.gov.qa`). Any other Supervisor, including the demo one, gets "Sanadi Integration Settings not available for current user." when approving any request, normal or scholarship. Approving `REQ3884` as Administrator would create a real beneficiary and request in Sanadi staging, so it was **not done**. It needs a go-ahead, or Sanadi settings for the demo Supervisor.
+- **OQ13 — after a scholarship rejection (new, for the mentor).** The applicant can fix and resubmit through the normal wizard, and the registration is then reviewed as a normal one with no scholarship request. Is that intended, or should they be able to reapply through `/scholarship`?
+- **OQ6 is temporary.** Scholarship shares Sanadi code `1001050` with Other Educational Assistance, so Sanadi reports can't tell the two apart until a dedicated code exists.
+- Still open with the mentor: OQ10 (to check later) and OQ13. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
 - **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.
 - **Desk.** The fields hidden in the wizard are still visible in the desk form of a scholarship registration. That is Phase 4 (desk polish).

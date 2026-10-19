@@ -82,7 +82,7 @@ There is no single source for subcategories; each place below holds its own copy
 | `beneficiary_aid.json` → `educational_assistance` (Select, its own copy) | option `Scholarship`. The committee fills this in by hand on the Aid: the "Aid Button" Client Script copies only `request_category`, `beneficiaries`, `beneficiary_request` and `suggested_amount`. |
 | `frontend/src/components/request/BeneficiaryRequest.vue` → `SUBCATEGORY_MAP['Education Assistance'].options` and `requiredDocs` | `Scholarship`, plus the 6 extra docs when it is selected |
 | `locales/translations.js` | `request.subtypes.education.Scholarship` (AR منحة دراسية / EN Scholarship) |
-| `hooks_call.py` → `get_aid_lookup_parent_id`, Education branch | `educational_assistance == "Scholarship"` → parent `10010` (Education), with the Sanadi `aidLookupId` from OQ6 |
+| `hooks_call.py` → `get_aid_lookup_parent_id`, Education branch | `educational_assistance == "Scholarship"` → parent `10010` (Education), `aidLookupId` `1001050` (Other Educational Assistance) for now (OQ6) |
 
 ### Field mapping in scholarship mode
 
@@ -125,8 +125,8 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
   - `new_aid_request` (`:1344`) loads the Aid's linked Beneficiary Request and calls it with that.
 
   The Aid never uses its own category fields for Sanadi, so a single Scholarship branch covers both the request and the Aid.
-- **Status for Scholarship.** The parent is settled (`10010`, Education). The `aidLookupId` is still open (OQ6): either Sanadi's dedicated Scholarship code, or a mapping to an existing one such as `1001010` Tuition Fees.
-- **An unmapped subcategory currently crashes** with `UnboundLocalError`. Phase 3 makes it fail with a clear `frappe.throw`.
+- **Status for Scholarship.** Parent `10010` (Education), `aidLookupId` `1001050` (Other Educational Assistance). This is temporary until Sanadi has a dedicated Scholarship code (OQ6).
+- **An unmapped category or subcategory** now fails with `UnmappedAidLookupError` (it used to crash with `UnboundLocalError`).
 
 ## 5. Affected areas
 
@@ -134,7 +134,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
   - `beneficiaries_registration.json`, `beneficiary_request.json` and `beneficiary_aid.json` (the `Scholarship` option only)
   - `afif/hooks_call.py`: `before_insert_request`, `get_beneficiary_income_set`, `get_aid_lookup_parent_id`, and the request transition hooks in Phase 3
   - new `afif/api/scholarship.py`
-- **Desk:** `beneficiary_request.js`, where the `check_beneficiary_id` guard is skipped for scholarship in Phase 3.
+- **Desk:** the `check_beneficiary_id` guard used by `beneficiary_request.js` lets a pending scholarship through (Phase 3, changed on the server, not in the JS).
 - **Frontend (`frontend/src`):**
   - `router.js`
   - `components/sidebar/AppSidebar.vue`, `navbar/MobileMenu.vue` and `navbar/NavLinks.vue`
@@ -148,7 +148,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 ## 6. Go-live prerequisites
 
 - `bench migrate` (new fields), `bench clear-cache`, `bench restart`, and a frontend build.
-- The Sanadi `aidLookupId` for Scholarship (OQ6) must be known before a scholarship request can be approved by the Supervisor.
+- Scholarship is sent to Sanadi as `1001050` (Other Educational Assistance) until Sanadi has a Scholarship code (OQ6). Swap the code in `get_aid_lookup_parent_id` when it does.
 
 ## 7. Open questions
 
@@ -166,13 +166,14 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ3 | Same as today. After submitting, the applicant visits the office to sign the declaration; the office uploads it, then the Supervisor approves (the Approve transition keeps its `doc.declaration` condition, and that approval sends the declaration to Sanadi). The Specialist then finishes the normal flow. No workflow change. |
 | OQ5 | Keep the normal rules for scholarship requests: one open request at a time, the 3-month cooldown after a rejection and the 6-month cooldown after an approval, and scholarship requests count as the latest request for later ones. The only exception is the new-applicant scholarship submission, which skips "only an accepted beneficiary can create a request" because the registration is submitted with it (already built in Phase 1). |
 | OQ11 | Keep today's rule: the registration `passport` copy stays required, so a scholarship applicant uploads it in the attachments sub-step and the guardian's and student's passports again in step 5. |
+| OQ6 | For now, Scholarship uses `aidLookupId` `1001050` (Other Educational Assistance) under parent `10010`, for both the request and the Aid. It changes when Sanadi provides a dedicated code. |
 | OQ12 | Keep today's rule: the passport number (and the secondary-ID group that carries it to Sanadi) is required. No beneficiary has ever been accepted without one, so there is no evidence Sanadi accepts it empty. |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
-| OQ6 | What is the Sanadi `aidLookupId` for the Scholarship subcategory under Education (`10010`)? Is it a dedicated Sanadi code, or should it map to an existing one such as `1001010` Tuition Fees or `1001050` Other? It is used for both the request (step 2) and the Aid (step 6). | Phase 3 |
+| OQ13 | After a scholarship rejection, the applicant can fix and resubmit the registration through the normal wizard (as for any `Not Accepted` registration). It is then reviewed as a normal registration, and no new scholarship request is created; once accepted, they can apply through the normal request page (Phase 4). Is that the intended path, or should a rejected applicant be able to reapply through `/scholarship`? | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 
 ## 8. Phases
