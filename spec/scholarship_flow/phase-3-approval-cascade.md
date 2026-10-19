@@ -2,7 +2,7 @@
 
 > The control point is confirmed: **the Supervisor approves the request, and the registration is approved in the same action** (plan D11).
 > OQ3 answered: same as today. The office uploads the signed `declaration` before the Supervisor approves; the Approve transition keeps its `doc.declaration` condition.
-> OQ4 answered: block direct Approve/Reject on a scholarship registration. Still open: OQ6 (the Sanadi lookup id) and OQ12 (Sanadi beneficiary payload).
+> OQ4 answered: block direct Approve/Reject on a scholarship registration. OQ12 answered: the passport number and secondary ID are required, as today. Still open: OQ6 (the Sanadi lookup id).
 
 ## Goal
 A single Supervisor action on a scholarship request approves or rejects **both** the request and its registration in one transaction.

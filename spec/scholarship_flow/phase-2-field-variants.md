@@ -13,7 +13,7 @@ In scholarship mode, the wizard hides, relabels and adds the fields listed in pl
 - **One variant config.** Add `components/registration/registrationVariant.js`. `getRegistrationVariant(flow)` returns the hidden field names, the income sources (with label keys) and the obligation label keys for the normal and the scholarship flow. The cards and the step validation must both read this one object so they can't drift apart.
 - **Testable validation.** Move `validateStep` into `components/registration/registrationValidation.js` (`validateRegistrationStep`), a plain module that Vitest can import without mounting the wizard.
 - **Cards:**
-  - `PersonalInfoCard.vue`: add a `flow` prop. Hide `passport_number`, `id_expiry_date`, `partners_phone_number`, the `ben_sec_*` group and `worked_before`. Show `guardian_mobile_number` (8 digits, required).
+  - `PersonalInfoCard.vue`: add a `flow` prop. Hide `id_expiry_date`, `partners_phone_number` and `worked_before`. (`passport_number` and the `ben_sec_*` group were hidden at first and restored after OQ12.) Show `guardian_mobile_number` (8 digits, required).
   - `FamilyDetailsCard.vue`: hide `family_visa_type`, `visa_dependent` and its names field, `have_children` and the children sub-fields, and `afif_charity_assistance` with its amount.
   - `IncomeDetailsCard.vue`: in `incomeSources`, drop `family_income`, `family_extra`, `children_income` and `rent_income`, add `father_income` and `mother_income`, and relabel `ben_income` and `private_income`.
   - `FinancialObligationsCard.vue`: relabel the 5 entries in `obligationSources`.

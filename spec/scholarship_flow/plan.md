@@ -97,7 +97,7 @@ There is no single source for subcategories; each place below holds its own copy
 | `treatment_obligation` | relabelled: هل لدى الأسرة التزامات دفع مصاريف علاج شهرية مستمرة؟ |
 | `debt_obligation` | relabelled: هل لدى الأسرة ديون بنكية أو شخصية؟ |
 | `tuition_obligation` | relabelled: هل لدى الأسرة التزامات بمصاريف مدرسية وجامعية؟ |
-| `passport_number`, `id_expiry_date`, `partners_phone_number`, `ben_sec_*`, `worked_before`, `family_visa_type`, `visa_dependent`, `have_children` (+ children sub-fields), `afif_charity_assistance` (+ `affif_assistance`) | hidden and not required |
+| `id_expiry_date`, `partners_phone_number`, `worked_before`, `family_visa_type`, `visa_dependent`, `have_children` (+ children sub-fields), `afif_charity_assistance` (+ `affif_assistance`) | hidden and not required. `passport_number` and the `ben_sec_*` group stay shown and required, as in the normal flow (OQ12). |
 
 In the Sanadi integration, `father_income` and `mother_income` map to income type 5 (family) in `get_beneficiary_income_set`.
 
@@ -165,12 +165,15 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ1b | Yes. Step 5 includes `request_summary`, and it is required (same as the normal request page). |
 | OQ3 | Same as today. After submitting, the applicant visits the office to sign the declaration; the office uploads it, then the Supervisor approves (the Approve transition keeps its `doc.declaration` condition, and that approval sends the declaration to Sanadi). The Specialist then finishes the normal flow. No workflow change. |
 | OQ5 | Keep the normal rules for scholarship requests: one open request at a time, the 3-month cooldown after a rejection and the 6-month cooldown after an approval, and scholarship requests count as the latest request for later ones. The only exception is the new-applicant scholarship submission, which skips "only an accepted beneficiary can create a request" because the registration is submitted with it (already built in Phase 1). |
+| OQ11 | Keep today's rule: the registration `passport` copy stays required, so a scholarship applicant uploads it in the attachments sub-step and the guardian's and student's passports again in step 5. |
+| OQ12 | Keep today's rule: the passport number (and the secondary-ID group that carries it to Sanadi) is required. No beneficiary has ever been accepted without one, so there is no evidence Sanadi accepts it empty. |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
 | OQ6 | What is the Sanadi `aidLookupId` for the Scholarship subcategory under Education (`10010`)? Is it a dedicated Sanadi code, or should it map to an existing one such as `1001010` Tuition Fees or `1001050` Other? It is used for both the request (step 2) and the Aid (step 6). | Phase 3 |
+| OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 
 ## 8. Phases
 

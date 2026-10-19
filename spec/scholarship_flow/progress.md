@@ -4,7 +4,7 @@
 |---|---|---|
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
-| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ6, OQ12; OQ3 and OQ4 answered) | |
+| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ6; OQ3, OQ4 and OQ12 answered) | |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 answered: normal rules apply) | |
 
 ## Phase 2 — log (2026-10-18)
@@ -141,13 +141,15 @@ Password for all of them: `Scholarship@2026`.
 - **OQ4:** block direct Approve/Reject on a scholarship registration (Phase 3).
 - **OQ5:** the normal request rules apply to scholarship requests (Phase 4). The new-applicant submission keeps its single exception to "accepted beneficiaries only".
 
+- **OQ10:** the 21+ age check exists, but only in the wizard (no server check, normal flow included). The scholarship keeps it; noted under blockers for the mentor to check later.
+- **OQ11:** today's rule stays: the registration passport copy is required, so it is not dropped for scholarship.
+- **OQ12:** today's rule stays. All 618 accepted registrations have a passport number, and none was accepted without one. So the scholarship wizard shows and requires the passport number and the secondary-ID group again (removed from the scholarship `hiddenFields`), and `submit_scholarship_application` also requires `passport_number`. Tests: Vitest **13 OK** (new: the passport number and secondary ID are required in scholarship mode; it fails if they are hidden again); backend **19 OK** (new: a missing passport number creates nothing). `yarn build` redone; the endpoint check goes live with `bench restart`.
+
 ## Open issues / blockers
 - **Go-live for Phases 1–2.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check) and income mapping. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already.
-- Still open with the mentor: OQ6, plus OQ10–OQ12 from Phase 2. OQ1b, OQ3, OQ4 and OQ5 are answered (see [plan.md §7](plan.md#7-open-questions)).
-- **New questions from Phase 2** (to add to plan §7 once the mentor answers):
-  - **OQ10 — minimum age.** Step 1 still requires the applicant to be at least 21. If the applicant is the student, most students are blocked. Is the applicant the student or the guardian? Should the age rule change for scholarship?
-  - **OQ11 — passport attachment.** The passport number is hidden in scholarship mode, but the registration attachments sub-step (same as normal, D3) still requires a passport copy, and step 5 asks for the guardian's and the student's passports again. Should the registration `passport` attachment be dropped for scholarship?
-  - **OQ12 — Sanadi beneficiary payload (blocks Phase 3).** A scholarship registration now has no passport number, ID expiry date or secondary ID. When the Supervisor approves (Phase 3), Sanadi creates the beneficiary from these fields (`benSecIdType`, `benSecIdNumber`, …). It is unknown whether Sanadi accepts them empty. This must be checked before Phase 3, or the cascade will fail at acceptance.
+- Still open with the mentor: OQ6, and OQ10 (to check later). OQ1b, OQ3, OQ4, OQ5, OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
+- **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
+- **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.
 - **Desk.** The fields hidden in the wizard are still visible in the desk form of a scholarship registration. That is Phase 4 (desk polish).
 - **Phase 4 input.**
   - The scholarship validation needs the attachments at insert time. The normal `BeneficiaryRequest.vue` inserts first and uploads afterwards, so it must change before `Scholarship` is offered there.
