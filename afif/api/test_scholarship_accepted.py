@@ -72,6 +72,7 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
         cases = {
             "missing attachment": {"scholarship_guardian_bank_statement": None},
             "missing reused attachment": {"education_invoice": None},
+            "missing student bank statement": {"scholarship_student_bank_statement": None},
             "missing amount": {"requested_amount": None},
             "missing summary": {"request_summary": ""},
             "unchecked declaration": {"is_data_accuracy_declared": 0},

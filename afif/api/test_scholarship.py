@@ -11,7 +11,10 @@ from pypdf import PdfWriter
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import (
     ScholarshipFlagChangeError as RegistrationFlagChangeError,
 )
-from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import ScholarshipSubmissionError
+from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import (
+    ScholarshipSubmissionError,
+    SingleMaritalStatusError,
+)
 from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     SCHOLARSHIP_ATTACHMENT_FIELDS,
     IncompleteScholarshipRequestError,
@@ -20,7 +23,7 @@ from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     ScholarshipFlagChangeError as RequestFlagChangeError,
 )
 from afif.api.scholarship import IncompleteScholarshipApplicationError, submit_scholarship_application
-from afif.hooks_call import get_beneficiary_income_set
+from afif.hooks_call import get_beneficiary_income_set, get_marital_status
 
 REGISTRATION_ATTACHMENTS = {
     "qid": "/files/test-qid.pdf",
@@ -110,6 +113,8 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         cases = {
             "missing attachment": {"scholarship_student_passport": None},
             "reused existing attachment field": {"grade_transcript": None},
+            "missing mother bank statement": {"scholarship_mother_bank_statement": None},
+            "missing student bank statement": {"scholarship_student_bank_statement": None},
             "missing amount": {"requested_amount": None},
             "zero amount": {"requested_amount": "0"},
             "missing summary": {"request_summary": None},
@@ -255,6 +260,37 @@ class TestScholarshipIncomeSet(IntegrationTestCase):
             get_beneficiary_income_set(registration),
             [{"periodicType": 2, "benIncomeType": 1, "amount": "8000", "notes": "Guardian salary"}],
         )
+
+
+class TestSingleMaritalStatus(IntegrationTestCase):
+    def setUp(self):
+        self.addCleanup(frappe.set_user, "Administrator")
+        self.user = make_beneficiary_user()
+        frappe.set_user(self.user)
+
+    def test_scholarship_applicant_can_be_single_and_is_sent_to_sanadi_as_single(self):
+        registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=1))
+        registration.marital_status = "Single"
+        registration.save()
+
+        self.assertEqual(get_marital_status(registration.reload()), 1)
+
+    def test_normal_registration_cannot_be_set_to_single(self):
+        registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=0))
+        registration.marital_status = "Single"
+
+        with self.assertRaises(SingleMaritalStatusError):
+            registration.save()
+
+    def test_older_single_registration_can_still_be_saved(self):
+        name = make_registration(is_scholarship=0)
+        frappe.db.set_value("Beneficiaries Registration", name, "marital_status", "Single")
+        registration = frappe.get_doc("Beneficiaries Registration", name)
+        registration.en_name = "Older Single Registration"
+
+        registration.save()
+
+        self.assertEqual(registration.reload().marital_status, "Single")
 
 
 class TestNormalFlowUnchanged(IntegrationTestCase):
