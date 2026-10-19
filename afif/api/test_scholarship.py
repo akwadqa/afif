@@ -104,6 +104,8 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
             "reused existing attachment field": {"grade_transcript": None},
             "missing amount": {"requested_amount": None},
             "zero amount": {"requested_amount": "0"},
+            "missing summary": {"request_summary": None},
+            "blank summary": {"request_summary": "   "},
             "unchecked declaration": {"is_eligibility_check_accepted": 0},
         }
         for case, override in cases.items():

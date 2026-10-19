@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import translations from '@/locales/translations'
-import { getRegistrationVariant } from './registrationVariant'
+import { SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS, getRegistrationVariant } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
 
 function lookup(language, key) {
@@ -117,6 +117,30 @@ describe('step 4 (registration attachments)', () => {
     }
 
     expect(validate(formData, 4, 'scholarship', 2)).toEqual({ errors: [], fields: [] })
+  })
+})
+
+describe('step 5 (scholarship request data)', () => {
+  const completeRequest = () => ({
+    scholarshipRequest: {
+      requested_amount: '20000',
+      request_summary: 'Tuition for the next semester',
+      files: Object.fromEntries(SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => [id, `/private/files/${id}.pdf`])),
+      declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, true])),
+    },
+  })
+
+  it('passes when everything is filled in', () => {
+    expect(validate(completeRequest(), 5, 'scholarship')).toEqual({ errors: [], fields: [] })
+  })
+
+  it('requires the request summary', () => {
+    for (const summary of ['', '   ']) {
+      const formData = completeRequest()
+      formData.scholarshipRequest.request_summary = summary
+
+      expect(validate(formData, 5, 'scholarship').fields).toEqual(['request_summary'])
+    }
   })
 })
 
