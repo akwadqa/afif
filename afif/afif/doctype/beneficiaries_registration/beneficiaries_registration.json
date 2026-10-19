@@ -353,6 +353,7 @@
    "unique": 1
   },
   {
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "id_expiry_date",
    "fieldtype": "Date",
    "label": "ID Expiry Date"
@@ -493,7 +494,7 @@
    "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))"
   },
   {
-   "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Residence\", \"Akwad\"], doc.visa_type) && in_list([\"No\", \"Akwad\"], doc.currently_working))",
    "fieldname": "worked_before",
    "fieldtype": "Select",
    "label": "Worked Before and Now Unemployed",
@@ -535,7 +536,7 @@
    "label": "Family Size"
   },
   {
-   "depends_on": "eval:in_list([\"Residence\", \"Akwad\"], doc.visa_type)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "fieldname": "visa_dependent",
    "fieldtype": "Select",
    "label": "Others Under Own Visa Besides Family",
@@ -548,13 +549,14 @@
    "label": "Beneficiary Dependent Count"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.visa_dependent)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))",
    "fieldname": "names_and_relation_to_sponsored",
    "fieldtype": "Data",
    "label": "Names and Relation to Sponsored",
    "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))"
   },
   {
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "family_visa_type",
    "fieldtype": "Select",
    "label": "Family Has Visa",
@@ -567,13 +569,14 @@
    "options": "\nYes\nNo"
   },
   {
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "have_children",
    "fieldtype": "Select",
    "label": "Have Children",
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "fieldname": "children_above_eighteen",
    "fieldtype": "Select",
    "label": "Children Above Eighteen",
@@ -581,7 +584,7 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "fieldname": "children_in_school",
    "fieldtype": "Select",
    "label": "Children In School",
@@ -589,7 +592,7 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
    "fieldname": "children_school",
    "fieldtype": "Select",
    "label": "Children School Type",
@@ -597,7 +600,7 @@
    "options": "\nPrivate\nPublic"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.have_children)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "fieldname": "children_special_needs",
    "fieldtype": "Select",
    "label": "Special Needs Children",
@@ -605,20 +608,21 @@
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.children_in_school)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
    "fieldname": "children_school_information",
    "fieldtype": "Data",
    "label": "Number of children in schools with their names and educational levels",
    "mandatory_depends_on": "eval: doc.current_step == 1 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))"
   },
   {
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "afif_charity_assistance",
    "fieldtype": "Select",
    "label": "Received Afif Charity Assistance Before",
    "options": "\nYes\nNo"
   },
   {
-   "depends_on": "eval:in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance)",
+   "depends_on": "eval:!doc.is_scholarship && (in_list([\"Yes\", \"Akwad\"], doc.afif_charity_assistance))",
    "fieldname": "affif_assistance",
    "fieldtype": "Data",
    "label": "Amount and Year of Afif Assistance",
@@ -646,56 +650,60 @@
    "fieldname": "ben_income",
    "fieldtype": "Check",
    "label": "Beneficiary Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "family_income",
    "fieldtype": "Check",
    "label": "Family Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "family_extra",
    "fieldtype": "Check",
    "label": "Family Extra Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "children_income",
    "fieldtype": "Check",
    "label": "Children Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "private_income",
    "fieldtype": "Check",
    "label": "Private Business Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "stock_income",
    "fieldtype": "Check",
    "label": "Stock Market Profits",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "rent_income",
    "fieldtype": "Check",
    "label": "Rent Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
@@ -929,40 +937,40 @@
    "fieldname": "family_obligation",
    "fieldtype": "Check",
    "label": "Family Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "rent_obligation",
    "fieldtype": "Check",
    "label": "Rent Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "treatment_obligation",
    "fieldtype": "Check",
    "label": "Treatment Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "debt_obligation",
    "fieldtype": "Check",
    "label": "Debt Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "tuition_obligation",
    "fieldtype": "Check",
    "label": "Tuition Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
@@ -1453,8 +1461,8 @@
   {
    "fieldname": "additional_attachments",
    "fieldtype": "Table",
-   "options": "Beneficiary Additional Document",
    "label": "Additional Attachments",
+   "options": "Beneficiary Additional Document",
    "print_hide": 1
   },
   {
@@ -1462,24 +1470,24 @@
    "fieldname": "documents_confirmation",
    "fieldtype": "Check",
    "label": "Documents Confirmation",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "verification_consent",
    "fieldtype": "Check",
    "label": "Eligibility Verification Consent",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "cancellation_right",
    "fieldtype": "Check",
    "label": "Afif Cancellation Right",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "fieldname": "custom_notes",
@@ -1530,6 +1538,7 @@
    "label": "Updated by Qatar Pass"
   },
   {
+   "depends_on": "eval:!doc.is_scholarship",
    "fieldname": "partners_phone_number",
    "fieldtype": "Data",
    "label": "Partner's phone number",
@@ -1548,7 +1557,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-10-18 15:00:00.000000",
+ "modified": "2026-10-19 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
