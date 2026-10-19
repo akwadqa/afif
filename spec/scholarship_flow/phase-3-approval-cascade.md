@@ -1,7 +1,8 @@
 # Phase 3 — Approval and rejection cascade
 
 > The control point is confirmed: **the Supervisor approves the request, and the registration is approved in the same action** (plan D11).
-> OQ4 answered: block direct Approve/Reject on a scholarship registration. Still open: OQ3 (whether the declaration is still required before the Supervisor approves) and OQ6 (the Sanadi lookup id).
+> OQ3 answered: same as today. The office uploads the signed `declaration` before the Supervisor approves; the Approve transition keeps its `doc.declaration` condition.
+> OQ4 answered: block direct Approve/Reject on a scholarship registration. Still open: OQ6 (the Sanadi lookup id) and OQ12 (Sanadi beneficiary payload).
 
 ## Goal
 A single Supervisor action on a scholarship request approves or rejects **both** the request and its registration in one transaction.
@@ -36,6 +37,7 @@ This needs a decision during the phase. Record it in `progress.md`.
   - Education / Scholarship → `(10010, <OQ6 id>)`;
   - an unmapped subcategory → clear error.
 - A normal (non-scholarship) request approval is unchanged.
+- Approving a scholarship request with no `declaration` is blocked, and the registration stays `New Registration`.
 - `new_aid_request` for an Aid linked to an Education / Scholarship request sends `(10010, <OQ6 id>)`.
 
 ## Done when

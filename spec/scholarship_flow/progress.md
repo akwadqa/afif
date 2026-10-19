@@ -4,8 +4,8 @@
 |---|---|---|
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
-| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ3 clarification, OQ6, OQ12; OQ4 answered) | |
-| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 has a default) | |
+| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ6, OQ12; OQ3 and OQ4 answered) | |
+| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 answered: normal rules apply) | |
 
 ## Phase 2 — log (2026-10-18)
 
@@ -124,7 +124,7 @@ Password for all of them: `Scholarship@2026`.
 - **Step-5 data stays in memory** until submit and is not saved with the Draft.
 - **Extra frontend changes.** A `/scholarship` website route rule was added, so a direct load or refresh works. Home sends scholarship Drafts to `/scholarship`. The wizard's 5 duplicated `docMeta` blocks were folded into `toDocMeta()`, which carries `is_scholarship`; it has to, because `frappe.client.save` rebuilds the doc from the payload.
 - **Step-5 uploads accept PDF/JPG/PNG only**, because Frappe rejects other types from website users anyway.
-- **OQ1b default.** `request_summary` is shown as optional.
+- **OQ1b.** `request_summary` was first shown as optional; on 2026-10-19 the mentor made it required (see below).
 - **Figma.** Node `723:1544` was not opened (no file key in the spec). The card follows the existing `AttachmentsCard` style.
 
 ### Phase 2
@@ -135,9 +135,15 @@ Password for all of them: `Scholarship@2026`.
 - **Obligation sub-field labels** (amount, periodicity, …) keep the normal wording; only the 5 checkbox labels change, as plan §3 lists.
 - The obligation sub-field list is still duplicated between `FinancialObligationsCard` and the validation. The plan only asked to deduplicate the income list.
 
+## Mentor answers — 2026-10-19
+- **OQ1b:** the request summary is required in step 5. Done in the server validation (`get_missing_scholarship_fields`, empty or blank fails), the wizard validation and the card (asterisk; "(optional)" dropped from the placeholder). Tests: 2 new backend sub-cases (missing and blank summary) → `bench run-tests --module afif.api.test_scholarship` **18 tests, OK**; 2 new Vitest cases for step 5 → `vitest run` **12 tests, OK**. `yarn build` redone on the dev site; the Python part goes live with `bench restart`.
+- **OQ3:** same as today: the office uploads the declaration, then the Supervisor approves. No workflow change (Phase 3 adds a test that approval without it is blocked).
+- **OQ4:** block direct Approve/Reject on a scholarship registration (Phase 3).
+- **OQ5:** the normal request rules apply to scholarship requests (Phase 4). The new-applicant submission keeps its single exception to "accepted beneficiaries only".
+
 ## Open issues / blockers
 - **Go-live for Phases 1–2.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check) and income mapping. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already.
-- Still open with the mentor: OQ3 (one clarification), OQ5 and OQ6. OQ4 answered: block (see [plan.md §7](plan.md#7-open-questions)). OQ1b uses its default (optional).
+- Still open with the mentor: OQ6, plus OQ10–OQ12 from Phase 2. OQ1b, OQ3, OQ4 and OQ5 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **New questions from Phase 2** (to add to plan §7 once the mentor answers):
   - **OQ10 — minimum age.** Step 1 still requires the applicant to be at least 21. If the applicant is the student, most students are blocked. Is the applicant the student or the guardian? Should the age rule change for scholarship?
   - **OQ11 — passport attachment.** The passport number is hidden in scholarship mode, but the registration attachments sub-step (same as normal, D3) still requires a passport copy, and step 5 asks for the guardian's and the student's passports again. Should the registration `passport` attachment be dropped for scholarship?

@@ -9,7 +9,7 @@ Beneficiaries who are already accepted can apply for the scholarship as a normal
    - when it is selected, `requiredDocs` adds the 6 `scholarship_*` docs on top of the existing `education_invoice` and `grade_transcript`, reusing the `scholarship.attachments.*` keys;
    - show the 2 declarations.
 
-   The server-side validation from Phase 1 enforces all of it. Apply the cooldown rules in `before_insert_request` according to OQ5 (default: they apply). These requests have `is_scholarship=0`, because the registration is already accepted, so the cascade doesn't run.
+   The server-side validation from Phase 1 enforces all of it. The cooldown rules in `before_insert_request` apply unchanged (OQ5). These requests have `is_scholarship=0`, because the registration is already accepted, so the cascade doesn't run.
 2. **`pages/Scholarship.vue` blocked state.**
    - A user with a normal registration sees a message. If they are Accepted, the message links to `/request` with Education Assistance → Scholarship preselected.
    - A user with a submitted scholarship registration sees its status.
@@ -18,7 +18,7 @@ Beneficiaries who are already accepted can apply for the scholarship as a normal
 
 ## Tests
 - An Education / Scholarship request from an accepted user with a missing attachment or declaration → error.
-- An accepted user can create an Education / Scholarship request, subject to the cooldown rules in OQ5, and no cascade runs.
+- An accepted user can create an Education / Scholarship request, subject to the normal cooldown rules (OQ5), and no cascade runs. A pending, recently rejected (3 months) or recently approved (6 months) request blocks it, and an approved scholarship request blocks the next request for 6 months.
 
 ## Done when
 - The tests pass.

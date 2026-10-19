@@ -27,7 +27,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | D1 | Add a read-only Check `is_scholarship` to `Beneficiaries Registration` and to `Beneficiary Request`. It shows in the list view and as a standard filter. It can only be set on insert; `validate` throws if it changes afterwards. On the request it means "created through the scholarship flow", and that is what triggers the approval cascade (D11). |
 | D2 | A scholarship is a **subcategory of Education Assistance**: `request_category = "Education Assistance"` and `educational_assistance = "Scholarship"`. There is no new category and no new DocType. The `Categories` tree already has `Education Assistance`, so it is not touched. |
 | D3 | Wizard steps: 1 البيانات الشخصية · 2 تفاصيل الدخل · 3 الالتزامات المالية · 4 بيانات إضافية, followed by the **same registration attachments sub-step** as the normal flow · 5 بيانات الطلب. |
-| D4 | Step 5 belongs entirely to the **request**: the requested amount, 8 required attachments and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the 8 attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
+| D4 | Step 5 belongs entirely to the **request**: the requested amount, the request summary (OQ1b), 8 required attachments and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the 8 attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
 | D5 | Drafts are saved step by step, exactly as today. A single whitelisted endpoint, `submit_scholarship_application`, validates **all** registration attachments and consents **and** all step-5 data. In one transaction it submits the registration and creates the request. If anything is missing, nothing is submitted. |
 | D6 | The existing DB Workflows stay as they are. The cascade logic lives in server hooks. Moving to status-only workflows is out of scope. |
 | D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Users who are already Accepted pick Education Assistance → Scholarship on the normal request page (Phase 4). |
@@ -69,7 +69,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | `is_data_accuracy_declared` | new Check | اقر أنا مقدم الطلب بأن كافة الوثائق والبيانات المقدمة في هذا الطلب صحيحة. |
 | `is_eligibility_check_accepted` | new Check | يحق لمؤسسة عفيف التأكد من أهلية مقدم الطلب بحسب اجراءاتها المتبعة. |
 
-- **Visibility.** The new Attach fields use `depends_on: eval:doc.request_category=="Education Assistance" && doc.educational_assistance=="Scholarship"`. For that subcategory, all 8 attachments, the amount and both declarations are required, and the server enforces it.
+- **Visibility.** The new Attach fields use `depends_on: eval:doc.request_category=="Education Assistance" && doc.educational_assistance=="Scholarship"`. For that subcategory, all 8 attachments, the amount, the summary and both declarations are required, and the server enforces it.
 - **Third Figma declaration dropped.** It says "this is only a registration, not an aid request", which is a registration consent and is already covered by the registration attachments sub-step.
 
 ### Where the Scholarship subcategory must be added
@@ -162,14 +162,14 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ8 | The last step is for the request: its attachments and declarations are stored on the Beneficiary Request (D4). |
 | OQ9 | Scholarship is a subcategory under Education Assistance (D2). |
 | OQ4 | Yes. A scholarship registration changes only through its request: a direct Approve/Reject on it is blocked (Phase 3). |
+| OQ1b | Yes. Step 5 includes `request_summary`, and it is required (same as the normal request page). |
+| OQ3 | Same as today. After submitting, the applicant visits the office to sign the declaration; the office uploads it, then the Supervisor approves (the Approve transition keeps its `doc.declaration` condition, and that approval sends the declaration to Sanadi). The Specialist then finishes the normal flow. No workflow change. |
+| OQ5 | Keep the normal rules for scholarship requests: one open request at a time, the 3-month cooldown after a rejection and the 6-month cooldown after an approval, and scholarship requests count as the latest request for later ones. The only exception is the new-applicant scholarship submission, which skips "only an accepted beneficiary can create a request" because the registration is submitted with it (already built in Phase 1). |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
-| OQ1b | Does step 5 also need `request_summary`? Sanadi receives it as `requestSummary`. The default is to show it as optional. | Phase 1 |
-| OQ3 | Partly answered: after the Supervisor approves, the request follows the normal flow, with the office (beneficiary visit, declaration upload, Specialist approval) and not us. Still to confirm: today the Supervisor's Approve **requires** `declaration` (transition condition `doc.declaration`), and that same transition sends the declaration to Sanadi (`new_subvention_request`). Does the scholarship keep that order (visit and declaration before Supervisor approval), or must the Supervisor approve before the declaration exists? The second needs a workflow and Sanadi change. | Phase 3 |
-| OQ5 | Do the pending, 3-month and 6-month cooldowns in `before_insert_request` apply to Scholarship requests from users who are already accepted? The default is that they apply, like every other subcategory. | Phase 4 |
 | OQ6 | What is the Sanadi `aidLookupId` for the Scholarship subcategory under Education (`10010`)? Is it a dedicated Sanadi code, or should it map to an existing one such as `1001010` Tuition Fees or `1001050` Other? It is used for both the request (step 2) and the Aid (step 6). | Phase 3 |
 
 ## 8. Phases
