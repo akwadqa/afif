@@ -5,7 +5,58 @@
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
 | [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
-| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | in progress | |
+| [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
+
+## Phase 4 — log (2026-10-19)
+
+### What was built
+- **Endpoint** `afif.api.scholarship.create_scholarship_request(request)` for accepted beneficiaries. It builds the Education / Scholarship request (`is_scholarship=0`), checks completeness, checks that every file is the caller's own and unattached, inserts with **normal permissions** (so `before_insert_request` applies the accepted-only, pending-request and cooldown rules, OQ5), and attaches the files, in one transaction. The request builder is shared with `submit_scholarship_application`.
+- **Request page** (`BeneficiaryRequest.vue`).
+  - `Scholarship` is offered under Education Assistance. It requires the 8 scholarship documents (step-5 labels) and the 2 declarations; the read-only view shows them.
+  - For Scholarship only, the files are uploaded first (private, unattached) and the new endpoint is called. Other subcategories keep insert-then-upload.
+  - The required-docs rule moved to `requestAttachments.js`.
+  - `initialCategory` / `initialSubcategory` props preselect a new request.
+- **`/request?category=…&subcategory=…`** opens the form preselected when the user may create a request; otherwise the list shows with the existing disabled reason.
+- **Scholarship page blocked view.** A normal Accepted beneficiary gets "apply from My Requests" (link to `/request` with Scholarship preselected). A submitted scholarship applicant sees the registration status, and the same link once Accepted. Other normal registrations keep the existing message.
+- **Desk.** 18 fields the scholarship wizard hides (personal, family, children, Afif assistance and the 4 replaced income checks) get `!doc.is_scholarship` in `depends_on`. `is_scholarship` was already in the list view and standard filters of both DocTypes (Phase 1).
+- **Home.** A scholarship Draft already opens the scholarship wizard (Phase 1); checked again in the browser.
+
+### Tests
+- **New:** `bench --site afif.akwad.qa run-tests --module afif.api.test_scholarship_accepted`: **12 tests, OK.**
+  - Accepted user creates the request: `Pending Supervisor Approval`, `is_scholarship=0`, all 8 files attached by field, registration unchanged.
+  - Missing attachment (new and reused field), amount, summary or declaration → `IncompleteScholarshipRequestError`, nothing created.
+  - Someone else's file, or a file already attached elsewhere → `PermissionError`, nothing created. A non-accepted user → `PermissionError`.
+  - Cooldowns (OQ5): pending request, rejection < 3 months, approval < 6 months each block; past both cooldowns it is allowed; an approved scholarship request blocks the next request for 6 months; a pending scholarship request blocks the next one.
+  - Supervisor approval of an accepted user's scholarship request: no cascade, the registration stays Accepted, no Sanadi beneficiary call, the subvention request sends the existing `ben_id` with `1001050`.
+- **Regression:** `--module afif.api.test_scholarship` **19 OK**; `--module afif.api.test_scholarship_decision` **13 OK**.
+- **Mutation check.** Dropping the file-ownership check and inserting with `ignore_permissions` fails 3 tests (both file tests and the non-accepted user).
+- **Frontend:** `yarn test:run` **22 tests, OK** (9 new in `requestAttachments.test.js`: 8 scholarship docs and their labels, the normal Education docs unchanged, no scholarship rule outside Education, the read-only field list, AR/EN keys). Biome lint is clean on the new files. `yarn build` done; `migrate` done for the desk `depends_on`.
+
+### Browser run (agent-browser, temporary `bench serve` on :8010, stopped afterwards)
+The headless Chrome now starts: `libasound.so.2` was extracted from the Ubuntu package into the session scratchpad and passed with `LD_LIBRARY_PATH` (nothing installed system-wide).
+
+| Check | Result |
+|---|---|
+| `/scholarship` as `scholarship.demo.phase4.accepted@example.com` (normal, Accepted) | "apply from My Requests" button → `/request?category=Education+Assistance&subcategory=Scholarship` |
+| The form | Education Assistance / منحة دراسية preselected, 8 documents, 2 declarations |
+| Empty save | popup lists 12 items; with the files in, only the 2 declarations |
+| Save | success view; `REQ3888` is Education / Scholarship, `is_scholarship=0`, Pending Supervisor Approval, 18000, both declarations set, 8 private files owned by the user and attached by field; `SA-6624-2026` still Accepted |
+| Back to the list | `REQ3888` listed, "create new" disabled (pending); its read-only view shows the 8 files and both declarations ticked and disabled |
+| Same link as `scholarship.demo.phase4.pending@example.com` (pending `REQ3887`) | list shown, not the form; "create new" disabled |
+| `/scholarship` as `phase3.approve` / `phase3.reject` | "تم تقديم طلب المنحة" with status تسجيل جديد / غير مقبول |
+| `/scholarship` as `draft2` | the 5-step wizard |
+| `/beneficiary-profile` as `draft2`, click the Draft | redirected to `/scholarship` |
+| Desk as `scholarship.demo.supervisor@example.com` | `SA-6621-2026` (scholarship): the 9 checked hidden fields are hidden; guardian mobile, father/mother income and passport number shown. `SA-6624-2026` (normal): the opposite |
+
+### Demo data added on the dev site (on purpose)
+Password: `Scholarship@2026`.
+
+| User | State |
+|---|---|
+| `scholarship.demo.phase4.accepted@example.com` | normal registration `SA-6624-2026`, Accepted, `ben_id = demo-p4-accepted`; applied through the browser: `REQ3888` (Education / Scholarship, pending) |
+| `scholarship.demo.phase4.pending@example.com` | normal registration `SA-6625-2026`, Accepted, `ben_id = demo-p4-pending`, with a pending Tuition Fees request `REQ3887`, so a new request is blocked |
+
+Their `ben_id` values are placeholders (not real Sanadi ids), and the registration attachments point to `/files/test-*.pdf`, as in the earlier demo data.
 
 ## Phase 3 — log (2026-10-19)
 
@@ -182,6 +233,12 @@ Password for all of them: `Scholarship@2026`.
 - **Obligation sub-field labels** (amount, periodicity, …) keep the normal wording; only the 5 checkbox labels change, as plan §3 lists.
 - The obligation sub-field list is still duplicated between `FinancialObligationsCard` and the validation. The plan only asked to deduplicate the income list.
 
+### Phase 4
+- **New endpoint instead of `frappe.client.insert`.** The plan expected the Phase 1 validation alone to be enough, but the normal page's insert-then-upload can't pass it. Uploading first and inserting through `frappe.client.insert` would have worked too, but the endpoint keeps the Phase 1 file-ownership check and creates the request and its attachments in one transaction. A direct `frappe.client.insert` with file URLs is still possible, as for every other category (unchanged).
+- **The normal path uploads only the required documents.** It used to upload every file still held in memory, so a file picked for a subcategory the user then left could be attached to the request. Only the visible documents are uploaded now.
+- **Desk hiding covers 18 fields**, not only the 7 top-level ones: the children and Afif-assistance sub-fields also get the guard, because the Phase 1 demo records still have the parent answers filled in. Mandatory rules were not changed: they key on `current_step` 1/2, and a submitted registration is at step 5.
+- The blocked view for a not-yet-accepted normal registration keeps the existing message.
+
 ### Phase 3
 - **Cascade location.** The cascade lives in the request controller (`validate` + `on_update`), not in `hooks_call.py`. The controller's methods run before the doc_events, which gives the order D11 needs without reordering `hooks.py`.
 - **Order of Sanadi calls.** `validate_subvention_request` (a read-only "active requests" search) still runs in `validate`, so it happens *before* the registration is accepted. The plan listed it after. It doesn't need `ben_id`, and running it first means a beneficiary with an active Sanadi request is rejected before a Sanadi beneficiary is created.
@@ -204,17 +261,16 @@ Password for all of them: `Scholarship@2026`.
 - **OQ12:** today's rule stays. All 618 accepted registrations have a passport number, and none was accepted without one. So the scholarship wizard shows and requires the passport number and the secondary-ID group again (removed from the scholarship `hiddenFields`), and `submit_scholarship_application` also requires `passport_number`. Tests: Vitest **13 OK** (new: the passport number and secondary ID are required in scholarship mode; it fails if they are hidden again); backend **19 OK** (new: a missing passport number creates nothing). `yarn build` redone; the endpoint check goes live with `bench restart`.
 
 ## Open issues / blockers
-- **Go-live for Phases 1–3.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check), income mapping and none of the Phase 3 cascade. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already. Phase 3 has no migrate or build step.
+- **Go-live for Phases 1–4.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoints, income mapping and none of the Phase 3 cascade. A scholarship submit on the live site fails until it is restarted, and so does the Phase 4 request page for Scholarship (`create_scholarship_request` doesn't exist in the running code). The new fields, the desk `depends_on` and the frontend are live already.
 - **Supervisor approval on the dev site.** Only `Administrator` has Sanadi Integration Settings (pointing at staging, `stgapi.raca.gov.qa`). Any other Supervisor, including the demo one, gets "Sanadi Integration Settings not available for current user." when approving any request, normal or scholarship. Approving `REQ3884` as Administrator would create a real beneficiary and request in Sanadi staging, so it was **not done**. It needs a go-ahead, or Sanadi settings for the demo Supervisor.
 - **OQ13 — after a scholarship rejection (new, for the mentor).** The applicant can fix and resubmit through the normal wizard, and the registration is then reviewed as a normal one with no scholarship request. Is that intended, or should they be able to reapply through `/scholarship`?
 - **OQ6 is temporary.** Scholarship shares Sanadi code `1001050` with Other Educational Assistance, so Sanadi reports can't tell the two apart until a dedicated code exists.
 - Still open with the mentor: OQ10 (to check later) and OQ13. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
 - **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.
-- **Desk.** The fields hidden in the wizard are still visible in the desk form of a scholarship registration. That is Phase 4 (desk polish).
-- **Phase 4 input.**
-  - The scholarship validation needs the attachments at insert time. The normal `BeneficiaryRequest.vue` inserts first and uploads afterwards, so it must change before `Scholarship` is offered there.
-  - `Beneficiary New Registration` has no read permission on Beneficiary Request, so an applicant cannot list their scholarship request until they are accepted.
+- **Resolved in Phase 4:** the desk now hides the fields the wizard skips; the request page uploads before creating a Scholarship request.
+- **Applicants can't see their scholarship request before acceptance.** `Beneficiary New Registration` has no read permission on Beneficiary Request, so the scholarship page shows the registration status instead (Phase 4). Granting read access is a permission change for the mentor to decide.
+- **Browser runs on this server** need `libasound.so.2`, which is not installed. Phase 4 used a copy extracted into the session scratchpad; installing `libasound2` system-wide (sudo) would make it permanent.
 - **Review notes (low).**
   - Files uploaded in step 5 stay as unattached private Files if the applicant abandons the flow. A retry reuses them.
   - `ScholarshipRequestCard` and `AttachmentsCard` emit the whole model from props. Two updates in the same tick lose the first one. Normal clicks are not affected; it showed up only with scripted clicks.
