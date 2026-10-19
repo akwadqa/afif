@@ -17,6 +17,8 @@ SCHOLARSHIP_ATTACHMENT_FIELDS = (
     "scholarship_student_passport",
     "scholarship_family_ids",
     "scholarship_guardian_bank_statement",
+    "scholarship_mother_bank_statement",
+    "scholarship_student_bank_statement",
 )
 SCHOLARSHIP_DECLARATION_FIELDS = ("is_data_accuracy_declared", "is_eligibility_check_accepted")
 # The Supervisor's decision on a scholarship request, and the registration state it carries over to.
