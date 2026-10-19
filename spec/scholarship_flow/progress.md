@@ -4,7 +4,7 @@
 |---|---|---|
 | [1 — Tracer: end-to-end submit](phase-1-tracer.md) | done (live site still needs `bench restart`) | `41fc2c0`, `e77431a`, `5448fe2`, `d8c9642` |
 | [2 — Field variants](phase-2-field-variants.md) | done (live site still needs `bench restart`) | `90c863d`, `ae1203b`, `e2e4436`, `919ada1`, `67b95e6`, `0cfa57f` |
-| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ3, OQ6, OQ12; OQ4 has a default) | |
+| [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | todo (needs OQ3 clarification, OQ6, OQ12; OQ4 answered) | |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | todo (OQ5 has a default) | |
 
 ## Phase 2 — log (2026-10-18)
@@ -137,7 +137,7 @@ Password for all of them: `Scholarship@2026`.
 
 ## Open issues / blockers
 - **Go-live for Phases 1–2.** `migrate` and `yarn build` are done on `afif.akwad.qa`. `bench restart` needs sudo and is **not done**, so the live gunicorn still runs the old `before_insert_request`, controllers, endpoint (no guardian check) and income mapping. A scholarship submit on the live site fails until it is restarted. The new fields and the frontend are live already.
-- Still open with the mentor: OQ3, OQ4, OQ5 and OQ6 (see [plan.md §7](plan.md#7-open-questions)). OQ1b uses its default (optional).
+- Still open with the mentor: OQ3 (one clarification), OQ5 and OQ6. OQ4 answered: block (see [plan.md §7](plan.md#7-open-questions)). OQ1b uses its default (optional).
 - **New questions from Phase 2** (to add to plan §7 once the mentor answers):
   - **OQ10 — minimum age.** Step 1 still requires the applicant to be at least 21. If the applicant is the student, most students are blocked. Is the applicant the student or the guardian? Should the age rule change for scholarship?
   - **OQ11 — passport attachment.** The passport number is hidden in scholarship mode, but the registration attachments sub-step (same as normal, D3) still requires a passport copy, and step 5 asks for the guardian's and the student's passports again. Should the registration `passport` attachment be dropped for scholarship?

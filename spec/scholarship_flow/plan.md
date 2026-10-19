@@ -161,14 +161,14 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ7 | The father and mother incomes are new fields. |
 | OQ8 | The last step is for the request: its attachments and declarations are stored on the Beneficiary Request (D4). |
 | OQ9 | Scholarship is a subcategory under Education Assistance (D2). |
+| OQ4 | Yes. A scholarship registration changes only through its request: a direct Approve/Reject on it is blocked (Phase 3). |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
 | OQ1b | Does step 5 also need `request_summary`? Sanadi receives it as `requestSummary`. The default is to show it as optional. | Phase 1 |
-| OQ3 | After the Supervisor approves, the request goes to `Pending Specialist Approval`, its normal next state. The Approve transition requires the `declaration` attachment. Who uploads it for scholarship requests? Is it the Supervisor, as today? | Phase 3 |
-| OQ4 | Should a Supervisor be blocked from approving or rejecting a scholarship registration directly, so that it only changes through the request? The default is to block it. | Phase 3 |
+| OQ3 | Partly answered: after the Supervisor approves, the request follows the normal flow, with the office (beneficiary visit, declaration upload, Specialist approval) and not us. Still to confirm: today the Supervisor's Approve **requires** `declaration` (transition condition `doc.declaration`), and that same transition sends the declaration to Sanadi (`new_subvention_request`). Does the scholarship keep that order (visit and declaration before Supervisor approval), or must the Supervisor approve before the declaration exists? The second needs a workflow and Sanadi change. | Phase 3 |
 | OQ5 | Do the pending, 3-month and 6-month cooldowns in `before_insert_request` apply to Scholarship requests from users who are already accepted? The default is that they apply, like every other subcategory. | Phase 4 |
 | OQ6 | What is the Sanadi `aidLookupId` for the Scholarship subcategory under Education (`10010`)? Is it a dedicated Sanadi code, or should it map to an existing one such as `1001010` Tuition Fees or `1001050` Other? It is used for both the request (step 2) and the Aid (step 6). | Phase 3 |
 

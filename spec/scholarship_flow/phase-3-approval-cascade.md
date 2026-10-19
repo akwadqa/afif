@@ -1,7 +1,7 @@
 # Phase 3 — Approval and rejection cascade
 
 > The control point is confirmed: **the Supervisor approves the request, and the registration is approved in the same action** (plan D11).
-> Still open: OQ3 (who uploads the declaration), OQ4 (blocking direct registration approval; the default is to block) and OQ6 (the Sanadi lookup id).
+> OQ4 answered: block direct Approve/Reject on a scholarship registration. Still open: OQ3 (whether the declaration is still required before the Supervisor approves) and OQ6 (the Sanadi lookup id).
 
 ## Goal
 A single Supervisor action on a scholarship request approves or rejects **both** the request and its registration in one transaction.
