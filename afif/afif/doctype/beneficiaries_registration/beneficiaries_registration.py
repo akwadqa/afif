@@ -20,12 +20,17 @@ class ScholarshipDecisionError(frappe.ValidationError):
     pass
 
 
+class SingleMaritalStatusError(frappe.ValidationError):
+    pass
+
+
 class BeneficiariesRegistration(Document):
     def validate(self):
         self.validate_scholarship_flag_unchanged()
         self.validate_scholarship_leaves_draft_with_request()
         self.validate_scholarship_decided_through_request()
         self.validate_guardian_mobile_number()
+        self.validate_single_marital_status()
 
     def validate_scholarship_flag_unchanged(self):
         if not self.is_new() and self.has_value_changed("is_scholarship"):
@@ -74,3 +79,14 @@ class BeneficiariesRegistration(Document):
     def validate_guardian_mobile_number(self):
         if self.guardian_mobile_number and not re.fullmatch(r"\d{8}", self.guardian_mobile_number):
             frappe.throw(_("Guardian Mobile Number must be exactly 8 digits."))
+
+    def validate_single_marital_status(self):
+        # Single is offered to scholarship applicants only; a few older registrations already hold it
+        # and can still be saved, so only setting it is refused.
+        if self.is_scholarship or self.marital_status != "Single":
+            return
+        if self.is_new() or self.has_value_changed("marital_status"):
+            frappe.throw(
+                _("Marital status Single is only available for scholarship applications."),
+                SingleMaritalStatusError,
+            )

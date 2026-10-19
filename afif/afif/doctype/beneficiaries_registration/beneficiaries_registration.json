@@ -313,7 +313,7 @@
    "fieldname": "marital_status",
    "fieldtype": "Select",
    "label": "Marital Status",
-   "options": "\nMarried\nDivorced\nWidowed\nSeparated"
+   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
   },
   {
    "fieldname": "phone_number",
@@ -1557,7 +1557,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-10-19 12:00:00.000000",
+ "modified": "2026-10-19 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
