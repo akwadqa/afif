@@ -73,6 +73,15 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
             SCHOLARSHIP_ATTACHMENTS,
         )
 
+    def test_applicant_can_read_only_their_own_request(self):
+        submit_scholarship_application(self.registration, self.request_data)
+        request = frappe.response["data"]["request"]
+
+        self.assertTrue(frappe.has_permission("Beneficiary Request", "read", request))
+        frappe.set_user("Administrator")
+        frappe.set_user(make_beneficiary_user())
+        self.assertFalse(frappe.has_permission("Beneficiary Request", "read", request))
+
     def test_missing_registration_attachment_creates_nothing(self):
         for fieldname in ("qid", "scholarship_university_invoice", "scholarship_student_bank_statement"):
             with self.subTest(fieldname):
