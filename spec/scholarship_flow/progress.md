@@ -7,6 +7,7 @@
 | [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
+| [6 — Registration parity](phase-6-registration-parity.md) | in progress | |
 
 ## Phase 5 — log (2026-10-19)
 
