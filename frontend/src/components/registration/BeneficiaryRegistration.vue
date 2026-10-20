@@ -8,8 +8,10 @@
           <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t(isScholarshipFlow ? 'scholarship.subtitle' : 'registration.subtitle') }}</p>
         </div>
         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <slot name="actions" />
+          <!-- A submitted scholarship application is edited from the profile page, without its request step. -->
           <button
-            v-if="canEdit && !editing"
+            v-if="canEdit && !editing && !isScholarshipFlow"
             @click="editing = true"
             class="border-2 border-sky-500 bg-white text-sky-600 hover:bg-sky-50 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.99]"
           >
@@ -57,6 +59,7 @@
           <ScholarshipRequestCard
             v-model="formData.scholarshipRequest"
             :files="formData.attachments.files"
+            :status="scholarshipRequestStatus"
             :invalid-fields="invalidFields"
             :uploading="attachmentUploading"
             :upload-errors="attachmentUploadErrors"
@@ -95,7 +98,7 @@
 
         <button
           @click="readOnlyNext"
-          :disabled="logicalCurrentStep === 5"
+          :disabled="logicalCurrentStep === totalLogicalSteps"
           class="text-white font-medium text-xs md:text-sm py-2.5 px-4 md:px-8 rounded-xl shadow-md transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-40 flex items-center gap-2 shrink-0"
           style="background-color: #34B0EE;"
         >
@@ -150,6 +153,8 @@ const props = defineProps({
   registrationName: { type: String, default: null },
   readOnly: { type: Boolean, default: false },
   flow: { type: String, default: 'registration', validator: value => ['registration', 'scholarship'].includes(value) },
+  // Shown read only in the request step of a submitted scholarship application.
+  scholarshipRequestName: { type: String, default: null },
 })
 
 const emit = defineEmits(['submitted', 'back'])
@@ -171,6 +176,7 @@ const showValidationPopup = ref(false)
 const validationErrors = ref([])
 const invalidFields = ref([])
 const editing = ref(false)
+const scholarshipRequestStatus = ref('')
 
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
@@ -487,9 +493,27 @@ function populateFromDoc(doc) {
   snapshot.value = cloneFormData(formData.value)
 }
 
+const getScholarshipRequest = createResource({
+  url: 'frappe.client.get',
+  onSuccess(doc) {
+    scholarshipRequestStatus.value = doc.status
+    formData.value.scholarshipRequest = {
+      requested_amount: doc.requested_amount,
+      request_summary: doc.request_summary,
+      declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!doc[field]])),
+    }
+  },
+  onError(err) {
+    error.value = err.message || t('registration.submitError')
+  },
+})
+
 onMounted(() => {
   if (props.registrationName) {
     getDoc.submit({ doctype: 'Beneficiaries Registration', name: props.registrationName })
+  }
+  if (props.scholarshipRequestName) {
+    getScholarshipRequest.submit({ doctype: 'Beneficiary Request', name: props.scholarshipRequestName })
   }
   if (props.readOnly && !editing.value) {
     currentStep.value = 1
@@ -828,13 +852,16 @@ function prevStep() {
 function readOnlyNext() {
   if (currentStep.value === 4 && subStep4.value === 1) {
     subStep4.value = 2
-  } else if (currentStep.value < 4) {
+  } else if (currentStep.value < 4 || isScholarshipFlow.value) {
     currentStep.value++
   }
 }
 
 function readOnlyPrev() {
-  if (currentStep.value === 4 && subStep4.value === 2) {
+  if (currentStep.value === 5) {
+    currentStep.value = 4
+    subStep4.value = 2
+  } else if (currentStep.value === 4 && subStep4.value === 2) {
     subStep4.value = 1
   } else if (currentStep.value > 1) {
     currentStep.value--

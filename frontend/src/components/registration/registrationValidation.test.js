@@ -195,6 +195,8 @@ describe('scholarship translations', () => {
     ...SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => `scholarship.attachments.${id}`),
     'scholarship.acceptedSubtitle',
     'scholarship.success.acceptedMessage',
+    'scholarship.applyAgain',
+    'scholarship.request.status',
   ]
 
   it.each(['ar', 'en'])('has every label key in %s', language => {

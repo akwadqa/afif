@@ -7,7 +7,7 @@
     </svg>
   </div>
 
-  <!-- Blocked: the user has a registration that is not accepted yet (scholarship or not) -->
+  <!-- Blocked: the user registered through the normal flow, which has no scholarship (plan Phase 7) -->
   <div
     v-else-if="view === 'blocked'"
     class="min-h-screen flex items-center justify-center p-4"
@@ -20,18 +20,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
         </svg>
       </div>
-      <h2 class="text-lg font-bold text-gray-800">
-        {{ existingRegistration?.is_scholarship ? t('scholarship.blocked.submittedTitle') : t('scholarship.blocked.title') }}
-      </h2>
-      <p v-if="existingRegistration?.is_scholarship" class="text-sm text-gray-500">
-        {{ t('scholarship.blocked.statusLabel') }}
-        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700">
-          {{ t(`statuses.registration.${existingRegistration.status}`) }}
-        </span>
-      </p>
-      <p v-if="!existingRegistration?.is_scholarship" class="text-sm text-gray-500 leading-relaxed">
-        {{ t('scholarship.blocked.message') }}
-      </p>
+      <h2 class="text-lg font-bold text-gray-800">{{ t('scholarship.blocked.title') }}</h2>
+      <p class="text-sm text-gray-500 leading-relaxed">{{ t('scholarship.blocked.message') }}</p>
       <button
         @click="goHome"
         class="px-6 py-3 bg-[#34B0EE] text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
@@ -48,7 +38,27 @@
     @submitted="view = 'success'"
   />
 
-  <!-- Accepted beneficiaries only fill in the request step (plan Phase 6) -->
+  <!-- A submitted application: the registration and the latest scholarship request, read only -->
+  <BeneficiaryRegistration
+    v-else-if="view === 'application'"
+    flow="scholarship"
+    read-only
+    :registration-name="registration.name"
+    :scholarship-request-name="scholarshipRequestName"
+    @back="goHome"
+  >
+    <template #actions>
+      <button
+        v-if="canApplyAgain"
+        @click="view = 'apply'"
+        class="bg-[#34B0EE] text-white hover:opacity-90 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap active:scale-[0.99]"
+      >
+        {{ t('scholarship.applyAgain') }}
+      </button>
+    </template>
+  </BeneficiaryRegistration>
+
+  <!-- A new scholarship request, once the request rules allow it -->
   <ScholarshipApplyForm v-else-if="view === 'apply'" @submitted="view = 'appliedSuccess'" />
 
   <div
@@ -67,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
@@ -75,14 +85,21 @@ import { useLanguage } from '@/composables/useLanguage'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 import ScholarshipApplyForm from '@/components/registration/ScholarshipApplyForm.vue'
+import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
 const router = useRouter()
 
 const view = ref('loading')
 const registrationName = ref(null)
-// The registration that keeps this user out of the wizard, shown in the blocked view.
-const existingRegistration = ref(null)
+// The user's submitted scholarship registration, and all their requests (newest first).
+const registration = ref(null)
+const requests = ref([])
+const scholarshipRequestName = computed(() => requests.value.find(row => row.is_scholarship)?.name || null)
+// Same rules as the request page; the server enforces them again.
+const canApplyAgain = computed(
+  () => !getRequestBlockReason(requests.value, { isAccepted: registration.value?.status === 'Accepted' }),
+)
 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',
@@ -95,10 +112,10 @@ const myRegistrations = createResource({
     if (draft) {
       registrationName.value = draft.name
       view.value = 'wizard'
-    } else if (rows[0].status === 'Accepted') {
-      view.value = 'apply'
+    } else if (rows[0].is_scholarship) {
+      registration.value = rows[0]
+      fetchRequests()
     } else {
-      existingRegistration.value = rows[0]
       view.value = 'blocked'
     }
   },
@@ -106,6 +123,27 @@ const myRegistrations = createResource({
     view.value = 'blocked'
   },
 })
+
+const myRequests = createResource({
+  url: 'frappe.client.get_list',
+  onSuccess(rows) {
+    requests.value = rows
+    view.value = 'application'
+  },
+  onError() {
+    view.value = 'application'
+  },
+})
+
+function fetchRequests() {
+  myRequests.submit({
+    doctype: 'Beneficiary Request',
+    filters: { beneficiaries: registration.value.name },
+    fields: ['name', 'is_scholarship', 'status', 'rejected_date', 'approved_for_aid_date'],
+    order_by: 'creation desc',
+    limit_page_length: 50,
+  })
+}
 
 onMounted(() => {
   myRegistrations.submit({

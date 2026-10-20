@@ -612,6 +612,7 @@ export default {
       title: 'منحة الشيخ خالد بن ناصر',
       subtitle: 'أكمل بيانات التسجيل وبيانات الطلب لتقديم طلب المنحة',
       acceptedSubtitle: 'ملف المستفيد الخاص بك مقبول، أكمل بيانات الطلب والمرفقات لتقديم طلب المنحة',
+      applyAgain: 'تقديم طلب منحة جديد',
       steps: {
         request: 'بيانات الطلب',
       },
@@ -625,6 +626,7 @@ export default {
         summary: 'ملخص الطلب',
         summaryPlaceholder: 'اكتب ملخصاً مختصراً لطلبك',
         attachmentsTitle: 'المرفقات المطلوبة',
+        status: 'حالة الطلب',
       },
       attachments: {
         scholarship_university_invoice: 'فاتورة الجامعة',
@@ -650,10 +652,8 @@ export default {
       },
       blocked: {
         title: 'لا يمكن التقديم على المنحة من هنا',
-        message: 'لديك ملف مستفيد لم يُقبل بعد. يمكنك التقديم على المنحة من هذه الصفحة بعد قبول ملفك.',
+        message: 'لديك ملف مستفيد مسجل مسبقاً، لذلك لا يمكنك بدء طلب منحة جديد من هذه الصفحة.',
         button: 'العودة إلى ملف المستفيد',
-        submittedTitle: 'تم تقديم طلب المنحة',
-        statusLabel: 'حالة ملف المستفيد:',
       },
     },
     beneficiaryList: {
@@ -1592,6 +1592,7 @@ export default {
       title: 'Sheikh Khalid bin Nasser Scholarship',
       subtitle: 'Complete your registration and request data to apply for the scholarship',
       acceptedSubtitle: 'Your beneficiary profile is accepted. Complete the request data and attachments to apply for the scholarship',
+      applyAgain: 'Apply for a new scholarship',
       steps: {
         request: 'Request Data',
       },
@@ -1605,6 +1606,7 @@ export default {
         summary: 'Request Summary',
         summaryPlaceholder: 'Write a short summary of your request',
         attachmentsTitle: 'Required Attachments',
+        status: 'Request status',
       },
       attachments: {
         scholarship_university_invoice: 'University invoice',
@@ -1630,10 +1632,8 @@ export default {
       },
       blocked: {
         title: 'You cannot apply for the scholarship here',
-        message: 'Your beneficiary profile is not accepted yet. You can apply for the scholarship from this page once it is accepted.',
+        message: 'You already have a beneficiary profile, so you cannot start a new scholarship application from this page.',
         button: 'Back to beneficiary profile',
-        submittedTitle: 'Your scholarship application was submitted',
-        statusLabel: 'Beneficiary profile status:',
       },
     },
     beneficiaryList: {
