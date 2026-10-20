@@ -44,7 +44,6 @@
     flow="scholarship"
     read-only
     :registration-name="registration.name"
-    :scholarship-request-name="scholarshipRequestName"
     @back="goHome"
   >
     <template #actions>
@@ -95,7 +94,6 @@ const registrationName = ref(null)
 // The user's submitted scholarship registration, and all their requests (newest first).
 const registration = ref(null)
 const requests = ref([])
-const scholarshipRequestName = computed(() => requests.value.find(row => row.is_scholarship)?.name || null)
 // Same rules as the request page; the server enforces them again.
 const canApplyAgain = computed(
   () => !getRequestBlockReason(requests.value, { isAccepted: registration.value?.status === 'Accepted' }),
@@ -139,7 +137,7 @@ function fetchRequests() {
   myRequests.submit({
     doctype: 'Beneficiary Request',
     filters: { beneficiaries: registration.value.name },
-    fields: ['name', 'is_scholarship', 'status', 'rejected_date', 'approved_for_aid_date'],
+    fields: ['name', 'status', 'rejected_date', 'approved_for_aid_date'],
     order_by: 'creation desc',
     limit_page_length: 50,
   })

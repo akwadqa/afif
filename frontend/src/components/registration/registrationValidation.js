@@ -273,12 +273,15 @@ function validateAttachmentsStep(check, formData, t) {
 }
 
 // Step 5 shows the request data and the scholarship documents, which are saved on the registration.
+// Once the request is submitted, only the documents can change, so only they are checked.
 function validateScholarshipRequestStep(check, { scholarshipRequest: sr, attachments }, t) {
-  if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
-  if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
     if (!attachments.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
   }
+  if (sr.isSubmitted) return
+
+  if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
+  if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
     if (!sr.declarations[field]) check.add(`claim_${field}`, t(`scholarship.declarations.${field}`))
   }

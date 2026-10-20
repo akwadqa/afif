@@ -20,6 +20,7 @@
             type="text"
             inputmode="numeric"
             :value="modelValue.requested_amount"
+            :readonly="requestReadOnly"
             @input="onAmountInput"
             :placeholder="t('scholarship.request.amountPlaceholder')"
             class="custom-input font-sans"
@@ -36,6 +37,7 @@
             rows="4"
             maxlength="1000"
             :value="modelValue.request_summary"
+            :readonly="requestReadOnly"
             @input="update({ request_summary: $event.target.value })"
             :placeholder="t('scholarship.request.summaryPlaceholder')"
             class="custom-textarea"
@@ -147,6 +149,7 @@
         <input
           type="checkbox"
           :checked="modelValue.declarations[field]"
+          :disabled="requestReadOnly"
           @change="update({ declarations: { ...modelValue.declarations, [field]: $event.target.checked } })"
           class="custom-checkbox mt-0.5 shrink-0"
         />
@@ -176,6 +179,8 @@ const props = defineProps({
   uploadErrors: { type: Object, default: () => ({}) },
   // The request's status, when a submitted application is shown read only.
   status: { type: String, default: '' },
+  // The request is already submitted: its amount, summary and declarations can no longer change.
+  requestReadOnly: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue', 'select-file', 'remove-file'])
 

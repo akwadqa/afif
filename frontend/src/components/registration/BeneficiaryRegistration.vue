@@ -55,11 +55,12 @@
           />
         </div>
 
-        <div v-else-if="currentStep === 5 && isScholarshipFlow">
+        <div v-else-if="currentStep === 5 && hasRequestStep">
           <ScholarshipRequestCard
             v-model="formData.scholarshipRequest"
             :files="formData.attachments.files"
             :status="scholarshipRequestStatus"
+            :request-read-only="isSubmittedApplication"
             :invalid-fields="invalidFields"
             :uploading="attachmentUploading"
             :upload-errors="attachmentUploadErrors"
@@ -153,8 +154,6 @@ const props = defineProps({
   registrationName: { type: String, default: null },
   readOnly: { type: Boolean, default: false },
   flow: { type: String, default: 'registration', validator: value => ['registration', 'scholarship'].includes(value) },
-  // Shown read only in the request step of a submitted scholarship application.
-  scholarshipRequestName: { type: String, default: null },
 })
 
 const emit = defineEmits(['submitted', 'back'])
@@ -181,13 +180,18 @@ const scholarshipRequestStatus = ref('')
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
 const isScholarshipFlow = computed(() => props.flow === 'scholarship')
+// A scholarship registration has the request step wherever it is opened, the profile page included;
+// a normal registration never has it.
+const hasRequestStep = computed(() => isScholarshipFlow.value || Boolean(docMeta.value.is_scholarship))
+// Its request is already submitted: only the documents, which are registration fields, can change.
+const isSubmittedApplication = computed(() => Boolean(docMeta.value.is_scholarship) && docMeta.value.status !== 'Draft')
 // A scholarship registration keeps its fields when it is edited from the normal profile page.
 const fieldsFlow = computed(() => (docMeta.value.is_scholarship ? 'scholarship' : props.flow))
 const variant = computed(() => getRegistrationVariant(fieldsFlow.value))
 
 // Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
 // 6 = scholarship request data (scholarship flow only).
-const totalLogicalSteps = computed(() => (isScholarshipFlow.value ? 6 : 5))
+const totalLogicalSteps = computed(() => (hasRequestStep.value ? 6 : 5))
 const logicalCurrentStep = computed(() => {
   if (currentStep.value === 4 && subStep4.value === 2) return 5
   if (currentStep.value === 5) return 6
@@ -224,7 +228,7 @@ const stepsList = computed(() => [
   { number: 2, label: t('registration.steps.incomeDetails') },
   { number: 3, label: t('registration.steps.financialObligations') },
   { number: 4, label: t('registration.steps.additionalData') },
-  ...(isScholarshipFlow.value ? [{ number: 5, label: t('scholarship.steps.request') }] : []),
+  ...(hasRequestStep.value ? [{ number: 5, label: t('scholarship.steps.request') }] : []),
 ])
 
 const formData = ref({
@@ -491,16 +495,28 @@ function populateFromDoc(doc) {
   formData.value.attachments.files = existingFiles
 
   snapshot.value = cloneFormData(formData.value)
+
+  if (isSubmittedApplication.value) {
+    latestScholarshipRequest.submit({
+      doctype: 'Beneficiary Request',
+      filters: { beneficiaries: doc.name, is_scholarship: 1 },
+      fields: ['status', 'requested_amount', 'request_summary', ...SCHOLARSHIP_DECLARATION_FIELDS],
+      order_by: 'creation desc',
+      limit_page_length: 1,
+    })
+  }
 }
 
-const getScholarshipRequest = createResource({
-  url: 'frappe.client.get',
-  onSuccess(doc) {
-    scholarshipRequestStatus.value = doc.status
+const latestScholarshipRequest = createResource({
+  url: 'frappe.client.get_list',
+  onSuccess([request]) {
+    if (!request) return
+    scholarshipRequestStatus.value = request.status
     formData.value.scholarshipRequest = {
-      requested_amount: doc.requested_amount,
-      request_summary: doc.request_summary,
-      declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!doc[field]])),
+      isSubmitted: true,
+      requested_amount: request.requested_amount,
+      request_summary: request.request_summary,
+      declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!request[field]])),
     }
   },
   onError(err) {
@@ -511,9 +527,6 @@ const getScholarshipRequest = createResource({
 onMounted(() => {
   if (props.registrationName) {
     getDoc.submit({ doctype: 'Beneficiaries Registration', name: props.registrationName })
-  }
-  if (props.scholarshipRequestName) {
-    getScholarshipRequest.submit({ doctype: 'Beneficiary Request', name: props.scholarshipRequestName })
   }
   if (props.readOnly && !editing.value) {
     currentStep.value = 1
@@ -765,7 +778,7 @@ async function handleNext() {
   submitting.value = true
 
   if (isScholarshipRequestStep) {
-    await submitScholarshipApplication()
+    await (isSubmittedApplication.value ? finishScholarshipRegistrationEdit() : submitScholarshipApplication())
     submitting.value = false
     return
   }
@@ -792,12 +805,16 @@ async function handleNext() {
   if (isAttachmentsStep) {
     try {
       const failedUploads = await uploadAllFiles()
-      const finalData = await saveStep(logicalCurrentStep.value, { applyWorkflow: failedUploads.length === 0 })
+      // With a request step, the workflow action (e.g. Review) waits for that last step. The
+      // updated_status hook still moves a complete registration on save, as in the normal flow.
+      const finalData = await saveStep(logicalCurrentStep.value, {
+        applyWorkflow: failedUploads.length === 0 && !hasRequestStep.value,
+      })
       docMeta.value = toDocMeta(finalData)
       syncSnapshot()
       if (failedUploads.length > 0) {
         error.value = `${t('registration.submitError')}: ${failedUploads.join(', ')}`
-      } else if (isScholarshipFlow.value) {
+      } else if (hasRequestStep.value) {
         currentStep.value = 5
         maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
       } else {
@@ -817,6 +834,19 @@ async function handleNext() {
     currentStep.value++
   }
   maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
+}
+
+// Saves the edited registration with its documents, and applies the same workflow action the
+// attachments step applies for a normal registration (e.g. Review for a Not Accepted one).
+async function finishScholarshipRegistrationEdit() {
+  try {
+    const data = await saveStep(5)
+    docMeta.value = toDocMeta(data)
+    updateSnapshotForStep(5)
+    emit('submitted', data.name)
+  } catch (e) {
+    error.value ||= e.message || t('registration.submitError')
+  }
 }
 
 // The scholarship documents were saved on the Draft as they were picked, so only the request data is sent.
@@ -852,7 +882,7 @@ function prevStep() {
 function readOnlyNext() {
   if (currentStep.value === 4 && subStep4.value === 1) {
     subStep4.value = 2
-  } else if (currentStep.value < 4 || isScholarshipFlow.value) {
+  } else if (currentStep.value < 4 || hasRequestStep.value) {
     currentStep.value++
   }
 }

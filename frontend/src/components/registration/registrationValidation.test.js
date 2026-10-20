@@ -178,6 +178,14 @@ describe('step 5 (scholarship request data)', () => {
     expect(validate(formData, 5, 'scholarship').errors).toEqual(['فاتورة الجامعة', 'كشف حساب الطالب'])
   })
 
+  it('checks only the documents once the request is submitted', () => {
+    const formData = completeRequest()
+    formData.scholarshipRequest = { isSubmitted: true, requested_amount: '', request_summary: '', declarations: {} }
+    formData.attachments.files.scholarship_family_ids = null
+
+    expect(validate(formData, 5, 'registration').fields).toEqual(['attach_scholarship_family_ids'])
+  })
+
   it('requires the request summary', () => {
     for (const summary of ['', '   ']) {
       const formData = completeRequest()
