@@ -9,7 +9,51 @@
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
 | [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
-| [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | in progress | |
+| [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | done (live site still needs `bench restart`) | `09557c1`, `2d41dc7`, `9b4a572` |
+
+## Phase 8 — log (2026-10-20)
+
+Mentor constraint: the normal flow must not change. Decisions P8-1 to P8-5 are in the [phase plan](phase-8-profile-edit-and-rejection.md).
+
+### What was built
+- **Rejection only rejects the request (P8-3, replaces D9).** `accept_scholarship_registration_with_request` runs on approval only. A rejected scholarship request leaves the registration as it is (New Registration), with no note, and the Supervisor then decides the registration through its own workflow. Approval still accepts the registration first (D11).
+- **Profile edit (P8-1, P8-2).**
+  - `BeneficiaryRegistration` has `hasRequestStep` (the scholarship wizard, or any scholarship registration) and `isSubmittedApplication`.
+  - A submitted scholarship registration loads its latest scholarship request itself (this replaces the Phase 7 prop) and shows it on step 5. The amount, summary and declarations are locked (`requestReadOnly`); the 10 documents can be replaced while editing.
+  - The attachments step saves and moves on to step 5. The workflow action (Review) is applied there.
+  - A submitted request's fields are not re-validated; the documents are.
+- **Normal flow:** every new condition is false for a registration with `is_scholarship = 0`, so its steps, saves, workflow actions and server rules are the same as before.
+
+### Tests
+- **Backend:** `test_scholarship` 20 OK, `test_scholarship_accepted` 14 OK, `test_scholarship_decision` **14 OK**, `test_beneficiaries_registration` 4 OK.
+  - New: the rejection leaves the registration in New Registration, and the Supervisor can then approve it directly; rejecting a normal request does not touch the registration (regression).
+  - The old cascade code fails the 2 changed tests.
+- **Frontend:** `vitest run` **40 OK**. New: a submitted request's step checks only the documents.
+
+### Browser run (agent-browser, temporary `bench serve` on :8010, stopped afterwards)
+| Check | Result |
+|---|---|
+| Profile, `scholarship.demo.phase8.rejected` (`SA-6631-2026` Not Accepted, `REQ3893` Rejected by Supervisor) | 5 steps with بيانات الطلب; Edit; steps 1–4 save with no popup; step 5 shows حالة الطلب: مرفوض, 19000 locked, declarations disabled |
+| Replace the family IDs on step 5, submit | new private file on the registration field; success view; `SA-6631-2026` Updated; `REQ3893` unchanged |
+| Profile, `scholarship.demo.phase8.normal` (`SA-6632-2026`, normal, Not Accepted) | 4 steps, as before; submit on the attachments step; success view; Updated |
+
+- **Status timing.** The scholarship registration became Updated when the attachments step saved, not on step 5. That is the existing `updated_status` hook (Not Accepted + complete + `current_step >= 5`), which does the same in the normal flow. It was left as is; the spec says so.
+- **Seed artefact.** The demo record was copied from `SA-6628-2026` and its fields still point at that record's files, while Frappe made its own copies at insert. Replacing a document therefore left the copied File in place. The cleanup only deletes a File attached to the same registration with the old URL, and correctly did not touch `SA-6628-2026`'s file. Real uploads always match.
+
+### The yearly "Update Required" (mentor question, answered here; OQ16 stays open)
+`beneficiary_update_required_status` runs daily on **Accepted** registrations only. It looks at the latest request created since the last "Update Required":
+- **With such a request** (and no pending update): "Update Required" only when that request was rejected 3+ months ago or approved for aid 6+ months ago, and the registration was accepted more than 10 days ago. An open request, or an approved one not yet for aid, never triggers it.
+- **Without one:** "Update Required" once the registration was accepted 10+ days ago.
+- **The desk button "Update Required"** does the same reset at any time, whatever the requests.
+- **When it applies:** the attachment fields are cleared (raw SQL), and the status becomes Update Required; the beneficiary re-uploads in the profile, and the next complete save moves it to Updated beneficiary.
+
+### Demo data added on the dev site (on purpose)
+Password: `Scholarship@2026`.
+
+| User | State |
+|---|---|
+| `scholarship.demo.phase8.rejected@example.com` | `SA-6631-2026` (scholarship), Updated after the browser edit; `REQ3893` Rejected by Supervisor |
+| `scholarship.demo.phase8.normal@example.com` | `SA-6632-2026` (normal), Updated after the browser edit |
 
 ## Phase 7 — log (2026-10-20)
 
