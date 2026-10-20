@@ -39,6 +39,7 @@ declare module 'vue' {
     ResetPasswordFormPanel: typeof import('./src/components/auth/ResetPasswordFormPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScholarshipApplyForm: typeof import('./src/components/registration/ScholarshipApplyForm.vue')['default']
     ScholarshipRequestCard: typeof import('./src/components/registration/ScholarshipRequestCard.vue')['default']
     ValidationErrorPopup: typeof import('./src/components/registration/ValidationErrorPopup.vue')['default']
     WelcomeCard: typeof import('./src/components/onboarding/WelcomeCard.vue')['default']

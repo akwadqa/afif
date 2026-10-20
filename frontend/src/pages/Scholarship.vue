@@ -7,7 +7,7 @@
     </svg>
   </div>
 
-  <!-- Blocked: the user already has a non-scholarship or submitted registration -->
+  <!-- Blocked: the user has a registration that is not accepted yet (scholarship or not) -->
   <div
     v-else-if="view === 'blocked'"
     class="min-h-screen flex items-center justify-center p-4"
@@ -29,26 +29,15 @@
           {{ t(`statuses.registration.${existingRegistration.status}`) }}
         </span>
       </p>
-      <p v-if="isAccepted" class="text-sm text-gray-500 leading-relaxed">{{ t('scholarship.blocked.acceptedMessage') }}</p>
-      <p v-else-if="!existingRegistration?.is_scholarship" class="text-sm text-gray-500 leading-relaxed">
+      <p v-if="!existingRegistration?.is_scholarship" class="text-sm text-gray-500 leading-relaxed">
         {{ t('scholarship.blocked.message') }}
       </p>
-      <div class="flex flex-col gap-3">
-        <button
-          v-if="isAccepted"
-          @click="goToScholarshipRequest"
-          class="px-6 py-3 bg-[#34B0EE] text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
-        >
-          {{ t('scholarship.blocked.applyButton') }}
-        </button>
-        <button
-          @click="goHome"
-          class="px-6 py-3 rounded-2xl font-bold active:scale-[0.98] transition-all"
-          :class="isAccepted ? 'border border-sky-200 text-sky-600 hover:bg-sky-50' : 'bg-[#34B0EE] text-white hover:opacity-90'"
-        >
-          {{ t('scholarship.blocked.button') }}
-        </button>
-      </div>
+      <button
+        @click="goHome"
+        class="px-6 py-3 bg-[#34B0EE] text-white rounded-2xl font-bold hover:opacity-90 active:scale-[0.98] transition-all"
+      >
+        {{ t('scholarship.blocked.button') }}
+      </button>
     </div>
   </div>
 
@@ -59,14 +48,17 @@
     @submitted="view = 'success'"
   />
 
+  <!-- Accepted beneficiaries only fill in the request step (plan Phase 6) -->
+  <ScholarshipApplyForm v-else-if="view === 'apply'" @submitted="view = 'appliedSuccess'" />
+
   <div
-    v-else-if="view === 'success'"
+    v-else-if="view === 'success' || view === 'appliedSuccess'"
     class="relative flex-1 flex items-center justify-center p-4 py-8 min-h-screen"
     style="background: #EBF4FF;"
   >
     <RegistrationSuccess
       :title="t('scholarship.success.title')"
-      :message="t('scholarship.success.message')"
+      :message="t(view === 'appliedSuccess' ? 'scholarship.success.acceptedMessage' : 'scholarship.success.message')"
       :button-text="t('scholarship.success.button')"
       :show-edit-answers="false"
       @view-status="goHome"
@@ -75,13 +67,14 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import ScholarshipApplyForm from '@/components/registration/ScholarshipApplyForm.vue'
 
 const { t, isRTL } = useLanguage()
 const router = useRouter()
@@ -90,7 +83,6 @@ const view = ref('loading')
 const registrationName = ref(null)
 // The registration that keeps this user out of the wizard, shown in the blocked view.
 const existingRegistration = ref(null)
-const isAccepted = computed(() => existingRegistration.value?.status === 'Accepted')
 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',
@@ -103,6 +95,8 @@ const myRegistrations = createResource({
     if (draft) {
       registrationName.value = draft.name
       view.value = 'wizard'
+    } else if (rows[0].status === 'Accepted') {
+      view.value = 'apply'
     } else {
       existingRegistration.value = rows[0]
       view.value = 'blocked'
@@ -125,9 +119,5 @@ onMounted(() => {
 
 function goHome() {
   router.push({ name: 'Home' })
-}
-
-function goToScholarshipRequest() {
-  router.push({ name: 'Request', query: { category: 'Education Assistance', subcategory: 'Scholarship' } })
 }
 </script>
