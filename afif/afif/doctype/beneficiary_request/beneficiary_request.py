@@ -8,18 +8,6 @@ from frappe.utils import flt
 
 from afif.hooks_call import get_aid_lookup_parent_id
 
-SCHOLARSHIP_ATTACHMENT_FIELDS = (
-    "education_invoice",
-    "grade_transcript",
-    "scholarship_guardian_id",
-    "scholarship_guardian_passport",
-    "scholarship_student_id",
-    "scholarship_student_passport",
-    "scholarship_family_ids",
-    "scholarship_guardian_bank_statement",
-    "scholarship_mother_bank_statement",
-    "scholarship_student_bank_statement",
-)
 SCHOLARSHIP_DECLARATION_FIELDS = ("is_data_accuracy_declared", "is_eligibility_check_accepted")
 # The Supervisor's decision on a scholarship request, and the registration state it carries over to.
 SUPERVISOR_DECISION_REGISTRATION_STATES = {
@@ -29,6 +17,10 @@ SUPERVISOR_DECISION_REGISTRATION_STATES = {
 
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
+    pass
+
+
+class ScholarshipSubcategoryError(frappe.ValidationError):
     pass
 
 
@@ -65,6 +57,7 @@ class BeneficiaryRequest(Document):
     def validate(self):
         self.validate_request_summary()
         self.validate_scholarship_flag()
+        self.validate_scholarship_subcategory()
         self.validate_scholarship_request()
         self.validate_scholarship_aid_lookup()
 
@@ -94,6 +87,20 @@ class BeneficiaryRequest(Document):
         elif self.has_value_changed("is_scholarship"):
             frappe.throw(_("Is Scholarship cannot be changed after the request is created."), ScholarshipFlagChangeError)
 
+    def validate_scholarship_subcategory(self):
+        # Scholarship is applied for only through /scholarship, which sets the flag (plan Phase 6), so a
+        # request carries the subcategory exactly when it carries the flag.
+        if self.is_scholarship_subcategory and not self.is_scholarship:
+            frappe.throw(
+                _("Scholarship requests can only be created through the scholarship application."),
+                ScholarshipSubcategoryError,
+            )
+        if self.is_scholarship and not self.is_scholarship_subcategory:
+            frappe.throw(
+                _("A scholarship request must stay Education Assistance - Scholarship."),
+                ScholarshipSubcategoryError,
+            )
+
     def validate_scholarship_request(self):
         if not self.is_scholarship_subcategory:
             return
@@ -106,8 +113,7 @@ class BeneficiaryRequest(Document):
             )
 
     def get_missing_scholarship_fields(self) -> list[str]:
-        required = [*SCHOLARSHIP_ATTACHMENT_FIELDS, *SCHOLARSHIP_DECLARATION_FIELDS]
-        missing = [fieldname for fieldname in required if not self.get(fieldname)]
+        missing = [fieldname for fieldname in SCHOLARSHIP_DECLARATION_FIELDS if not self.get(fieldname)]
         if not (self.request_summary or "").strip():
             missing.insert(0, "request_summary")
         if flt(self.requested_amount) <= 0:

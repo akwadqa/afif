@@ -162,9 +162,13 @@ class TestScholarshipSupervisorDecision(ScholarshipDecisionTestCase):
         self.assertEqual(self.sanadi.calls, [])
 
     def test_approval_with_unmapped_subcategory_fails_before_calling_sanadi(self):
-        frappe.db.set_value("Beneficiary Request", self.request, "educational_assistance", "Unmapped")
+        # A scholarship request always carries the Scholarship subcategory, so the missing mapping is simulated.
+        unmapped = patch(
+            "afif.afif.doctype.beneficiary_request.beneficiary_request.get_aid_lookup_parent_id",
+            side_effect=UnmappedAidLookupError("Unmapped"),
+        )
 
-        with self.assertRaises(UnmappedAidLookupError):
+        with unmapped, self.assertRaises(UnmappedAidLookupError):
             self.apply_request_action("Approve")
 
         self.assertEqual(self.sanadi.calls, [])

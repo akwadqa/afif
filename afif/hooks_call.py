@@ -708,17 +708,6 @@ def get_beneficiary_income_set(doc):
             }
         )
 
-    for parent in ("father", "mother"):
-        if doc.get(f"{parent}_income") == 1:
-            beneficiary_income_set.append(
-                {
-                    "periodicType": get_income_periodic_type(doc.get(f"{parent}_income_periodicity")),
-                    "benIncomeType": 5,
-                    "amount": doc.get(f"{parent}_income_amount"),
-                    "notes": doc.get(f"{parent}_income_note")
-                }
-            )
-
     if doc.private_income == 1:
         beneficiary_income_set.append(
             {
@@ -761,7 +750,7 @@ def before_insert_request(doc, method):
 
     # submit_scholarship_application links the request to the registration it submits in the same
     # transaction, so that registration is not Accepted yet. Clients cannot set doc.flags.
-    if doc.flags.is_scholarship_submission:
+    if doc.flags.is_new_scholarship_applicant:
         doc.request_date = now_datetime()
         return
 

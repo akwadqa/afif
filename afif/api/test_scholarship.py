@@ -12,18 +12,19 @@ from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration imp
     ScholarshipFlagChangeError as RegistrationFlagChangeError,
 )
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import (
+    SCHOLARSHIP_ATTACHMENT_FIELDS,
     ScholarshipSubmissionError,
     SingleMaritalStatusError,
 )
 from afif.afif.doctype.beneficiary_request.beneficiary_request import (
-    SCHOLARSHIP_ATTACHMENT_FIELDS,
     IncompleteScholarshipRequestError,
+    ScholarshipSubcategoryError,
 )
 from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     ScholarshipFlagChangeError as RequestFlagChangeError,
 )
 from afif.api.scholarship import IncompleteScholarshipApplicationError, submit_scholarship_application
-from afif.hooks_call import get_beneficiary_income_set, get_marital_status
+from afif.hooks_call import get_marital_status
 
 REGISTRATION_ATTACHMENTS = {
     "qid": "/files/test-qid.pdf",
@@ -35,6 +36,9 @@ REGISTRATION_ATTACHMENTS = {
     "beneficiary_credit_certificate": "/files/test-credit.pdf",
     "vehicle_certificate": "/files/test-vehicle.pdf",
     "iban_picture": "/files/test-iban.pdf",
+}
+SCHOLARSHIP_ATTACHMENTS = {
+    fieldname: f"/private/files/test-{fieldname.replace('_', '-')}.pdf" for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS
 }
 
 
@@ -64,26 +68,22 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         self.assertEqual(request.educational_assistance, "Scholarship")
         self.assertEqual(request.is_scholarship, 1)
         self.assertTrue(request.request_date)
-
-        for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS:
-            attached = frappe.db.get_value(
-                "File",
-                {"file_url": request.get(fieldname), "owner": self.user},
-                ["attached_to_doctype", "attached_to_name", "attached_to_field"],
-                as_dict=True,
-            )
-            self.assertEqual(
-                (attached.attached_to_doctype, attached.attached_to_name, attached.attached_to_field),
-                ("Beneficiary Request", request.name, fieldname),
-            )
+        self.assertEqual(
+            {fieldname: registration.get(fieldname) for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS},
+            SCHOLARSHIP_ATTACHMENTS,
+        )
 
     def test_missing_registration_attachment_creates_nothing(self):
-        frappe.db.set_value("Beneficiaries Registration", self.registration, "qid", None)
+        for fieldname in ("qid", "scholarship_university_invoice", "scholarship_student_bank_statement"):
+            with self.subTest(fieldname):
+                frappe.db.savepoint("missing_attachment")
+                frappe.db.set_value("Beneficiaries Registration", self.registration, fieldname, None)
 
-        with self.assertRaises(IncompleteScholarshipApplicationError):
-            submit_scholarship_application(self.registration, self.request_data)
+                with self.assertRaises(IncompleteScholarshipApplicationError):
+                    submit_scholarship_application(self.registration, self.request_data)
 
-        self.assert_nothing_submitted()
+                self.assert_nothing_submitted()
+                frappe.db.rollback(save_point="missing_attachment")
 
     def test_missing_registration_consent_creates_nothing(self):
         frappe.db.set_value("Beneficiaries Registration", self.registration, "verification_consent", 0)
@@ -111,10 +111,6 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
     def test_missing_request_data_creates_nothing(self):
         cases = {
-            "missing attachment": {"scholarship_student_passport": None},
-            "reused existing attachment field": {"grade_transcript": None},
-            "missing mother bank statement": {"scholarship_mother_bank_statement": None},
-            "missing student bank statement": {"scholarship_student_bank_statement": None},
             "missing amount": {"requested_amount": None},
             "zero amount": {"requested_amount": "0"},
             "missing summary": {"request_summary": None},
@@ -140,34 +136,6 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         self.assertEqual(
             frappe.db.get_value("Beneficiaries Registration", other_registration, "workflow_state"), "Draft"
         )
-
-    def test_rejects_another_users_file(self):
-        frappe.set_user("Administrator")
-        other_user = make_beneficiary_user()
-        frappe.set_user(other_user)
-        other_file_url = upload_unattached_file("other-user")
-        frappe.set_user(self.user)
-
-        with self.assertRaises(frappe.PermissionError):
-            submit_scholarship_application(
-                self.registration, {**self.request_data, "scholarship_family_ids": other_file_url}
-            )
-
-        self.assert_nothing_submitted()
-
-    def test_rejects_a_file_already_attached_elsewhere(self):
-        file_url = self.request_data["scholarship_family_ids"]
-        file_name = frappe.db.get_value("File", {"file_url": file_url}, "name")
-        frappe.db.set_value(
-            "File",
-            file_name,
-            {"attached_to_doctype": "Beneficiaries Registration", "attached_to_name": self.registration},
-        )
-
-        with self.assertRaises(frappe.PermissionError):
-            submit_scholarship_application(self.registration, self.request_data)
-
-        self.assert_nothing_submitted()
 
     def test_already_submitted_application_cannot_be_resubmitted(self):
         submit_scholarship_application(self.registration, self.request_data)
@@ -207,59 +175,43 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
     def test_plain_insert_of_scholarship_request_is_blocked_for_accepted_user(self):
         accept_registration(self.registration, self.user)
-        request = make_plain_scholarship_request(self.registration, self.request_data)
+        cases = {
+            "with the flag": (1, RequestFlagChangeError),
+            "without the flag": (0, ScholarshipSubcategoryError),
+        }
+        for case, (is_scholarship, error) in cases.items():
+            request = make_plain_scholarship_request(self.registration, self.request_data)
+            request.is_scholarship = is_scholarship
+            with self.subTest(case), self.assertRaises(error):
+                request.insert()
 
-        with self.assertRaises(RequestFlagChangeError):
-            request.insert()
+        self.assertFalse(frappe.db.exists("Beneficiary Request", {"beneficiaries": self.registration}))
+
+    def test_request_cannot_be_switched_to_or_from_scholarship(self):
+        submit_scholarship_application(self.registration, self.request_data)
+        scholarship_request = frappe.response["data"]["request"]
+        frappe.set_user("Administrator")
+        other_user = make_beneficiary_user()
+        frappe.set_user(other_user)
+        accept_registration(make_registration(is_scholarship=0), other_user)
+        normal_request = make_normal_education_request()
+        frappe.set_user("Administrator")
+
+        cases = {
+            "normal request to Scholarship": (normal_request, "Scholarship"),
+            "scholarship request to Tuition Fees": (scholarship_request, "Tuition Fees"),
+        }
+        for case, (name, subcategory) in cases.items():
+            request = frappe.get_doc("Beneficiary Request", name)
+            request.educational_assistance = subcategory
+            with self.subTest(case), self.assertRaises(ScholarshipSubcategoryError):
+                request.save()
 
     def assert_nothing_submitted(self):
         self.assertEqual(
             frappe.db.get_value("Beneficiaries Registration", self.registration, "workflow_state"), "Draft"
         )
         self.assertFalse(frappe.db.exists("Beneficiary Request", {"beneficiaries": self.registration}))
-
-
-class TestScholarshipIncomeSet(IntegrationTestCase):
-    def test_father_and_mother_incomes_are_sent_as_family_income(self):
-        registration = frappe.get_doc(
-            {
-                "doctype": "Beneficiaries Registration",
-                "father_income": 1,
-                "father_income_periodicity": "Monthly",
-                "father_income_amount": "12000",
-                "father_income_note": "Father salary",
-                "mother_income": 1,
-                "mother_income_periodicity": "Yearly",
-                "mother_income_amount": "30000",
-                "mother_income_note": "Mother salary",
-            }
-        )
-
-        self.assertEqual(
-            get_beneficiary_income_set(registration),
-            [
-                {"periodicType": 2, "benIncomeType": 5, "amount": "12000", "notes": "Father salary"},
-                {"periodicType": 1, "benIncomeType": 5, "amount": "30000", "notes": "Mother salary"},
-            ],
-        )
-
-    def test_unchecked_parent_incomes_are_not_sent(self):
-        registration = frappe.get_doc(
-            {
-                "doctype": "Beneficiaries Registration",
-                "ben_income": 1,
-                "ben_periodic_type": "Monthly",
-                "salary_amount": "8000",
-                "benficiary_note": "Guardian salary",
-                "father_income": 0,
-                "father_income_amount": "12000",
-            }
-        )
-
-        self.assertEqual(
-            get_beneficiary_income_set(registration),
-            [{"periodicType": 2, "benIncomeType": 1, "amount": "8000", "notes": "Guardian salary"}],
-        )
 
 
 class TestSingleMaritalStatus(IntegrationTestCase):
@@ -315,15 +267,7 @@ class TestNormalFlowUnchanged(IntegrationTestCase):
         registration = make_registration(is_scholarship=0)
         accept_registration(registration, self.user)
 
-        request = frappe.get_doc(
-            {
-                "doctype": "Beneficiary Request",
-                "request_category": "Education Assistance",
-                "educational_assistance": "Tuition Fees",
-                "requested_amount": "1000",
-                "request_summary": "Tuition fees",
-            }
-        ).insert()
+        request = frappe.get_doc("Beneficiary Request", make_normal_education_request())
 
         self.assertEqual(request.beneficiaries, registration)
         self.assertEqual(request.workflow_state, "Pending Supervisor Approval")
@@ -376,6 +320,7 @@ def make_registration(is_scholarship: int) -> str:
             "guardian_mobile_number": "55123456" if is_scholarship else None,
             "current_step": 5,
             **REGISTRATION_ATTACHMENTS,
+            **(SCHOLARSHIP_ATTACHMENTS if is_scholarship else {}),
         }
     ).insert()
     return registration.name
@@ -387,8 +332,23 @@ def make_request_data() -> dict:
         "request_summary": "Scholarship test request",
         "is_data_accuracy_declared": 1,
         "is_eligibility_check_accepted": 1,
-        **{fieldname: upload_unattached_file(fieldname) for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS},
     }
+
+
+def make_normal_education_request() -> str:
+    return (
+        frappe.get_doc(
+            {
+                "doctype": "Beneficiary Request",
+                "request_category": "Education Assistance",
+                "educational_assistance": "Tuition Fees",
+                "requested_amount": "1000",
+                "request_summary": "Tuition fees",
+            }
+        )
+        .insert()
+        .name
+    )
 
 
 def upload_unattached_file(label: str) -> str:

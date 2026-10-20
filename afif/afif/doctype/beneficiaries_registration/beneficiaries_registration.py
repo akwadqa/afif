@@ -7,6 +7,20 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+# All of them are required to submit a scholarship application (plan Phase 6).
+SCHOLARSHIP_ATTACHMENT_FIELDS = (
+    "scholarship_university_invoice",
+    "scholarship_grade_transcript",
+    "scholarship_guardian_id",
+    "scholarship_guardian_passport",
+    "scholarship_student_id",
+    "scholarship_student_passport",
+    "scholarship_family_ids",
+    "scholarship_guardian_bank_statement",
+    "scholarship_mother_bank_statement",
+    "scholarship_student_bank_statement",
+)
+
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
     pass
@@ -59,7 +73,8 @@ class BeneficiariesRegistration(Document):
             return
 
         previous = self.get_doc_before_save()
-        if not previous or previous.workflow_state == self.workflow_state:
+        # An already accepted beneficiary's scholarship request does not decide their registration.
+        if not previous or previous.workflow_state != "New Registration":
             return
         if self.workflow_state not in ("Accepted", "Not Accepted"):
             return
