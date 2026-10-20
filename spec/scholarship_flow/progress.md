@@ -9,6 +9,7 @@
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
 | [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
+| [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | in progress | |
 
 ## Phase 7 — log (2026-10-20)
 

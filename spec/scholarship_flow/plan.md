@@ -32,7 +32,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | D6 | The existing DB Workflows stay as they are. The cascade logic lives in server hooks. Moving to status-only workflows is out of scope. |
 | D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Since Phase 7, `/scholarship` is only for scholarship registrations: a normal-flow beneficiary cannot apply there, and an accepted scholarship beneficiary can file a new scholarship request under the request page's rules. |
 | D8 | *(Superseded by Phase 6: same fields and labels as the normal registration; father/mother income removed.)* Where a field means the same thing, reuse it with a scholarship label. Where the meaning differs, add a new field (§3). The father and mother incomes are **new fields**. |
-| D9 | When the Supervisor rejects a scholarship request, the registration is also set to `Not Accepted`. |
+| D9 | *(Replaced in Phase 8.)* Rejecting a scholarship request only rejects the request, as in the normal request flow; the registration is left as it is and follows its own workflow. |
 | D10 | Frontend: add a sidebar item "منحة الشيخ خالد بن ناصر" at route `/scholarship`. `BeneficiaryRegistration.vue` is reused with `flow="scholarship"`, and each card reads a variant config. The public nav link `khaledGrant` (terms page) stays unchanged. |
 | D11 | **The request is the control point.** When the Supervisor approves a scholarship request, the linked registration is accepted in the same action. The registration is accepted first, so Sanadi creates the beneficiary and sets `ben_id` before the request's Sanadi hooks run. |
 
@@ -174,13 +174,15 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ11 | Keep today's rule: the registration `passport` copy stays required, so a scholarship applicant uploads it in the attachments sub-step and the guardian's and student's passports again in step 5. |
 | OQ6 | For now, Scholarship uses `aidLookupId` `1001050` (Other Educational Assistance) under parent `10010`, for both the request and the Aid. It changes when Sanadi provides a dedicated code. |
 | OQ14 | Phase 6: the scholarship wizard is identical to the normal one, so years of residence is asked of every applicant. |
+| OQ13 | Phase 8: a rejected scholarship request stays final, as in the normal request flow, and the registration is not touched by the rejection. The applicant edits the registration in the profile; a new scholarship request follows the request rules. |
 | OQ12 | Keep today's rule: the passport number (and the secondary-ID group that carries it to Sanadi) is required. No beneficiary has ever been accepted without one, so there is no evidence Sanadi accepts it empty. |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
-| OQ13 | After a scholarship rejection, the applicant can fix and resubmit the registration through the normal wizard (as for any `Not Accepted` registration). It is then reviewed as a normal registration, and no new scholarship request is created; once accepted, they can apply through the normal request page (Phase 4). Is that the intended path, or should a rejected applicant be able to reapply through `/scholarship`? | — |
+| OQ15 | Should the Supervisor be able to ask for an update on a pending scholarship application, instead of only Approve/Reject? Left as is (Phase 8). | — |
+| OQ16 | Should the yearly "Update Required" also clear the 10 scholarship documents? On hold until the question about the yearly update is answered (Phase 8). | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 
 ## 8. Phases
@@ -192,5 +194,6 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 5. [Phase 5 — Review edits](phase-5-review-edits.md)
 6. [Phase 6 — Registration parity and attachments on the registration](phase-6-registration-parity.md)
 7. [Phase 7 — What the applicant sees after submitting](phase-7-scholarship-views.md)
+8. [Phase 8 — Editing a scholarship application, and request rejection](phase-8-profile-edit-and-rejection.md)
 
 Progress: [progress.md](progress.md)
