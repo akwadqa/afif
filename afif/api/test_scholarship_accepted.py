@@ -10,6 +10,7 @@ from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration imp
 from afif.afif.doctype.beneficiary_request.beneficiary_request import IncompleteScholarshipRequestError
 from afif.api.scholarship import IncompleteScholarshipApplicationError, create_scholarship_request
 from afif.api.test_scholarship import (
+    SCHOLARSHIP_ATTACHMENTS,
     accept_registration,
     make_beneficiary_user,
     make_registration,
@@ -28,12 +29,18 @@ class AcceptedBeneficiaryTestCase(IntegrationTestCase):
 
         self.user = make_beneficiary_user()
         frappe.set_user(self.user)
-        self.registration = make_registration(is_scholarship=0)
+        self.registration = make_registration(is_scholarship=1)
         accept_registration(self.registration, self.user)
 
     def create_request(self, request_data: dict | None = None) -> str:
         create_scholarship_request(request_data or make_accepted_request_data())
         return frappe.response["data"]["request"]
+
+    def assert_scholarship_documents_unchanged(self) -> None:
+        self.assertEqual(
+            frappe.db.get_value("Beneficiaries Registration", self.registration, "scholarship_student_id"),
+            SCHOLARSHIP_ATTACHMENTS["scholarship_student_id"],
+        )
 
     def get_request_count(self) -> int:
         return frappe.db.count("Beneficiary Request", {"beneficiaries": self.registration})
@@ -82,7 +89,7 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
                 self.create_request({**make_accepted_request_data(), **override})
 
         self.assertEqual(self.get_request_count(), 0)
-        self.assertFalse(frappe.db.get_value("Beneficiaries Registration", self.registration, "scholarship_student_id"))
+        self.assert_scholarship_documents_unchanged()
 
     def test_another_users_file_is_rejected(self):
         frappe.set_user("Administrator")
@@ -94,7 +101,7 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
             self.create_request({**make_accepted_request_data(), "scholarship_student_id": other_file_url})
 
         self.assertEqual(self.get_request_count(), 0)
-        self.assertFalse(frappe.db.get_value("Beneficiaries Registration", self.registration, "scholarship_student_id"))
+        self.assert_scholarship_documents_unchanged()
 
     def test_a_file_already_attached_elsewhere_is_rejected(self):
         request_data = make_accepted_request_data()
@@ -110,11 +117,23 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
 
         self.assertEqual(self.get_request_count(), 0)
 
-    def test_not_accepted_user_cannot_create_a_scholarship_request(self):
+    def test_normal_flow_beneficiary_cannot_create_a_scholarship_request(self):
         frappe.set_user("Administrator")
         user = make_beneficiary_user()
         frappe.set_user(user)
         registration = make_registration(is_scholarship=0)
+        accept_registration(registration, user)
+
+        with self.assertRaises(frappe.PermissionError):
+            self.create_request()
+
+        self.assertFalse(frappe.db.exists("Beneficiary Request", {"beneficiaries": registration}))
+
+    def test_not_accepted_user_cannot_create_a_scholarship_request(self):
+        frappe.set_user("Administrator")
+        user = make_beneficiary_user()
+        frappe.set_user(user)
+        registration = make_registration(is_scholarship=1)
 
         with self.assertRaises(frappe.PermissionError):
             self.create_request()
@@ -204,7 +223,7 @@ class TestAcceptedBeneficiaryScholarshipApproval(ScholarshipDecisionTestCase):
         frappe.set_user("Administrator")
         user = make_beneficiary_user()
         frappe.set_user(user)
-        registration = make_registration(is_scholarship=0)
+        registration = make_registration(is_scholarship=1)
         accept_registration(registration, user)
         frappe.db.set_value("Beneficiaries Registration", registration, "ben_id", "123")
         create_scholarship_request(make_accepted_request_data())

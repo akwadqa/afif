@@ -53,11 +53,17 @@ def submit_scholarship_application(registration: str, request: dict | str) -> No
 
 @frappe.whitelist(methods=["POST"])
 def create_scholarship_request(request: dict | str) -> None:
-    """Create a scholarship request for an accepted beneficiary and put its documents on their registration.
+    """Create a new scholarship request for an accepted scholarship beneficiary, and put its documents
+    on their registration.
 
     Only a Supervisor may save an Accepted registration, so the files are uploaded unattached and the
     endpoint writes them onto the registration once the request is allowed.
     """
+    # The scholarship is its own flow: a beneficiary who registered through the normal flow cannot
+    # apply for it (plan Phase 7).
+    if not frappe.db.get_value("Beneficiaries Registration", {"user": frappe.session.user}, "is_scholarship"):
+        raise frappe.PermissionError(_("Only scholarship applicants can file a scholarship request."))
+
     request = frappe.parse_json(request)
     request_doc = new_scholarship_request(request)
     request_doc.validate_scholarship_request()
