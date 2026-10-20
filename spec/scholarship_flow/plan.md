@@ -30,7 +30,7 @@ The normal registration flow and the normal aid request flow stay unchanged.
 | D4 | *(Superseded by Phase 6: the 10 attachments are registration fields, in their own tab; step 5 still shows them.)* Step 5 belongs entirely to the **request**: the requested amount, the request summary (OQ1b), 10 required attachments (8 at first; 2 bank statements added in Phase 5) and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
 | D5 | Drafts are saved step by step, exactly as today. A single whitelisted endpoint, `submit_scholarship_application`, validates **all** registration attachments and consents **and** all step-5 data. In one transaction it submits the registration and creates the request. If anything is missing, nothing is submitted. |
 | D6 | The existing DB Workflows stay as they are. The cascade logic lives in server hooks. Moving to status-only workflows is out of scope. |
-| D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Users who are already Accepted apply on `/scholarship` too, with step 5 only (Phase 6; Phase 4 had them use the request page, which no longer offers Scholarship). |
+| D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Since Phase 7, `/scholarship` is only for scholarship registrations: a normal-flow beneficiary cannot apply there, and an accepted scholarship beneficiary can file a new scholarship request under the request page's rules. |
 | D8 | *(Superseded by Phase 6: same fields and labels as the normal registration; father/mother income removed.)* Where a field means the same thing, reuse it with a scholarship label. Where the meaning differs, add a new field (§3). The father and mother incomes are **new fields**. |
 | D9 | When the Supervisor rejects a scholarship request, the registration is also set to `Not Accepted`. |
 | D10 | Frontend: add a sidebar item "منحة الشيخ خالد بن ناصر" at route `/scholarship`. `BeneficiaryRegistration.vue` is reused with `flow="scholarship"`, and each card reads a variant config. The public nav link `khaledGrant` (terms page) stays unchanged. |
@@ -191,5 +191,6 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 4. [Phase 4 — Accepted users and desk polish](phase-4-accepted-users-desk.md)
 5. [Phase 5 — Review edits](phase-5-review-edits.md)
 6. [Phase 6 — Registration parity and attachments on the registration](phase-6-registration-parity.md)
+7. [Phase 7 — What the applicant sees after submitting](phase-7-scholarship-views.md)
 
 Progress: [progress.md](progress.md)

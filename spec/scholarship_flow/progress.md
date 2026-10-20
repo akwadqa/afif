@@ -8,6 +8,7 @@
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
+| [7 — What the applicant sees](phase-7-scholarship-views.md) | in progress | |
 
 ## Phase 6 — log (2026-10-20)
 
