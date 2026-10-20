@@ -46,6 +46,9 @@ class BeneficiariesRegistration(Document):
         self.validate_guardian_mobile_number()
         self.validate_single_marital_status()
 
+    def on_update(self):
+        self.delete_replaced_attachments()
+
     def validate_scholarship_flag_unchanged(self):
         if not self.is_new() and self.has_value_changed("is_scholarship"):
             frappe.throw(
@@ -105,3 +108,30 @@ class BeneficiariesRegistration(Document):
                 _("Marital status Single is only available for scholarship applications."),
                 SingleMaritalStatusError,
             )
+
+    def delete_replaced_attachments(self):
+        """Delete the File of an attachment that was replaced or cleared, so it does not stay behind."""
+        previous = self.get_doc_before_save()
+        if not previous:
+            return
+
+        for df in self.meta.get("fields", {"fieldtype": ("in", ("Attach", "Attach Image"))}):
+            old_file_url = previous.get(df.fieldname)
+            if not old_file_url or old_file_url == self.get(df.fieldname):
+                continue
+
+            # Only this field's File: Frappe reuses one file_url for identical uploads, and the
+            # disk copy is kept while another File still points at it.
+            replaced_files = frappe.get_all(
+                "File",
+                filters={
+                    "attached_to_doctype": self.doctype,
+                    "attached_to_name": self.name,
+                    "attached_to_field": df.fieldname,
+                    "file_url": old_file_url,
+                },
+                pluck="name",
+            )
+            for file_name in replaced_files:
+                # The save already checked that the user may change this registration.
+                frappe.delete_doc("File", file_name, ignore_permissions=True)
