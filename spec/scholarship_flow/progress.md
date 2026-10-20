@@ -8,7 +8,54 @@
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
-| [7 — What the applicant sees](phase-7-scholarship-views.md) | in progress | |
+| [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
+
+## Phase 7 — log (2026-10-20)
+
+Review after trying Phase 6: after submitting, `/scholarship` only said "submitted" and `/request` showed no request. After approval, `/scholarship` showed an empty request form. The partner phone must be optional for Single. Decisions P7-1 to P7-5 are in the [phase plan](phase-7-scholarship-views.md).
+
+### What was built
+- **`/scholarship` only for scholarship registrations (P7-1).**
+  - A normal-flow beneficiary is blocked there, accepted or not. This replaces P6-7.
+  - `create_scholarship_request` refuses a caller whose registration is not a scholarship one (`PermissionError`).
+- **Full application, read only (P7-2).**
+  - A submitted scholarship applicant sees the wizard read only: steps 1–4, then step 5 with the latest scholarship request (amount, summary, declarations, the 10 documents) and a "حالة الطلب" badge.
+  - Read-only navigation now reaches step 5. The Edit button is hidden in the scholarship flow; edits go through the profile page.
+- **New scholarship request (P7-3).**
+  - "تقديم طلب منحة جديد" appears when `getRequestBlockReason` allows it (Accepted, last request closed, cooldowns passed), and opens `ScholarshipApplyForm`.
+  - The rules moved from `Request.vue` to `components/request/requestEligibility.js`, shared by both pages.
+- **`/request` before acceptance (P7-4).**
+  - The page lists the user's requests with "create new" disabled ("يمكنك تقديم طلبات جديدة بعد قبول ملف المستفيد الخاص بك"). It is blocked only when there are none.
+  - The patch `allow_applicants_to_read_their_requests` gives `Beneficiary New Registration` and `Beneficiary Not Accepted` read + if_owner on Beneficiary Request.
+- **Partner phone (P7-5).** Optional for Single in the wizard (asterisk and validation) and in the desk (`mandatory_depends_on`). Its 8-digit format is still checked when given.
+
+### Tests
+- **Backend:** `test_scholarship` **20 OK**, `test_scholarship_accepted` **14 OK**, `test_scholarship_decision` **13 OK**, `test_beneficiaries_registration` **4 OK**.
+  - New: an applicant reads their own request but not someone else's; a normal accepted beneficiary is refused by `create_scholarship_request`.
+  - The accepted-path tests now use accepted scholarship registrations.
+- **Mutation check.** Dropping the scholarship-only check fails 1 test. Requiring the partner phone for Single again fails 1.
+- **Frontend:** `vitest run` **39 OK**.
+  - New: `requestEligibility.test.js` (9) covers not accepted, pending and the cooldowns.
+  - The partner phone is optional for Single only, and its format is still checked.
+  - New keys exist.
+- **Lint and build.** Biome is clean on the changed JS files. `migrate` (with the patch) and `yarn build` are done.
+
+### Browser run (agent-browser, temporary `bench serve` on :8010, stopped afterwards)
+| Check | Result |
+|---|---|
+| `/scholarship` as `scholarship.demo.phase6.draft` (`SA-6628-2026` New Registration, `REQ3890` pending) | read-only application; step 5 shows حالة الطلب: تحت الإجراء, 22000, the summary, the 10 documents and both declarations ticked; no Edit, no new-request button |
+| `/request`, same user | `REQ3890` listed (مساعدات تعليمية, تحت الإجراء), create disabled with the "after acceptance" message; opening it shows Education / منحة دراسية |
+| Approval simulated (registration Accepted, request Pending Specialist Approval) | `/scholarship` still shows the data, not an empty form; no new-request button |
+| Request closed (Approved) | `/scholarship` shows "تقديم طلب منحة جديد", which opens the request step; `/request` create is enabled too |
+| `/scholarship` as `scholarship.demo.phase6.requestpage` (normal, Accepted) | blocked: "لا يمكن التقديم على المنحة من هنا" |
+
+### Demo data changed on the dev site (on purpose)
+- **Approval simulated in the database**, not through the desk, because a real approval would call Sanadi staging. `SA-6628-2026` is Accepted (`ben_id = demo-p7-approved`), and its user now has the `Beneficiary Accepted` profile.
+- **`REQ3890` is `Approved`**, so that user can try a new scholarship request.
+
+### Deviations from the phase plan
+- The new-request button sits in the wizard header, through a new `actions` slot on `BeneficiaryRegistration`.
+- The blocked view's "submitted" variant and its two keys are removed, because a scholarship applicant now always gets the application view. The blocked message is back to the Phase 1 wording.
 
 ## Phase 6 — log (2026-10-20)
 
