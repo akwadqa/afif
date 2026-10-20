@@ -112,9 +112,23 @@ describe('marital status options', () => {
   it('needs no partner details for a single applicant', () => {
     const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
     formData.personalInfo.marital_status = 'Single'
-    formData.personalInfo.partners_phone_number = '55111222'
+    formData.personalInfo.partners_phone_number = ''
 
     expect(validate(formData, 1, 'scholarship')).toEqual({ errors: [], fields: [] })
+  })
+
+  it.each(['Married', 'Divorced', 'Widowed', 'Separated'])('still requires the partner phone when %s', status => {
+    const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
+    Object.assign(formData.personalInfo, { marital_status: status, partners_phone_number: '' })
+
+    expect(validate(formData, 1, 'scholarship').fields).toContain('partners_phone_number')
+  })
+
+  it('still checks the format of a partner phone given by a single applicant', () => {
+    const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
+    Object.assign(formData.personalInfo, { marital_status: 'Single', partners_phone_number: '5511' })
+
+    expect(validate(formData, 1, 'scholarship').fields).toEqual(['partners_phone_number'])
   })
 })
 

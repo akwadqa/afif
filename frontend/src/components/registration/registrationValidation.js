@@ -87,7 +87,8 @@ function validatePersonalInfo(check, pi, t) {
   check.reject(pi.phone_number && pi.phone_number.length !== 8, 'phone_number', t('registration.validation.phoneMustBe8'))
   check.require(pi.guardian_mobile_number, 'guardian_mobile_number', t('scholarship.personalInfo.guardianMobile'))
   check.reject(pi.guardian_mobile_number && pi.guardian_mobile_number.length !== 8, 'guardian_mobile_number', t('registration.validation.phoneMustBe8'))
-  check.require(pi.partners_phone_number, 'partners_phone_number', t('registration.personalInfo.partnerPhone'))
+  // Single is offered only in the scholarship flow, and a single applicant may have no partner.
+  if (pi.marital_status !== 'Single') check.require(pi.partners_phone_number, 'partners_phone_number', t('registration.personalInfo.partnerPhone'))
   check.reject(pi.partners_phone_number && pi.partners_phone_number.length !== 8, 'partners_phone_number', t('registration.validation.phoneMustBe8'))
   check.require(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
   if (pi.marital_status === 'Married') check.require(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))

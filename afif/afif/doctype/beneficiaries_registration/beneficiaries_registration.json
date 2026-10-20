@@ -1534,7 +1534,7 @@
    "fieldname": "partners_phone_number",
    "fieldtype": "Data",
    "label": "Partner's phone number",
-   "mandatory_depends_on": "eval: doc.current_step == 1"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && doc.marital_status != \"Single\""
   }
  ],
  "index_web_pages_for_search": 1,
@@ -1549,7 +1549,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-10-20 10:00:00.000000",
+ "modified": "2026-10-20 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
