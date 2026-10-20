@@ -7,7 +7,90 @@
 | [3 — Approval/rejection cascade](phase-3-approval-cascade.md) | done (live site still needs `bench restart`) | `b99fcd8`, `3fadd55`, `4468f6b`, `bfc8ae6` |
 | [4 — Accepted users + desk polish](phase-4-accepted-users-desk.md) | done (live site still needs `bench restart` for the endpoint) | `6587698`, `ae1e5f2`, `efcf2cd`, `e8aba43`, `7cffa9d`, `4960c0c` |
 | [5 — Review edits](phase-5-review-edits.md) | done (live site still needs `bench restart`) | `d1346a5`, `b85fcb8`, `f9c654a`, `3f6a815`, `b2c673a`, `034f705` |
-| [6 — Registration parity](phase-6-registration-parity.md) | in progress | |
+| [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
+
+## Phase 6 — log (2026-10-20)
+
+Mentor review: the scholarship registration has the same fields as the normal one, and the scholarship documents live on the registration. Decisions P6-1 to P6-13 are in the [phase plan](phase-6-registration-parity.md).
+
+### What was built
+- **Same fields as the normal registration.**
+  - The scholarship variant hides nothing. The income and obligations steps and the bank-loans question are the normal ones.
+  - The father/mother incomes are removed: the fields, the Sanadi type-5 mapping and the wizard.
+  - The 18 desk `!doc.is_scholarship` guards are dropped.
+  - Only `guardian_mobile_number` and `Single` remain scholarship-only.
+- **Documents on the registration.**
+  - New tab "Scholarship Attachments" on Beneficiaries Registration (10 Attach fields, `depends_on: is_scholarship`).
+  - The 8 `scholarship_*` fields are removed from Beneficiary Request. `education_invoice` / `grade_transcript` no longer show or are required for Scholarship in the desk.
+  - The request keeps the amount, the summary and the 2 declarations.
+- **New applicant (Draft).**
+  - Each step-5 document is uploaded when picked (native `upload_file`, private, attached by field) and saved on the Draft.
+  - `submit_scholarship_application` now takes only the request data. It requires the 10 documents on the registration.
+- **Accepted beneficiary.**
+  - `/scholarship` shows step 5 only (`ScholarshipApplyForm.vue`).
+  - `create_scholarship_request` uploads nothing itself. It checks that the files are the caller's own and unattached, then inserts the request with normal permissions (cooldowns apply). It then writes the URLs onto the registration with `db_set` and attaches the File records, all in one transaction.
+  - Saving an Accepted registration would re-run `create_new_beneficiary` (a new Sanadi call and a reset acceptance date), which is why the registration is not saved.
+- **Scholarship only through `/scholarship`.**
+  - The request page no longer offers it for a new request; it still shows an existing one with its declarations.
+  - The server enforces "Scholarship subcategory ⇔ `is_scholarship`" (`ScholarshipSubcategoryError`), and only the endpoints set the flag.
+  - `before_insert_request` skips its rules only for the new applicant (`flags.is_new_scholarship_applicant`).
+- **Replaced or cleared attachments.** `BeneficiariesRegistration.on_update` deletes the File of that field and URL. A File with the same URL on another field (Frappe's dedup) is kept, and so is its disk copy.
+- **Unchanged:** Sanadi lookup `1001050` and the approval cascade.
+
+### Tests
+- **Backend:** `test_scholarship` **19 OK**, `test_scholarship_accepted` **13 OK**, `test_scholarship_decision` **13 OK**, `beneficiaries_registration.test_beneficiaries_registration` **4 OK** (new).
+  - New cases: a missing scholarship document on the registration; the accepted path writing private files to the registration; inserting Scholarship without the endpoint (with and without the flag); switching a request to or from Scholarship; the attachment cleanup (replace, clear, shared URL, no change).
+  - The guard test: an accepted scholarship registration with a new pending scholarship request can still be rejected by the Supervisor.
+- **Mutation check.** Each of these fails the suite:
+  - Undoing the guard narrowing.
+  - Dropping the subcategory check (4 tests).
+  - Dropping the cleanup (3).
+  - Dropping the `attached_to_field` filter in the cleanup (1).
+- **Frontend:** `vitest run` **25 OK**.
+  - Every normal field is required in both flows, and the guardian mobile only in the scholarship flow.
+  - The normal incomes and bank-loans label appear in both flows; father/mother are gone.
+  - Step 5 reads the documents from the registration files.
+  - Scholarship requests list no request documents.
+  - The AR/EN keys exist.
+  - Mutations caught: hiding a field again (1), reading the step-5 files from the old place (3).
+- **Lint and build.** Biome is clean on the changed JS files. It crashes on `.vue` files, as before. `migrate` and `yarn build` are done.
+
+### Browser run (agent-browser, temporary `bench serve` on :8010, stopped afterwards)
+| Check | Result |
+|---|---|
+| `scholarship.demo.phase6.draft` (`SA-6628-2026`, copied from the Phase 2 Draft), step 1 empty Next | popup lists the normal fields Phases 2–5 hid: ID expiry, passport number, partner phone, secondary nationality, family visa, children, Afif assistance |
+| Steps 2 / 3 / 4 | 7 normal incomes; normal obligation labels; "هل لديك قروض بنكية ومديونيات؟" |
+| Step 5 uploads | each file saved on the Draft at once, private, attached by field |
+| Replace the transcript, delete the student ID | old File records and disk files gone; the cleared field is empty |
+| Submit | `SA-6628-2026` New Registration with 10 private scholarship files; `REQ3890` Education / Scholarship, `is_scholarship=1`, Pending Supervisor Approval, 22000 |
+| `/scholarship` again as the same user | "تم تقديم طلب المنحة", status تسجيل جديد |
+| `scholarship.demo.phase6.accepted` (`SA-6629-2026`, Accepted) on `/scholarship` | step 5 only; empty submit lists 14 items; nothing uploaded before submit |
+| Submit | `REQ3891` Scholarship, `is_scholarship=1`, pending; the 10 private files on `SA-6629-2026`; registration still Accepted with its `ben_id`; success message "يمكنك متابعة حالته من صفحة طلباتي" |
+| `/request` as the accepted user, open `REQ3891` | read-only: مساعدات تعليمية / منحة دراسية, both declarations ticked and disabled |
+| `/request` as `scholarship.demo.phase6.requestpage` (`SA-6630-2026`), new request | Education options stop at Other Educational Assistance; no Scholarship |
+| Desk as `scholarship.demo.supervisor` | "Scholarship Attachments" tab with the documents on `SA-6628-2026`; hidden on the normal `SA-6630-2026` |
+
+### Demo data added on the dev site (on purpose)
+Password: `Scholarship@2026`.
+
+| User | State |
+|---|---|
+| `scholarship.demo.phase6.draft@example.com` | submitted through the browser: `SA-6628-2026` + `REQ3890` |
+| `scholarship.demo.phase6.accepted@example.com` | `SA-6629-2026` Accepted (`ben_id = demo-p6-accepted`), applied through the browser: `REQ3891` |
+| `scholarship.demo.phase6.requestpage@example.com` | `SA-6630-2026` Accepted (`ben_id = demo-p6-requestpage`), no requests |
+
+Older scholarship requests (`REQ3881`–`REQ3889`) had their documents on the request; those columns are no longer DocFields, so the documents are not shown (P6-12). `REQ3888` (Phase 4) is Scholarship with `is_scholarship=0`, so saving it now fails the subcategory rule. That's fine for demo data.
+
+### Deviations from the phase plan
+- **No Vitest for the request page's subcategory list.** The filter lives in the component, and the app has no `@vue/test-utils`. It was checked in the browser instead.
+- **The guard narrowing matters only for scholarship registrations.** A normal registration never hits it. The test uses an applicant accepted through an earlier scholarship who applies again.
+- **The field variant follows the record.** A scholarship registration opened from `/beneficiary-profile` keeps the guardian mobile and `Single`. Before this, editing it there dropped `guardian_mobile_number` (the normal flow stripped it from the payload). This affected the OQ13 resubmit path.
+- **The scholarship document fields are always in the wizard payload**, normal flow included. Without them, editing a scholarship registration from the profile page would clear them, and the cleanup would then delete the files.
+- **The success view** has a separate message for accepted beneficiaries, and the blocked view now says they can apply once accepted.
+- **`utils/fileUpload.js`** holds the native upload for the wizard and the accepted form. The request page keeps its own copy (unchanged).
+
+### Found, not fixed (outside this phase)
+- **The wizard clears every field it doesn't send.** `frappe.client.save` rebuilds the document from the payload, and the wizard never sends `ben_id`, `registration_acceptance_date` and other desk-only fields. 4 of the 5 "Updated beneficiary" registrations (re-saved through the wizard after "Update Required") have no `ben_id`. A fix would load the doc and update only the wizard fields (for example a whitelisted save, or `frappe.client.set_value`). This needs its own fix branch and a check of the affected records.
 
 ## Phase 5 — log (2026-10-19)
 
@@ -302,7 +385,7 @@ Password for all of them: `Scholarship@2026`.
 - **Supervisor approval on the dev site.** Only `Administrator` has Sanadi Integration Settings (pointing at staging, `stgapi.raca.gov.qa`). Any other Supervisor, including the demo one, gets "Sanadi Integration Settings not available for current user." when approving any request, normal or scholarship. Approving `REQ3884` as Administrator would create a real beneficiary and request in Sanadi staging, so it was **not done**. It needs a go-ahead, or Sanadi settings for the demo Supervisor.
 - **OQ13 — after a scholarship rejection (new, for the mentor).** The applicant can fix and resubmit through the normal wizard, and the registration is then reviewed as a normal one with no scholarship request. Is that intended, or should they be able to reapply through `/scholarship`?
 - **OQ6 is temporary.** Scholarship shares Sanadi code `1001050` with Other Educational Assistance, so Sanadi reports can't tell the two apart until a dedicated code exists.
-- Still open with the mentor: OQ10 (to check later), OQ13 and OQ14 (years of residence for Qatari applicants; the wizard asks it of everyone, the desk hides it for Qatar).
+- Still open with the mentor: OQ10 (to check later) and OQ13. OQ14 was closed in Phase 6 (asked of everyone, as in the normal wizard).
 - **Older scholarship requests and the new statements.** `REQ3881`–`REQ3888` have 8 documents; saving one in the desk now fails until the mother's and student's statements are added. Fine for demo data; check before go-live whether real requests exist by then. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
 - **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.
