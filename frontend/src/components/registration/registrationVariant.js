@@ -1,10 +1,10 @@
-// Field layout of the registration wizard for each flow (spec/scholarship_flow/plan.md §3).
+// Field layout of the registration wizard for each flow (spec/scholarship_flow/phase-6-registration-parity.md).
 // The cards and the step validation both read it, so what is shown and what is required stay in sync.
 
-// Mirrors the server lists in beneficiary_request.py; all of them are required.
+// Mirrors SCHOLARSHIP_ATTACHMENT_FIELDS in beneficiaries_registration.py; all of them are required.
 export const SCHOLARSHIP_ATTACHMENT_FIELDS = [
-  'education_invoice',
-  'grade_transcript',
+  'scholarship_university_invoice',
+  'scholarship_grade_transcript',
   'scholarship_guardian_id',
   'scholarship_guardian_passport',
   'scholarship_student_id',
@@ -14,12 +14,11 @@ export const SCHOLARSHIP_ATTACHMENT_FIELDS = [
   'scholarship_mother_bank_statement',
   'scholarship_student_bank_statement',
 ]
+// Stored on the Beneficiary Request.
 export const SCHOLARSHIP_DECLARATION_FIELDS = ['is_data_accuracy_declared', 'is_eligibility_check_accepted']
 
-const REGISTRATION_INCOME = 'registration.incomeDetails'
-const SCHOLARSHIP_INCOME = 'scholarship.incomeDetails'
-
-function incomeSource(field, periodicField, amountField, noteField, keys, prefix = REGISTRATION_INCOME) {
+function incomeSource(field, periodicField, amountField, noteField, keys) {
+  const prefix = 'registration.incomeDetails'
   return {
     field,
     periodicField,
@@ -33,79 +32,38 @@ function incomeSource(field, periodicField, amountField, noteField, keys, prefix
   }
 }
 
-const INCOME = {
-  ben_income: incomeSource('ben_income', 'ben_periodic_type', 'salary_amount', 'benficiary_note',
+// The income card and the step validation both read this list.
+export const INCOME_SOURCES = [
+  incomeSource('ben_income', 'ben_periodic_type', 'salary_amount', 'benficiary_note',
     { label: 'benIncomeLabel', sectionTitle: 'benIncomeTitle', periodic: 'benPeriodicLabel', amount: 'salaryAmount', note: 'benNoteLabel' }),
-  family_income: incomeSource('family_income', 'family_periodic_type', 'family_income_amount', 'family_note',
+  incomeSource('family_income', 'family_periodic_type', 'family_income_amount', 'family_note',
     { label: 'familyIncomeLabel', sectionTitle: 'familyIncomeTitle', periodic: 'familyPeriodicLabel', amount: 'familyAmount', note: 'familyNoteLabel' }),
-  family_extra: incomeSource('family_extra', 'extra_periodic_type', 'family_extra_salary', 'family_extra_note',
+  incomeSource('family_extra', 'extra_periodic_type', 'family_extra_salary', 'family_extra_note',
     { label: 'familyExtraLabel', sectionTitle: 'familyExtraTitle', periodic: 'extraPeriodicLabel', amount: 'extraAmount', note: 'extraNoteLabel' }),
-  children_income: incomeSource('children_income', 'children_periodic_type', 'family_children_salary', 'children_note',
+  incomeSource('children_income', 'children_periodic_type', 'family_children_salary', 'children_note',
     { label: 'childrenIncomeLabel', sectionTitle: 'childrenIncomeTitle', periodic: 'childrenPeriodicLabel', amount: 'childrenAmount', note: 'childrenNoteLabel' }),
-  private_income: incomeSource('private_income', 'private_business_periodicity', 'private_business_amount', 'private_note',
+  incomeSource('private_income', 'private_business_periodicity', 'private_business_amount', 'private_note',
     { label: 'privateIncomeLabel', sectionTitle: 'privateIncomeTitle', periodic: 'privatePeriodicLabel', amount: 'privateAmount', note: 'privateNoteLabel' }),
-  stock_income: incomeSource('stock_income', 'stock_market_periodicity', 'stock_market_income', 'stock_market_note',
+  incomeSource('stock_income', 'stock_market_periodicity', 'stock_market_income', 'stock_market_note',
     { label: 'stockIncomeLabel', sectionTitle: 'stockIncomeTitle', periodic: 'stockPeriodicLabel', amount: 'stockAmount', note: 'stockNoteLabel' }),
-  rent_income: incomeSource('rent_income', 'rent_periodic_type', 'rent_income_amount', 'rent_note',
+  incomeSource('rent_income', 'rent_periodic_type', 'rent_income_amount', 'rent_note',
     { label: 'rentIncomeLabel', sectionTitle: 'rentIncomeTitle', periodic: 'rentPeriodicLabel', amount: 'rentAmount', note: 'rentNoteLabel' }),
-}
-
-const SCHOLARSHIP_ONLY_INCOME = {
-  father_income: incomeSource('father_income', 'father_income_periodicity', 'father_income_amount', 'father_income_note',
-    { label: 'fatherIncomeLabel', sectionTitle: 'fatherIncomeTitle', periodic: 'fatherPeriodicLabel', amount: 'fatherAmount', note: 'fatherNoteLabel' },
-    SCHOLARSHIP_INCOME),
-  mother_income: incomeSource('mother_income', 'mother_income_periodicity', 'mother_income_amount', 'mother_income_note',
-    { label: 'motherIncomeLabel', sectionTitle: 'motherIncomeTitle', periodic: 'motherPeriodicLabel', amount: 'motherAmount', note: 'motherNoteLabel' },
-    SCHOLARSHIP_INCOME),
-}
+]
 
 export const OBLIGATION_FIELDS = ['family_obligation', 'rent_obligation', 'treatment_obligation', 'debt_obligation', 'tuition_obligation']
 
-const OBLIGATION_LABEL_KEYS = {
-  family_obligation: 'familyLabel',
-  rent_obligation: 'rentLabel',
-  treatment_obligation: 'treatmentLabel',
-  debt_obligation: 'debtLabel',
-  tuition_obligation: 'tuitionLabel',
-}
-
 const MARITAL_STATUSES = ['Married', 'Divorced', 'Widowed', 'Separated']
 
+// The scholarship wizard has every field of the normal one, plus the guardian mobile and Single.
 const REGISTRATION_VARIANT = {
   hiddenFields: new Set(['guardian_mobile_number']),
   maritalStatuses: MARITAL_STATUSES,
-  labelKeys: { bankLoans: 'registration.additionalData.bankLoans' },
-  incomeSources: Object.values(INCOME),
-  obligationLabelKeys: Object.fromEntries(
-    OBLIGATION_FIELDS.map(field => [field, `registration.financialObligations.${OBLIGATION_LABEL_KEYS[field]}`]),
-  ),
 }
 
 const SCHOLARSHIP_VARIANT = {
-  // The passport number and the secondary-ID group stay visible: Sanadi gets the passport through
-  // them, and no beneficiary has been accepted without one.
-  hiddenFields: new Set([
-    'id_expiry_date', 'partners_phone_number',
-    'worked_before',
-    'family_visa_type', 'visa_dependent', 'names_and_relation_to_sponsored',
-    'have_children', 'children_above_eighteen', 'children_in_school', 'children_school',
-    'children_school_information', 'children_special_needs',
-    'afif_charity_assistance', 'affif_assistance',
-  ]),
+  hiddenFields: new Set(),
   // The server refuses Single on a normal registration.
   maritalStatuses: ['Single', ...MARITAL_STATUSES],
-  labelKeys: { bankLoans: 'scholarship.additionalData.bankLoans' },
-  incomeSources: [
-    // The applicant's own income; the guardian's comes through the father and mother incomes.
-    { ...INCOME.ben_income, labelKey: `${SCHOLARSHIP_INCOME}.benIncomeLabel` },
-    SCHOLARSHIP_ONLY_INCOME.father_income,
-    SCHOLARSHIP_ONLY_INCOME.mother_income,
-    { ...INCOME.private_income, labelKey: `${SCHOLARSHIP_INCOME}.privateIncomeLabel` },
-    INCOME.stock_income,
-  ],
-  obligationLabelKeys: Object.fromEntries(
-    OBLIGATION_FIELDS.map(field => [field, `scholarship.financialObligations.${OBLIGATION_LABEL_KEYS[field]}`]),
-  ),
 }
 
 export function getRegistrationVariant(flow) {

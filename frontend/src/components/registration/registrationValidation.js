@@ -1,4 +1,5 @@
 import {
+  INCOME_SOURCES,
   OBLIGATION_FIELDS,
   SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
@@ -11,8 +12,8 @@ function isEmpty(value) {
   return value === undefined || value === null || value === ''
 }
 
-// Collects the popup messages and the highlighted fields of one step. Fields the flow hides are
-// never required or checked, so a hidden field can't block the applicant.
+// Collects the popup messages and the highlighted fields of one step. A field the flow hides (the
+// guardian mobile in the normal flow) is never required or checked.
 class StepErrors {
   constructor(variant) {
     this.variant = variant
@@ -46,7 +47,7 @@ export function validateRegistrationStep({ formData, step, subStep4, flow = 'reg
   if (step === 3) validateObligationsStep(check, formData.financialObligations, t)
   if (step === 4 && subStep4 === 1) validateAdditionalDataStep(check, formData.additionalData, t)
   if (step === 4 && subStep4 === 2) validateAttachmentsStep(check, formData, t)
-  if (step === 5) validateScholarshipRequestStep(check, formData.scholarshipRequest, t)
+  if (step === 5) validateScholarshipRequestStep(check, formData, t)
 
   return { errors: check.errors, fields: check.fields }
 }
@@ -141,11 +142,10 @@ function validateFamilyDetails(check, pi, fd, t) {
 }
 
 function validateIncomeStep(check, incomeDetails, t) {
-  const sources = check.variant.incomeSources
-  if (!sources.some(src => Number(incomeDetails[src.field]) === 1)) {
+  if (!INCOME_SOURCES.some(src => Number(incomeDetails[src.field]) === 1)) {
     check.add(null, t('registration.validation.atLeastOneIncome'))
   }
-  for (const src of sources.filter(src => Number(incomeDetails[src.field]) === 1)) {
+  for (const src of INCOME_SOURCES.filter(src => Number(incomeDetails[src.field]) === 1)) {
     check.require(incomeDetails[src.periodicField], src.periodicField, t(src.periodicLabelKey))
     check.require(incomeDetails[src.amountField], src.amountField, t(src.amountLabelKey))
     check.require(incomeDetails[src.noteField], src.noteField, t(src.noteLabelKey))
@@ -211,7 +211,7 @@ function validateAdditionalDataStep(check, ad, t) {
   check.require(ad.housing_description, 'housing_description', t('registration.additionalData.housingDescription'))
   check.require(ad.has_afif_employee_relation, 'has_afif_employee_relation', t('registration.additionalData.afifRelation'))
   check.require(ad.has_housemates, 'has_housemates', t('registration.additionalData.housemates'))
-  check.require(ad.has_bank_loans, 'has_bank_loans', t(check.variant.labelKeys.bankLoans))
+  check.require(ad.has_bank_loans, 'has_bank_loans', t('registration.additionalData.bankLoans'))
   if (ad.has_bank_loans === 'Yes') check.require(ad.court_tried, 'court_tried', t('registration.additionalData.courtTried'))
   check.require(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
   if (ad.has_other_info === 'Yes') {
@@ -271,11 +271,12 @@ function validateAttachmentsStep(check, formData, t) {
   if (!legalClaims.statusAwareness)   check.add('claim_statusAwareness', 'الإقرار بطبيعة التسجيل')
 }
 
-function validateScholarshipRequestStep(check, sr, t) {
+// Step 5 shows the request data and the scholarship documents, which are saved on the registration.
+function validateScholarshipRequestStep(check, { scholarshipRequest: sr, attachments }, t) {
   if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
   if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
-    if (!sr.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
+    if (!attachments.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
   }
   for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
     if (!sr.declarations[field]) check.add(`claim_${field}`, t(`scholarship.declarations.${field}`))

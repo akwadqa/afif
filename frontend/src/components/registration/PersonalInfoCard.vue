@@ -73,7 +73,7 @@
 
 
       <!-- ID Expiry Date -->
-      <div v-if="variant.isShown('id_expiry_date')" class="space-y-1.5">
+      <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.idExpiryDate') }} <span class="text-red-500">*</span></label>
         <DatePicker
           :modelValue="modelValue.id_expiry_date"
@@ -101,7 +101,7 @@
       </div>
 
       <!-- Passport Number -->
-      <div v-if="variant.isShown('passport_number')" class="space-y-1.5">
+      <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.passportNumber') }} <span class="text-red-500">*</span></label>
         <input
           type="text"
@@ -221,8 +221,8 @@
         </select>
       </div>
 
-      <!-- Partner Phone -->
-      <div v-if="variant.isShown('partners_phone_number')" class="space-y-1.5">
+      <!-- Partner Phone (always shown) -->
+      <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
@@ -438,7 +438,7 @@
       -->
 
       <!-- Secondary ID Type -->
-      <div v-if="variant.isShown('ben_sec_idtype')" class="space-y-1.5">
+      <div class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secIdType') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_sec_idtype || 'Passport'"
@@ -451,7 +451,7 @@
       </div>
 
       <!-- Secondary Nationality — shown when secondary ID is Passport -->
-      <div v-if="variant.isShown('ben_sec_nationality') && additionalInfo.ben_sec_idtype === 'Passport'" class="space-y-1.5">
+      <div v-if="additionalInfo.ben_sec_idtype === 'Passport'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.secNationality') }} <span class="text-red-500">*</span></label>
         <Autocomplete
           :options="countryOptions"
@@ -473,7 +473,7 @@
       </div>
 
       <!-- Gulf Country — shown when secondary ID is GCC Id -->
-      <div v-if="variant.isShown('ben_sec_gulf_country') && additionalInfo.ben_sec_idtype === 'GCC Id'" class="space-y-1.5">
+      <div v-if="additionalInfo.ben_sec_idtype === 'GCC Id'" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.gulfCountry') }} <span class="text-red-500">*</span></label>
         <select
           :value="additionalInfo.ben_sec_gulf_country"
@@ -554,7 +554,7 @@
 
       <!-- Worked Before — shown when visa=Residence AND currently_working=No -->
       <div
-        v-if="variant.isShown('worked_before') && isResidence && additionalInfo.currently_working === 'No'"
+        v-if="isResidence && additionalInfo.currently_working === 'No'"
         class="space-y-1.5"
       >
         <label class="text-sm font-medium text-gray-700">{{ t('registration.additionalInfo.workedBefore') }} <span class="text-red-500">*</span></label>

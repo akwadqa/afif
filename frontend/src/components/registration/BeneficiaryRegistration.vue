@@ -28,20 +28,20 @@
 
       <div :class="{ 'read-only-form': isReadOnly }">
         <div v-if="currentStep === 1" class="space-y-6">
-          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :flow="flow" :invalid-fields="invalidFields" />
-          <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :flow="flow" :invalid-fields="invalidFields" />
+          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :flow="fieldsFlow" :invalid-fields="invalidFields" />
+          <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 2">
-          <IncomeDetailsCard v-model="formData.incomeDetails" :flow="flow" :invalid-fields="invalidFields" />
+          <IncomeDetailsCard v-model="formData.incomeDetails" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 3">
-          <FinancialObligationsCard v-model="formData.financialObligations" :flow="flow" :invalid-fields="invalidFields" />
+          <FinancialObligationsCard v-model="formData.financialObligations" :invalid-fields="invalidFields" />
         </div>
 
         <div v-else-if="currentStep === 4">
-          <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :flow="flow" :invalid-fields="invalidFields" />
+          <AdditionalDataCard v-if="subStep4 === 1" v-model="formData.additionalData" :invalid-fields="invalidFields" />
           <AttachmentsCard
             v-else-if="subStep4 === 2"
             v-model="formData.attachments"
@@ -54,7 +54,15 @@
         </div>
 
         <div v-else-if="currentStep === 5 && isScholarshipFlow">
-          <ScholarshipRequestCard v-model="formData.scholarshipRequest" :invalid-fields="invalidFields" />
+          <ScholarshipRequestCard
+            v-model="formData.scholarshipRequest"
+            :files="formData.attachments.files"
+            :invalid-fields="invalidFields"
+            :uploading="attachmentUploading"
+            :upload-errors="attachmentUploadErrors"
+            @select-file="handleAttachmentFileSelected"
+            @remove-file="removeScholarshipAttachment"
+          />
         </div>
       </div>
 
@@ -136,6 +144,7 @@ import {
   getRegistrationVariant,
 } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
+import { uploadFile } from '@/utils/fileUpload'
 
 const props = defineProps({
   registrationName: { type: String, default: null },
@@ -166,7 +175,9 @@ const editing = ref(false)
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
 const isScholarshipFlow = computed(() => props.flow === 'scholarship')
-const variant = computed(() => getRegistrationVariant(props.flow))
+// A scholarship registration keeps its fields when it is edited from the normal profile page.
+const fieldsFlow = computed(() => (docMeta.value.is_scholarship ? 'scholarship' : props.flow))
+const variant = computed(() => getRegistrationVariant(fieldsFlow.value))
 
 // Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
 // 6 = scholarship request data (scholarship flow only).
@@ -222,8 +233,6 @@ const formData = ref({
     private_income: 0,
     stock_income: 0,
     rent_income: 0,
-    father_income: 0,
-    mother_income: 0,
   },
   financialObligations: {
     family_obligation: 0,
@@ -242,10 +251,10 @@ const formData = ref({
     },
   },
   // Kept in memory only: it becomes the Beneficiary Request when the application is submitted.
+  // The scholarship documents are registration fields, kept in attachments.files.
   scholarshipRequest: {
     requested_amount: '',
     request_summary: '',
-    files: {},
     declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false])),
   },
 })
@@ -259,6 +268,8 @@ const ATTACHMENT_FIELDS = [
   'special_needs_certificate', 'termination_letter', 'nonmarriage_proof', 'divorce_paper',
   'partner_death_certificate', 'copy_of_court_judgment', 'id_coresidents', 'id_sponsored',
   'metrash_adress', 'additional_documents',
+  // Always sent: frappe.client.save clears every field missing from the payload, even on a normal page.
+  ...SCHOLARSHIP_ATTACHMENT_FIELDS,
 ]
 
 function onStepError(err) {
@@ -391,8 +402,6 @@ function populateFromDoc(doc) {
     private_income: doc.private_income ?? 0,
     stock_income: doc.stock_income ?? 0,
     rent_income: doc.rent_income ?? 0,
-    father_income: doc.father_income ?? 0,
-    mother_income: doc.mother_income ?? 0,
     ben_periodic_type: doc.ben_periodic_type,
     salary_amount: doc.salary_amount,
     benficiary_note: doc.benficiary_note,
@@ -414,12 +423,6 @@ function populateFromDoc(doc) {
     rent_periodic_type: doc.rent_periodic_type,
     rent_income_amount: doc.rent_income_amount,
     rent_note: doc.rent_note,
-    father_income_periodicity: doc.father_income_periodicity,
-    father_income_amount: doc.father_income_amount,
-    father_income_note: doc.father_income_note,
-    mother_income_periodicity: doc.mother_income_periodicity,
-    mother_income_amount: doc.mother_income_amount,
-    mother_income_note: doc.mother_income_note,
   }
 
   formData.value.financialObligations = {
@@ -681,7 +684,7 @@ function validateStep(targetStep, targetSubStep4) {
     formData: formData.value,
     step: targetStep,
     subStep4: targetSubStep4,
-    flow: props.flow,
+    flow: fieldsFlow.value,
     t,
   })
 }
@@ -714,8 +717,7 @@ async function handleNext() {
 
   const isAttachmentsStep = currentStep.value === 4 && subStep4.value === 2
   const isScholarshipRequestStep = currentStep.value === 5
-  if (isAttachmentsStep && pendingAttachmentOps.size) {
-    
+  if ((isAttachmentsStep || isScholarshipRequestStep) && pendingAttachmentOps.size) {
     submitting.value = true
     await waitForPendingAttachmentOps()
     submitting.value = false
@@ -793,22 +795,12 @@ async function handleNext() {
   maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
 }
 
+// The scholarship documents were saved on the Draft as they were picked, so only the request data is sent.
 async function submitScholarshipApplication() {
   const sr = formData.value.scholarshipRequest
-  try {
-    for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
-      // Stored back as a URL so a retry after a failed submit reuses the upload.
-      if (sr.files[id] instanceof File) sr.files[id] = await uploadUnattachedPrivateFile(sr.files[id])
-    }
-  } catch (e) {
-    error.value = e.message || t('registration.submitError')
-    return
-  }
-
   const request = {
     requested_amount: sr.requested_amount,
     request_summary: sr.request_summary,
-    ...sr.files,
     ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
   }
   try {
@@ -856,7 +848,7 @@ async function uploadAllFiles() {
     if (fieldname === 'additional_attachments') continue
     if (file instanceof File) {
       try {
-        const fileUrl = await uploadFile(file, docName.value, fieldname)
+        const fileUrl = await uploadRegistrationFile(file, docName.value, fieldname)
         formData.value.attachments.files[fieldname] = fileUrl
       } catch (e) {
         failures.push(e.message || file.name)
@@ -868,7 +860,7 @@ async function uploadAllFiles() {
   for (let i = 0; i < extras.length; i++) {
     if (extras[i] instanceof File) {
       try {
-        extras[i] = await uploadFile(extras[i], docName.value, 'additional_attachments')
+        extras[i] = await uploadRegistrationFile(extras[i], docName.value, 'additional_attachments')
       } catch (e) {
         failures.push(e.message || extras[i].name)
       }
@@ -878,38 +870,14 @@ async function uploadAllFiles() {
   return failures
 }
 
-function uploadFile(file, docName, fieldname) {
-  return postFile(file, {
-    is_private: '0',
+function uploadRegistrationFile(file, docName, fieldname) {
+  return uploadFile(file, {
+    // The registration documents stay public (mentor's decision); the scholarship ones are private.
+    is_private: SCHOLARSHIP_ATTACHMENT_FIELDS.includes(fieldname) ? '1' : '0',
     doctype: 'Beneficiaries Registration',
     docname: docName,
     fieldname,
   })
-}
-
-// The scholarship endpoint attaches these to the request it creates, after checking they are the user's own.
-function uploadUnattachedPrivateFile(file) {
-  return postFile(file, { is_private: '1' })
-}
-
-async function postFile(file, fields) {
-  const fd = new FormData()
-  fd.append('file', file, file.name)
-  fd.append('folder', 'Home/Attachments')
-  for (const [key, value] of Object.entries(fields)) fd.append(key, value)
-
-  const headers = { 'X-Frappe-Site-Name': window.location.hostname }
-  if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {
-    headers['X-Frappe-CSRF-Token'] = window.csrf_token
-  }
-
-  const res = await fetch('/api/method/upload_file', { method: 'POST', headers, body: fd })
-  if (!res.ok) {
-    if (res.status === 413) throw new Error(`${t('registration.attachments.fileTooLarge')}: ${file.name}`)
-    throw new Error(`${t('registration.submitError')}: ${file.name}`)
-  }
-  const data = await res.json()
-  return data.message.file_url
 }
 
 
@@ -944,6 +912,16 @@ function handleAttachmentFileSelected(id, file) {
   return op
 }
 
+// Saving the cleared field also deletes its File on the server.
+function removeScholarshipAttachment(id) {
+  formData.value.attachments.files = { ...formData.value.attachments.files, [id]: null }
+  const op = queueAttachmentSave().catch(e => {
+    attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: e.message || t('registration.submitError') }
+  })
+  pendingAttachmentOps.add(op)
+  op.finally(() => pendingAttachmentOps.delete(op))
+}
+
 async function uploadAndSaveAttachment(id, file) {
   attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: undefined }
 
@@ -955,7 +933,7 @@ async function uploadAndSaveAttachment(id, file) {
 
   attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
   try {
-    const fileUrl = await uploadFile(file, docName.value, id)
+    const fileUrl = await uploadRegistrationFile(file, docName.value, id)
     formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
 
     await queueAttachmentSave()

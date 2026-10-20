@@ -185,7 +185,7 @@
 
         <div class="space-y-1.5">
           <label class="text-xs font-semibold text-gray-700 block leading-relaxed">
-            {{ t(variant.labelKeys.bankLoans) }} <span class="text-red-500">*</span>
+            {{ t('registration.additionalData.bankLoans') }} <span class="text-red-500">*</span>
           </label>
           <select
             :value="modelValue.has_bank_loans"
@@ -258,20 +258,16 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
-import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
-  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue'])
-
-const variant = computed(() => getRegistrationVariant(props.flow))
 
 const letterWarnings = ref(new Set())
 

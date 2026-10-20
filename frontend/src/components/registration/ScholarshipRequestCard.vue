@@ -59,14 +59,30 @@
             ? 'bg-red-50/50 border-red-300'
             : 'bg-gray-50/50 hover:bg-gray-50/80 border-gray-100/70'"
         >
-          <div class="flex-1 min-w-0 text-sm font-semibold text-gray-700">
-            {{ t(`scholarship.attachments.${id}`) }}
-            <span class="text-red-500">*</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-700">
+              {{ t(`scholarship.attachments.${id}`) }}
+              <span class="text-red-500">*</span>
+            </div>
+            <div v-if="uploadErrors[id]" class="text-xs text-red-500 mt-1">
+              {{ uploadErrors[id] }}
+            </div>
           </div>
 
           <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
+            <span
+              v-if="uploading[id]"
+              class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-gray-400"
+            >
+              <svg class="w-4 h-4 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
+              </svg>
+              <span>{{ t('registration.attachments.uploading') }}</span>
+            </span>
+
             <button
-              v-if="!modelValue.files[id]"
+              v-else-if="!files[id]"
               type="button"
               @click="triggerFileInput(id)"
               class="flex items-center gap-1.5 px-4 py-2 border border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm"
@@ -91,7 +107,7 @@
 
               <button
                 type="button"
-                @click="setFile(id, null)"
+                @click="emit('remove-file', id)"
                 class="flex items-center gap-1.5 px-3 py-2 border border-red-100 text-red-500 rounded-xl bg-red-50/30 hover:bg-red-50 transition-colors text-xs font-semibold"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
@@ -147,11 +163,16 @@ import { isFileTooLarge } from '@/utils/fileValidation'
 import { SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
+// The documents are registration fields, so the parent owns them: it uploads a picked file now
+// (Draft) or on submit (accepted beneficiary).
 const props = defineProps({
   modelValue: { type: Object, required: true },
+  files: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
+  uploading: { type: Object, default: () => ({}) },
+  uploadErrors: { type: Object, default: () => ({}) },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'select-file', 'remove-file'])
 
 const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png']
 const amountLetterWarning = ref(false)
@@ -164,10 +185,6 @@ function update(changes) {
   emit('update:modelValue', { ...props.modelValue, ...changes })
 }
 
-function setFile(id, file) {
-  update({ files: { ...props.modelValue.files, [id]: file } })
-}
-
 function onAmountInput(event) {
   const raw = event.target.value
   const value = raw.replace(/[^\d.]/g, '')
@@ -177,7 +194,7 @@ function onAmountInput(event) {
 }
 
 function fileLabel(id) {
-  const value = props.modelValue.files[id]
+  const value = props.files[id]
   if (value instanceof File) return value.name
   if (typeof value === 'string') return value.split('/').pop()
   return ''
@@ -201,7 +218,7 @@ function handleFileSelected(event, id) {
     alert(t('registration.attachments.fileTooLarge'))
     return
   }
-  setFile(id, file)
+  emit('select-file', id, file)
 }
 </script>
 

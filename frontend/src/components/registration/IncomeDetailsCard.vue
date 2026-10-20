@@ -106,13 +106,12 @@
 import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
-import { getRegistrationVariant } from './registrationVariant'
+import { INCOME_SOURCES } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 const props = defineProps({
   modelValue: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
-  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -136,7 +135,7 @@ function isInvalid(field) {
 }
 
 const incomeSources = computed(() =>
-  getRegistrationVariant(props.flow).incomeSources.map(src => ({
+  INCOME_SOURCES.map(src => ({
     ...src,
     label: t(src.labelKey),
     sectionTitle: t(src.sectionTitleKey),

@@ -611,35 +611,12 @@ export default {
     scholarship: {
       title: 'منحة الشيخ خالد بن ناصر',
       subtitle: 'أكمل بيانات التسجيل وبيانات الطلب لتقديم طلب المنحة',
+      acceptedSubtitle: 'ملف المستفيد الخاص بك مقبول، أكمل بيانات الطلب والمرفقات لتقديم طلب المنحة',
       steps: {
         request: 'بيانات الطلب',
       },
       personalInfo: {
         guardianMobile: 'رقم جوال ولي الأمر',
-      },
-      incomeDetails: {
-        benIncomeLabel: 'هل لديك (دخل/راتب)؟',
-        fatherIncomeLabel: 'هل لديك دخل ولي الأمر (الأب)؟',
-        fatherIncomeTitle: 'معلومات إضافية عن دخل الأب',
-        fatherPeriodicLabel: 'آلية صرف دخل الأب',
-        fatherAmount: 'مبلغ دخل الأب',
-        fatherNoteLabel: 'ملاحظات',
-        motherIncomeLabel: 'هل لديك دخل الأم إن كانت تعمل؟',
-        motherIncomeTitle: 'معلومات إضافية عن دخل الأم',
-        motherPeriodicLabel: 'آلية صرف دخل الأم',
-        motherAmount: 'مبلغ دخل الأم',
-        motherNoteLabel: 'ملاحظات',
-        privateIncomeLabel: 'هل يوجد دخل للأسرة من عمل خاص أو تجارة منزلية؟',
-      },
-      financialObligations: {
-        familyLabel: 'هل لدى الأسرة التزامات مالية؟',
-        rentLabel: 'هل لدى الأسرة التزامات دفع إيجار شهرية؟',
-        treatmentLabel: 'هل لدى الأسرة التزامات دفع مصاريف علاج شهرية مستمرة؟',
-        debtLabel: 'هل لدى الأسرة ديون بنكية أو شخصية؟',
-        tuitionLabel: 'هل لدى الأسرة التزامات بمصاريف مدرسية وجامعية؟',
-      },
-      additionalData: {
-        bankLoans: 'هل لديك أو لدى رب الأسرة التزامات بنكية ومديونيات؟',
       },
       request: {
         title: 'بيانات الطلب',
@@ -650,8 +627,8 @@ export default {
         attachmentsTitle: 'المرفقات المطلوبة',
       },
       attachments: {
-        education_invoice: 'فاتورة الجامعة',
-        grade_transcript: 'السجل التراكمي للطالب',
+        scholarship_university_invoice: 'فاتورة الجامعة',
+        scholarship_grade_transcript: 'السجل التراكمي للطالب',
         scholarship_guardian_id: 'صورة البطاقة الشخصية لولي الأمر أو مقدم الطلب',
         scholarship_guardian_passport: 'صورة جواز السفر لولي الأمر أو مقدم الطلب',
         scholarship_student_id: 'صورة البطاقة الشخصية للطالب',
@@ -668,16 +645,15 @@ export default {
       success: {
         title: 'تم تقديم طلب المنحة بنجاح',
         message: 'تم استلام تسجيلك وطلب المنحة بنجاح. سيصلك إشعار عبر البريد الإلكتروني بنتيجة المراجعة.',
+        acceptedMessage: 'تم استلام طلب المنحة بنجاح. يمكنك متابعة حالته من صفحة طلباتي.',
         button: 'الاطلاع على ملف المستفيد',
       },
       blocked: {
         title: 'لا يمكن التقديم على المنحة من هنا',
-        message: 'لديك ملف مستفيد مسجل مسبقاً، لذلك لا يمكنك بدء طلب منحة جديد من هذه الصفحة.',
+        message: 'لديك ملف مستفيد لم يُقبل بعد. يمكنك التقديم على المنحة من هذه الصفحة بعد قبول ملفك.',
         button: 'العودة إلى ملف المستفيد',
         submittedTitle: 'تم تقديم طلب المنحة',
         statusLabel: 'حالة ملف المستفيد:',
-        acceptedMessage: 'ملف المستفيد الخاص بك مقبول، ويمكنك التقديم على المنحة كطلب مساعدة تعليمية من صفحة طلباتي.',
-        applyButton: 'التقديم على المنحة من طلباتي',
       },
     },
     beneficiaryList: {
@@ -1614,35 +1590,12 @@ export default {
     scholarship: {
       title: 'Sheikh Khalid bin Nasser Scholarship',
       subtitle: 'Complete your registration and request data to apply for the scholarship',
+      acceptedSubtitle: 'Your beneficiary profile is accepted. Complete the request data and attachments to apply for the scholarship',
       steps: {
         request: 'Request Data',
       },
       personalInfo: {
         guardianMobile: "Guardian's Mobile Number",
-      },
-      incomeDetails: {
-        benIncomeLabel: 'Do you have an income (salary)?',
-        fatherIncomeLabel: 'Do you have income from the guardian (father)?',
-        fatherIncomeTitle: "Additional details about the father's income",
-        fatherPeriodicLabel: "Father's income payment frequency",
-        fatherAmount: "Father's income amount",
-        fatherNoteLabel: 'Notes',
-        motherIncomeLabel: 'Do you have income from the mother, if she works?',
-        motherIncomeTitle: "Additional details about the mother's income",
-        motherPeriodicLabel: "Mother's income payment frequency",
-        motherAmount: "Mother's income amount",
-        motherNoteLabel: 'Notes',
-        privateIncomeLabel: 'Does the family have income from a private business or home-based trade?',
-      },
-      financialObligations: {
-        familyLabel: 'Does the family have financial obligations?',
-        rentLabel: 'Does the family have monthly rent payments?',
-        treatmentLabel: 'Does the family have ongoing monthly medical expenses?',
-        debtLabel: 'Does the family have bank or personal debts?',
-        tuitionLabel: 'Does the family have school or university expenses?',
-      },
-      additionalData: {
-        bankLoans: 'Do you or the head of the family have bank obligations or debts?',
       },
       request: {
         title: 'Request Data',
@@ -1653,8 +1606,8 @@ export default {
         attachmentsTitle: 'Required Attachments',
       },
       attachments: {
-        education_invoice: 'University invoice',
-        grade_transcript: "Student's cumulative transcript",
+        scholarship_university_invoice: 'University invoice',
+        scholarship_grade_transcript: "Student's cumulative transcript",
         scholarship_guardian_id: 'ID card of the guardian or applicant',
         scholarship_guardian_passport: 'Passport of the guardian or applicant',
         scholarship_student_id: "Student's ID card",
@@ -1671,16 +1624,15 @@ export default {
       success: {
         title: 'Your scholarship application was submitted',
         message: 'We received your registration and scholarship request. You will be notified by email of the review result.',
+        acceptedMessage: 'We received your scholarship request. You can follow its status in My Requests.',
         button: 'View beneficiary profile',
       },
       blocked: {
         title: 'You cannot apply for the scholarship here',
-        message: 'You already have a beneficiary profile, so you cannot start a new scholarship application from this page.',
+        message: 'Your beneficiary profile is not accepted yet. You can apply for the scholarship from this page once it is accepted.',
         button: 'Back to beneficiary profile',
         submittedTitle: 'Your scholarship application was submitted',
         statusLabel: 'Beneficiary profile status:',
-        acceptedMessage: 'Your beneficiary profile is accepted, so you can apply for the scholarship as an education assistance request from My Requests.',
-        applyButton: 'Apply from My Requests',
       },
     },
     beneficiaryList: {
