@@ -121,12 +121,12 @@ class TestScholarshipSupervisorDecision(ScholarshipDecisionTestCase):
             (10010, SCHOLARSHIP_AID_LOOKUP_ID),
         )
 
-    def test_rejecting_the_request_rejects_the_registration(self):
+    def test_rejecting_the_request_leaves_the_registration_as_it_is(self):
         self.apply_request_action("Reject")
 
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
-        self.assertEqual((registration.workflow_state, registration.status), ("Not Accepted", "Not Accepted"))
-        self.assertIn(self.request, registration.custom_notes)
+        self.assertEqual((registration.workflow_state, registration.status), ("New Registration", "New Registration"))
+        self.assertFalse(registration.custom_notes)
         self.assertEqual(self.get_request_state(), "Rejected by Supervisor")
         self.assertEqual(self.sanadi.calls, [])
 
@@ -188,15 +188,13 @@ class TestScholarshipRegistrationGuard(ScholarshipDecisionTestCase):
         self.assertEqual(self.get_registration_state(), "New Registration")
         self.assertEqual(self.sanadi.calls, [])
 
-    def test_rejected_applicant_who_resubmits_follows_the_normal_workflow(self):
+    def test_after_the_request_is_rejected_the_registration_follows_its_own_workflow(self):
         self.apply_request_action("Reject")
-        frappe.set_user(self.applicant)
-        apply_workflow(frappe.get_doc("Beneficiaries Registration", self.registration), "Submit")
-        frappe.set_user(self.supervisor)
 
         apply_workflow(frappe.get_doc("Beneficiaries Registration", self.registration), "Approve")
 
         self.assertEqual(self.get_registration_state(), "Accepted")
+        self.assertEqual(self.get_request_state(), "Rejected by Supervisor")
 
 
 class TestScholarshipAidLookup(ScholarshipDecisionTestCase):
@@ -242,6 +240,28 @@ class TestScholarshipAidLookup(ScholarshipDecisionTestCase):
 
 
 class TestNormalRequestApprovalUnchanged(ScholarshipDecisionTestCase):
+    def test_normal_request_rejection_does_not_touch_the_registration(self):
+        frappe.set_user("Administrator")
+        user = make_beneficiary_user()
+        frappe.set_user(user)
+        registration = make_registration(is_scholarship=0)
+        accept_registration(registration, user)
+        request = frappe.get_doc(
+            {
+                "doctype": "Beneficiary Request",
+                "request_category": "Education Assistance",
+                "educational_assistance": "Tuition Fees",
+                "requested_amount": "1000",
+                "request_summary": "Tuition fees",
+            }
+        ).insert()
+        frappe.set_user(self.supervisor)
+
+        self.apply_request_action("Reject", request.name)
+
+        self.assertEqual(frappe.db.get_value("Beneficiary Request", request.name, "workflow_state"), "Rejected by Supervisor")
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "workflow_state"), "Accepted")
+
     def test_normal_request_approval_does_not_touch_the_registration(self):
         frappe.set_user("Administrator")
         user = make_beneficiary_user()

@@ -9,11 +9,6 @@ from frappe.utils import flt
 from afif.hooks_call import get_aid_lookup_parent_id
 
 SCHOLARSHIP_DECLARATION_FIELDS = ("is_data_accuracy_declared", "is_eligibility_check_accepted")
-# The Supervisor's decision on a scholarship request, and the registration state it carries over to.
-SUPERVISOR_DECISION_REGISTRATION_STATES = {
-    "Pending Specialist Approval": "Accepted",
-    "Rejected by Supervisor": "Not Accepted",
-}
 
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
@@ -64,7 +59,7 @@ class BeneficiaryRequest(Document):
     def on_update(self):
         # Runs before the on_update hooks, so the registration has its Sanadi id before
         # new_subvention_request sends this request to Sanadi.
-        self.apply_supervisor_decision_to_scholarship_registration()
+        self.accept_scholarship_registration_with_request()
 
     def validate_request_summary(self):
         if self.request_summary and len(self.request_summary) > 1000:
@@ -121,40 +116,38 @@ class BeneficiaryRequest(Document):
         return [_(self.meta.get_label(fieldname)) for fieldname in missing]
 
     @property
-    def is_scholarship_supervisor_decision(self) -> bool:
+    def is_scholarship_supervisor_approval(self) -> bool:
         previous = self.get_doc_before_save()
         return bool(
             self.is_scholarship
             and previous
             and previous.workflow_state == "Pending Supervisor Approval"
-            and self.workflow_state in SUPERVISOR_DECISION_REGISTRATION_STATES
+            and self.workflow_state == "Pending Specialist Approval"
         )
 
     def validate_scholarship_aid_lookup(self):
         # Fail on a missing Sanadi mapping before anything is sent to Sanadi.
-        if self.is_scholarship_supervisor_decision and self.workflow_state == "Pending Specialist Approval":
+        if self.is_scholarship_supervisor_approval:
             get_aid_lookup_parent_id(self)
 
-    def apply_supervisor_decision_to_scholarship_registration(self):
-        """Accept or reject the linked registration together with its scholarship request (plan D9, D11)."""
-        if not self.is_scholarship_supervisor_decision:
+    def accept_scholarship_registration_with_request(self):
+        """Accept the linked registration when the Supervisor approves its scholarship request (plan D11).
+
+        A rejection only rejects the request, as in the normal request flow: the registration is left
+        as it is, and the Supervisor decides it through its own workflow (plan Phase 8).
+        """
+        if not self.is_scholarship_supervisor_approval:
             return
 
         registration = frappe.get_doc("Beneficiaries Registration", self.beneficiaries)
         if registration.workflow_state == "New Registration":
-            registration.workflow_state = registration.status = SUPERVISOR_DECISION_REGISTRATION_STATES[
-                self.workflow_state
-            ]
-            if registration.workflow_state == "Not Accepted":
-                registration.custom_notes = _("Scholarship request {0} was rejected.").format(self.name)
+            registration.workflow_state = registration.status = "Accepted"
             registration.flags.is_scholarship_decision = True
             # The Supervisor's right to decide was checked on the request; the registration's own
             # workflow transition check still runs.
             registration.save(ignore_permissions=True)
 
-        if self.workflow_state == "Pending Specialist Approval" and not frappe.db.get_value(
-            "Beneficiaries Registration", registration.name, "ben_id"
-        ):
+        if not frappe.db.get_value("Beneficiaries Registration", registration.name, "ben_id"):
             frappe.throw(
                 _("The beneficiary could not be registered in Sanadi, so the scholarship request was not approved."),
                 ScholarshipCascadeError,
