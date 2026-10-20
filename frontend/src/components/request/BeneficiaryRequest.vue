@@ -263,9 +263,6 @@ const props = defineProps({
   beneficiaryName: { type: String, required: true },
   requestName: { type: String, default: '' },
   readOnly: { type: Boolean, default: false },
-  // Preselects a new request, e.g. Education Assistance → Scholarship from the scholarship page.
-  initialCategory: { type: String, default: '' },
-  initialSubcategory: { type: String, default: '' },
 })
 const emit = defineEmits(['submitted', 'back'])
 
@@ -357,12 +354,6 @@ function populateFromDoc(doc) {
 onMounted(() => {
   if (props.requestName) {
     getDoc.submit({ doctype: 'Beneficiary Request', name: props.requestName })
-    return
-  }
-  const preset = SUBCATEGORY_MAP[props.initialCategory]
-  if (preset) {
-    form.value.request_category = props.initialCategory
-    if (preset.options.includes(props.initialSubcategory)) form.value[preset.field] = props.initialSubcategory
   }
 })
 
@@ -428,7 +419,11 @@ const subcategoryLabel = computed(() => {
 const subcategoryOptions = computed(() => {
   if (!subcategoryConfig.value) return []
   const k = subcategoryConfig.value.key
-  return subcategoryConfig.value.options.map(val => ({
+  // Scholarship is applied for on /scholarship; it is listed here only to show an existing request.
+  const options = subcategoryConfig.value.options.filter(
+    val => props.readOnly || !isScholarshipSubcategory(form.value.request_category, val),
+  )
+  return options.map(val => ({
     value: val,
     label: t(`request.subtypes.${k}.${val}`),
   }))
@@ -529,15 +524,6 @@ function validate() {
     }
   }
 
-  if (isScholarship.value) {
-    for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
-      if (!declarations.value[field]) {
-        errors.push(t(`scholarship.declarations.${field}`))
-        fields.push('claim_' + field)
-      }
-    }
-  }
-
   return { errors, fields }
 }
 
@@ -566,13 +552,6 @@ const insertDoc = createResource({
   },
 })
 
-const createScholarshipRequest = createResource({
-  url: 'afif.api.scholarship.create_scholarship_request',
-  onError(err) {
-    error.value = extractError(err)
-  },
-})
-
 const setFieldValue = createResource({
   url: 'frappe.client.set_value',
   onError(err) {
@@ -594,12 +573,6 @@ async function handleSubmit() {
 
   invalidFields.value = []
   submitting.value = true
-
-  if (isScholarship.value) {
-    await submitScholarshipRequest()
-    submitting.value = false
-    return
-  }
 
   const f = form.value
   const doc = {
@@ -641,34 +614,6 @@ async function handleSubmit() {
   }
 
   submitting.value = false
-}
-
-// The scholarship validation needs every attachment when the request is created, so the files are
-// uploaded first, unattached, and the endpoint attaches them after checking they are the user's own.
-async function submitScholarshipRequest() {
-  try {
-    for (const { id } of requiredDocs.value) {
-      // Stored back as a URL so a retry after a failed submit reuses the upload.
-      if (files.value[id] instanceof File) files.value[id] = await uploadFile(files.value[id], { is_private: '1' })
-    }
-  } catch (e) {
-    error.value = e.message || t('request.submitError')
-    return
-  }
-
-  const request = {
-    requested_amount: form.value.requested_amount,
-    request_summary: form.value.request_summary,
-    ...Object.fromEntries(requiredDocs.value.map(({ id }) => [id, files.value[id]])),
-    ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, declarations.value[field] ? 1 : 0])),
-  }
-  try {
-    await createScholarshipRequest.submit({ request })
-  } catch {
-    return
-  }
-  submitted.value = true
-  emit('submitted')
 }
 
 async function uploadFile(file, fields) {

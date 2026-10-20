@@ -1,10 +1,7 @@
-import { SCHOLARSHIP_ATTACHMENT_FIELDS } from '@/components/registration/registrationVariant'
-
 // Every Attach field the request page can show, so the read-only view lists what was uploaded.
 export const REQUEST_ATTACHMENT_FIELDS = [
   'medical_bill', 'education_invoice', 'grade_transcript', 'garmeen_proof', 'garmeen_disclosure',
   'travel_ticket_doc', 'rent_contract', 'onwer_qid', 'late_letter', 'estate_pruchase',
-  ...SCHOLARSHIP_ATTACHMENT_FIELDS.filter(field => field.startsWith('scholarship_')),
 ]
 
 export function isScholarshipSubcategory(category, subcategory) {
@@ -12,10 +9,8 @@ export function isScholarshipSubcategory(category, subcategory) {
 }
 
 export function getRequiredRequestDocs(category, subcategory) {
-  if (isScholarshipSubcategory(category, subcategory)) {
-    // Same documents and labels as step 5 of the scholarship wizard; the server requires all of them.
-    return SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => ({ id, labelKey: `scholarship.attachments.${id}` }))
-  }
+  // A scholarship request's documents are on the registration (plan Phase 6).
+  if (isScholarshipSubcategory(category, subcategory)) return []
 
   const docs = []
   if (category === 'Medical Assistance') {
