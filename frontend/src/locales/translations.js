@@ -687,6 +687,7 @@ export default {
         pending: 'لا يمكنك تقديم طلب جديد حتى تتم مراجعة طلبك السابق.',
         cooldownRejected: 'يجب الانتظار 3 أشهر من تاريخ رفض الطلب السابق قبل تقديم طلب جديد.',
         cooldownApproved: 'يجب الانتظار 6 أشهر من تاريخ الموافقة على المساعدة السابقة قبل تقديم طلب جديد.',
+        notAccepted: 'يمكنك تقديم طلبات جديدة بعد قبول ملف المستفيد الخاص بك.',
       },
     },
     statuses: {
@@ -1666,6 +1667,7 @@ export default {
         pending: 'You cannot submit a new request until your previous request has been reviewed.',
         cooldownRejected: 'Three months must pass since the last rejected request before a new one can be created.',
         cooldownApproved: 'Six months must pass since the last approved request before a new one can be created.',
+        notAccepted: 'You can submit new requests once your beneficiary profile is accepted.',
       },
     },
     statuses: {

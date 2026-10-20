@@ -152,6 +152,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import bgImg from '@/assets/images/background.png'
 import BeneficiaryRequest from '@/components/request/BeneficiaryRequest.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
 
@@ -160,9 +161,9 @@ const beneficiaryName = ref('')
 const beneficiaryDisplayName = ref('')
 const requests = ref([])
 const selectedRequestName = ref('')
+const isAccepted = ref(false)
 
 const PENDING_STATUSES = ['Pending Supervisor Approval', 'Pending Specialist Approval', 'Saved']
-const FINAL_STATUSES = ['Rejected by Supervisor', 'Rejected', 'Approved', 'Approved For Aid']
 
 const CATEGORY_KEYS = {
   'Medical Assistance': 'request.categories.medical',
@@ -174,68 +175,20 @@ const CATEGORY_KEYS = {
   'Awareness Assistance': 'request.categories.awareness',
 }
 
-const canCreateRequest = computed(() => {
-  if (!requests.value.length) return true
-
-  const last = requests.value[0]
-
-  if (!FINAL_STATUSES.includes(last.status)) return false
-
-  if (last.rejected_date) {
-    const rejectedDate = new Date(last.rejected_date)
-    const threeMonthsLater = new Date(rejectedDate)
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
-    if (new Date() < threeMonthsLater) return false
-  }
-
-  if (last.approved_for_aid_date) {
-    const approvedDate = new Date(last.approved_for_aid_date)
-    const sixMonthsLater = new Date(approvedDate)
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
-    if (new Date() < sixMonthsLater) return false
-  }
-
-  return true
-})
-
-const disabledReason = computed(() => {
-  if (!requests.value.length) return ''
-
-  const last = requests.value[0]
-
-  if (!FINAL_STATUSES.includes(last.status)) {
-    return t('myRequests.disabledReasons.pending')
-  }
-
-  if (last.rejected_date) {
-    const rejectedDate = new Date(last.rejected_date)
-    const threeMonthsLater = new Date(rejectedDate)
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
-    if (new Date() < threeMonthsLater) {
-      return t('myRequests.disabledReasons.cooldownRejected')
-    }
-  }
-
-  if (last.approved_for_aid_date) {
-    const approvedDate = new Date(last.approved_for_aid_date)
-    const sixMonthsLater = new Date(approvedDate)
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
-    if (new Date() < sixMonthsLater) {
-      return t('myRequests.disabledReasons.cooldownApproved')
-    }
-  }
-
-  return ''
-})
+const blockReason = computed(() => getRequestBlockReason(requests.value, { isAccepted: isAccepted.value }))
+const canCreateRequest = computed(() => !blockReason.value)
+const disabledReason = computed(() => (blockReason.value ? t(`myRequests.disabledReasons.${blockReason.value}`) : ''))
 
 const myRegistration = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
-    if (!rows.length || rows[0].status !== 'Accepted') {
+    if (!rows.length) {
       view.value = 'blocked'
       return
     }
 
+    // A scholarship applicant has a request before being accepted, so the list is shown, read only.
+    isAccepted.value = rows[0].status === 'Accepted'
     beneficiaryName.value = rows[0].name
     beneficiaryDisplayName.value = rows[0].ar_name || rows[0].en_name || ''
     fetchRequests()
@@ -249,11 +202,11 @@ const myRequests = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
     requests.value = rows
-    view.value = 'list'
+    view.value = isAccepted.value || rows.length ? 'list' : 'blocked'
   },
   onError() {
     requests.value = []
-    view.value = 'list'
+    view.value = isAccepted.value ? 'list' : 'blocked'
   },
 })
 
