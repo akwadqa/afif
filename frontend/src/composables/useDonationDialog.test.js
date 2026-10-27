@@ -12,8 +12,8 @@ vi.mock("@/data/donation", () => ({ isProjectClosed: (project) => project?.statu
 
 const { useDonationDialog } = await import("./useDonationDialog")
 
-const openProject = { name: "abc123", status: "Open" }
-const closedProject = { name: "closed1", status: "Closed" }
+const openProject = { name: "abc123", slug: "wheelchairs", status: "Open" }
+const closedProject = { name: "closed1", slug: "school-bag", status: "Closed" }
 
 async function settle() {
 	await router.isReady()
@@ -29,10 +29,10 @@ describe("useDonationDialog", () => {
 		await settle()
 	})
 
-	it("adds the project to the URL when opened and removes it when closed", async () => {
+	it("shows only the project while open and restores the category when closed", async () => {
 		dialog.openDonationDialog(openProject)
 		await settle()
-		expect(router.currentRoute.value.fullPath).toBe("/donate?category=education&donate=abc123")
+		expect(router.currentRoute.value.fullPath).toBe("/donate?donate=wheelchairs")
 
 		dialog.closeDonationDialog()
 		await settle()
@@ -40,7 +40,7 @@ describe("useDonationDialog", () => {
 	})
 
 	it("opens the dialog for a shared ?donate= link", async () => {
-		await router.replace("/donate?donate=abc123")
+		await router.replace("/donate?donate=wheelchairs")
 
 		dialog.openFromQuery([openProject])
 
@@ -49,7 +49,7 @@ describe("useDonationDialog", () => {
 	})
 
 	it("drops ?donate= when the project is closed or missing", async () => {
-		await router.replace("/donate?category=education&donate=closed1")
+		await router.replace("/donate?category=education&donate=school-bag")
 		dialog.openFromQuery([closedProject])
 		await settle()
 		expect(dialog.isOpen.value).toBe(false)

@@ -129,21 +129,22 @@ const { t, isRTL, currentLang } = useLanguage()
 const { openDonationDialog, openFromQuery } = useDonationDialog()
 
 const detail = projectDetail
-const project = computed(() => projectDetails[`${route.params.name}:${currentLang.value}`] || null)
+const projectKey = computed(() => route.params.slug || route.params.name)
+const project = computed(() => projectDetails[`${projectKey.value}:${currentLang.value}`] || null)
 
 const isClosed = computed(() => isProjectClosed(project.value))
 
 const canonicalRoute = computed(() => ({
   name: 'DonationProject',
-  params: { category: project.value?.program_slug, name: project.value?.name },
+  params: { slug: project.value?.slug },
 }))
 
-// Legacy /donate/project/<id> links and a wrong category both land on the canonical URL
+// Legacy /donate/project/<id> links land on /donate/<slug>
 watch(
   project,
   async (loadedProject) => {
     if (!loadedProject) return
-    if (route.name !== 'DonationProject' || route.params.category !== loadedProject.program_slug) {
+    if (route.name !== 'DonationProject') {
       await router.replace({ ...canonicalRoute.value, query: route.query })
     }
     openFromQuery([loadedProject])
@@ -195,12 +196,12 @@ function formatAmount(value) {
 }
 
 function fetchDetail() {
-  loadProjectDetail(route.params.name, currentLang.value)
+  loadProjectDetail({ slug: route.params.slug, name: route.params.name }, currentLang.value)
 }
 
 onMounted(fetchDetail)
 watch(currentLang, fetchDetail)
-watch(() => route.params.name, fetchDetail)
+watch(projectKey, fetchDetail)
 
 async function share() {
   const url = `${window.location.origin}${router.resolve(canonicalRoute.value).href}`

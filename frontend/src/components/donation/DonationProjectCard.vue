@@ -61,7 +61,7 @@ const router = useRouter()
 
 const detailRoute = computed(() => ({
   name: 'DonationProject',
-  params: { category: props.project.program_slug, name: props.project.name },
+  params: { slug: props.project.slug },
 }))
 
 const isClosed = computed(() => isProjectClosed(props.project))

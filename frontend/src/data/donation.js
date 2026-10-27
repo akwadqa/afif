@@ -38,7 +38,7 @@ export function getAmountExceedsMessage(error, t) {
 	return `${message} ${t("donation.maxDonation")} ${remaining} ${t("donation.currency")}`
 }
 
-// Project details keyed by `${project}:${lang}`
+// Project details keyed by `${slug or name}:${lang}`
 export const projectDetails = reactive({})
 
 export const projectDetail = createResource({
@@ -46,14 +46,17 @@ export const projectDetail = createResource({
 	method: "GET",
 })
 
-export function loadProjectDetail(projectName, lang) {
-	const key = `${projectName}:${lang}`
+// Pass { slug } for project pages, or { name } for legacy links that still carry the ID
+export function loadProjectDetail({ slug, name }, lang) {
+	const key = `${slug || name}:${lang}`
 	if (projectDetails[key]) return
 	projectDetail.submit(
-		{ project_name: projectName, lang },
+		{ ...(slug ? { slug } : { project_name: name }), lang },
 		{
 			onSuccess(data) {
 				projectDetails[key] = data
+				// A legacy link redirects to the slug URL, which can then reuse this result
+				projectDetails[`${data.slug}:${lang}`] = data
 			},
 		},
 	)
