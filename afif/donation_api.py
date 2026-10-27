@@ -128,6 +128,7 @@ def get_donation_landing(lang=None):
 			filters={"program": program["name"], "published": 1},
 			fields=[
 				"name",
+				"slug",
 				"title",
 				"image",
 				"location",
@@ -142,7 +143,6 @@ def get_donation_landing(lang=None):
 		)
 		for project in projects:
 			project["title"] = _localize(project["title"], lang)
-			project["program_slug"] = program["slug"]
 			_apply_progress_visibility(project)
 		sort_by_position(projects, lambda p, program=program: project_positions.get((program["name"], p["name"])))
 
@@ -155,14 +155,17 @@ def get_donation_landing(lang=None):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_project_detail(project_name, lang=None):
+def get_project_detail(project_name=None, lang=None, slug=None):
+	# Project pages use the slug; links shared before slugs existed still carry the name
 	lang = _normalize_lang(lang)
 
+	filters = {"slug": slug} if slug else {"name": project_name}
 	project = frappe.db.get_value(
 		"Donation Project",
-		{"name": project_name, "published": 1},
+		{**filters, "published": 1},
 		[
 			"name",
+			"slug",
 			"title",
 			"quote",
 			"body",

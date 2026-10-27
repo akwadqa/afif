@@ -9,6 +9,7 @@
  "field_order": [
   "program",
   "title",
+  "slug",
   "published",
   "status",
   "content_section",
@@ -42,6 +43,13 @@
    "label": "Title",
    "reqd": 1,
    "translatable": 1
+  },
+  {
+   "description": "Used in the project URL, e.g. /donate/wheelchairs. Generated from the English title when left empty. Changing it breaks links already shared; add a Route Redirect in Website Settings for the old URL.",
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug",
+   "unique": 1
   },
   {
    "default": "0",
@@ -147,7 +155,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-18 12:00:00.000000",
+ "modified": "2026-10-28 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project",
@@ -166,6 +174,7 @@
    "write": 1
   }
  ],
+ "search_fields": "slug",
  "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",

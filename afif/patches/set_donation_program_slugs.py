@@ -1,6 +1,6 @@
 import frappe
 
-from afif.afif.doctype.donation_program.donation_program import get_english_title, get_unique_slug, slugify
+from afif.donation_slug import get_english_title, get_unique_slug, slugify
 
 
 def execute():
@@ -8,5 +8,9 @@ def execute():
 	for program in frappe.get_all("Donation Program", filters={"slug": ["is", "not set"]}, fields=["name", "title"]):
 		slug = slugify(get_english_title(program.title)) or program.name
 		frappe.db.set_value(
-			"Donation Program", program.name, "slug", get_unique_slug(slug, program.name), update_modified=False
+			"Donation Program",
+			program.name,
+			"slug",
+			get_unique_slug("Donation Program", slug, program.name),
+			update_modified=False,
 		)

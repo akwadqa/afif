@@ -61,4 +61,3 @@ class TestDonationProgram(FrappeTestCase):
 		self.assertEqual(get_project_detail(project.name, "en")["program_slug"], "slug-api")
 		landing_program = next(p for p in get_donation_landing("en") if p["name"] == program.name)
 		self.assertEqual(landing_program["slug"], "slug-api")
-		self.assertEqual(landing_program["projects"][0]["program_slug"], "slug-api")
