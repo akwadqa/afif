@@ -4,10 +4,11 @@
 |---|---|---|
 | 1. Category slug | done | feat: add slug to donation program |
 | 2. URL state | done | feat: reflect donation category, project and dialog in URL |
+| 3. Project slug | done | feat: add slug to donation project; feat: use project slug in donation URLs |
 
 ## Deviations
 
-None.
+- Phase 3 replaced phase 2's `/donate/<category>/project/<id>` with `/donate/<project-slug>`, and `?donate=<id>` with `?donate=<project-slug>`. Phase 2 never went live, so no links depended on it.
 
 ## Open issues
 
