@@ -4,3 +4,4 @@
 afif.patches.migrate_additional_documents_to_child_table
 afif.patches.add_beneficiary_visit_sms_message_setting
 afif.patches.recompute_donation_project_status
+afif.patches.set_donation_program_slugs

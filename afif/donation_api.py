@@ -114,7 +114,7 @@ def get_donation_landing(lang=None):
 	programs = frappe.get_all(
 		"Donation Program",
 		filters={"published": 1},
-		fields=["name", "title", "intro", "icon"],
+		fields=["name", "title", "slug", "intro", "icon"],
 		order_by="creation desc",
 		ignore_permissions=True,
 	)
@@ -142,6 +142,7 @@ def get_donation_landing(lang=None):
 		)
 		for project in projects:
 			project["title"] = _localize(project["title"], lang)
+			project["program_slug"] = program["slug"]
 			_apply_progress_visibility(project)
 		sort_by_position(projects, lambda p, program=program: project_positions.get((program["name"], p["name"])))
 
@@ -182,7 +183,7 @@ def get_project_detail(project_name, lang=None):
 	program = frappe.db.get_value(
 		"Donation Program",
 		project.program,
-		["title", "intro", "icon"],
+		["title", "slug", "intro", "icon"],
 		as_dict=True,
 	)
 
@@ -192,6 +193,7 @@ def get_project_detail(project_name, lang=None):
 	project["program_title"] = _localize(program.title, lang)
 	project["program_intro"] = _localize(program.intro, lang)
 	project["program_icon"] = program.icon
+	project["program_slug"] = program.slug
 	_apply_progress_visibility(project)
 	_attach_amounts([project], lang)
 
