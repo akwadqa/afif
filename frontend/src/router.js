@@ -57,8 +57,15 @@ const routes = [
         meta: { public: true },
       },
       {
-        path: 'project/:name',
+        path: ':category/project/:name',
         name: 'DonationProject',
+        component: () => import('@/pages/DonationProjectDetail.vue'),
+        meta: { public: true },
+      },
+      {
+        // Links shared before the category was in the path; the page redirects to the canonical URL
+        path: 'project/:name',
+        name: 'DonationProjectLegacy',
         component: () => import('@/pages/DonationProjectDetail.vue'),
         meta: { public: true },
       },

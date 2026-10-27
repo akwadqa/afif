@@ -14,7 +14,7 @@
             type="button"
             class="filter-chip"
             :class="{ active: activeProgram === 'all' }"
-            @click="activeProgram = 'all'"
+            @click="selectProgram(null)"
           >
             <span class="icon-chip">
               <span class="w-4 h-4 sm:w-5 sm:h-5" v-html="gridIconSvg" />
@@ -28,9 +28,9 @@
               :key="program.name"
               type="button"
               class="filter-chip"
-              :class="{ active: activeProgram === program.name }"
+              :class="{ active: activeProgram === program.slug }"
               :title="program.title"
-              @click="activeProgram = program.name"
+              @click="selectProgram(program.slug)"
             >
               <span class="icon-chip">
                 <img v-if="program.icon" :src="program.icon" alt="" class="w-[32px] h-[32px] sm:w-[38px] sm:h-[38px] object-contain" />
@@ -105,20 +105,27 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { donationLanding, loadDonationLanding } from '@/data/donation'
 import { useSidebar } from '@/composables/useSidebar'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { programIconFallback, gridIconSvg, noFeesIconSvg } from '@/config/donationIcons'
 import DonationProjectCard from '@/components/donation/DonationProjectCard.vue'
+import { useDonationDialog } from '@/composables/useDonationDialog'
 
 const { sidebarOpen } = useSidebar()
 // Use the full width when the sidebar isn't taking space
 const isWide = computed(() => !(session.isLoggedIn && sidebarOpen.value))
 const { t, isRTL, currentLang } = useLanguage()
 
-const activeProgram = ref('all')
+const route = useRoute()
+const router = useRouter()
+const { openFromQuery } = useDonationDialog()
+
+// The URL owns the filter so a copied link opens the same category
+const activeProgram = computed(() => route.query.category || 'all')
 
 const landing = donationLanding
 
@@ -126,8 +133,25 @@ const programs = computed(() => landing.data || [])
 
 const visiblePrograms = computed(() => {
   if (activeProgram.value === 'all') return programs.value
-  return programs.value.filter((program) => program.name === activeProgram.value)
+  return programs.value.filter((program) => program.slug === activeProgram.value)
 })
+
+function selectProgram(slug) {
+  const { category, ...query } = route.query
+  return router.replace({ query: slug ? { ...query, category: slug } : query })
+}
+
+watch(
+  programs,
+  async (loadedPrograms) => {
+    if (!loadedPrograms.length) return
+    // A renamed or unpublished category falls back to "All"
+    const isUnknownCategory = route.query.category && !loadedPrograms.some((program) => program.slug === route.query.category)
+    if (isUnknownCategory) await selectProgram(null)
+    openFromQuery(loadedPrograms.flatMap((program) => program.projects))
+  },
+  { immediate: true },
+)
 
 function fetchLanding() {
   loadDonationLanding(currentLang.value)

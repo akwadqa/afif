@@ -6,7 +6,7 @@
         <a href="#" class="crumb-link" @click.prevent="router.push({ name: 'Donate' })">{{ t('donation.detail.mainPage') }}</a>
         <template v-if="project.program_title">
           <span class="crumb-sep">/</span>
-          <a href="#" class="crumb-link" @click.prevent="router.push({ name: 'Donate' })">{{ project.program_title }}</a>
+          <a href="#" class="crumb-link" @click.prevent="router.push({ name: 'Donate', query: { category: project.program_slug } })">{{ project.program_title }}</a>
         </template>
         <span class="crumb-sep">/</span>
         <span class="crumb-current">{{ project.title }}</span>
@@ -126,12 +126,30 @@ const { sidebarOpen } = useSidebar()
 // Use the full width when the sidebar isn't taking space
 const isWide = computed(() => !(session.isLoggedIn && sidebarOpen.value))
 const { t, isRTL, currentLang } = useLanguage()
-const { openDonationDialog } = useDonationDialog()
+const { openDonationDialog, openFromQuery } = useDonationDialog()
 
 const detail = projectDetail
 const project = computed(() => projectDetails[`${route.params.name}:${currentLang.value}`] || null)
 
 const isClosed = computed(() => isProjectClosed(project.value))
+
+const canonicalRoute = computed(() => ({
+  name: 'DonationProject',
+  params: { category: project.value?.program_slug, name: project.value?.name },
+}))
+
+// Legacy /donate/project/<id> links and a wrong category both land on the canonical URL
+watch(
+  project,
+  async (loadedProject) => {
+    if (!loadedProject) return
+    if (route.name !== 'DonationProject' || route.params.category !== loadedProject.program_slug) {
+      await router.replace({ ...canonicalRoute.value, query: route.query })
+    }
+    openFromQuery([loadedProject])
+  },
+  { immediate: true },
+)
 const hasProgress = computed(() => project.value?.show_progress !== 0)
 
 const coveragePercentage = computed(() => Math.min(Math.round(project.value?.percentage || 0), 100))
@@ -185,7 +203,7 @@ watch(currentLang, fetchDetail)
 watch(() => route.params.name, fetchDetail)
 
 async function share() {
-  const url = window.location.href
+  const url = `${window.location.origin}${router.resolve(canonicalRoute.value).href}`
   if (navigator.share) {
     try {
       await navigator.share({ title: project.value?.title, url })

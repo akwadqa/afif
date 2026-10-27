@@ -35,7 +35,7 @@
         <button type="button" class="primary-btn" :disabled="isClosed" @click.stop="openDonationDialog(project)">
           {{ isClosed ? t('donation.targetReached') : t('donation.donateNow') }}
         </button>
-        <router-link :to="{ name: 'DonationProject', params: { name: project.name } }" class="secondary-btn" @click.stop>
+        <router-link :to="detailRoute" class="secondary-btn" @click.stop>
           {{ t('donation.detail.details') }}
         </router-link>
       </div>
@@ -45,6 +45,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { qatarFlagSvg } from '@/config/donationIcons'
@@ -56,6 +57,12 @@ const props = defineProps({
 
 const { t, isRTL } = useLanguage()
 const { openDonationDialog } = useDonationDialog()
+const router = useRouter()
+
+const detailRoute = computed(() => ({
+  name: 'DonationProject',
+  params: { category: props.project.program_slug, name: props.project.name },
+}))
 
 const isClosed = computed(() => isProjectClosed(props.project))
 const coveragePercentage = computed(() => Math.min(Math.round(props.project.percentage || 0), 100))
@@ -78,7 +85,7 @@ function formatAmount(value) {
 }
 
 async function share() {
-  const url = `${window.location.origin}/donate/project/${props.project.name}`
+  const url = `${window.location.origin}${router.resolve(detailRoute.value).href}`
   if (navigator.share) {
     try {
       await navigator.share({ title: props.project.title, url })
