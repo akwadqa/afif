@@ -60,8 +60,8 @@ const { openDonationDialog } = useDonationDialog()
 const router = useRouter()
 
 const detailRoute = computed(() => ({
-  name: 'DonationProject',
-  params: { slug: props.project.slug },
+  name: 'Donate',
+  query: { project: props.project.slug },
 }))
 
 const isClosed = computed(() => isProjectClosed(props.project))

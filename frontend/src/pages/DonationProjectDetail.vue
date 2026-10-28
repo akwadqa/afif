@@ -129,23 +129,24 @@ const { t, isRTL, currentLang } = useLanguage()
 const { openDonationDialog, openFromQuery } = useDonationDialog()
 
 const detail = projectDetail
-const projectKey = computed(() => route.params.slug || route.params.name)
+const projectKey = computed(() => route.query.project || route.params.name)
 const project = computed(() => projectDetails[`${projectKey.value}:${currentLang.value}`] || null)
 
 const isClosed = computed(() => isProjectClosed(project.value))
 
 const canonicalRoute = computed(() => ({
-  name: 'DonationProject',
-  params: { slug: project.value?.slug },
+  name: 'Donate',
+  query: { project: project.value?.slug },
 }))
 
-// Legacy /donate/project/<id> links land on /donate/<slug>
+// Legacy /donate/project/<id> links land on /donate?project=<slug>, and a project link carries no category
 watch(
   project,
   async (loadedProject) => {
     if (!loadedProject) return
-    if (route.name !== 'DonationProject') {
-      await router.replace({ ...canonicalRoute.value, query: route.query })
+    if (route.name !== 'Donate' || route.query.category) {
+      const { category, ...query } = route.query
+      await router.replace({ name: 'Donate', query: { ...query, project: loadedProject.slug } })
     }
     openFromQuery([loadedProject])
   },
@@ -196,7 +197,7 @@ function formatAmount(value) {
 }
 
 function fetchDetail() {
-  loadProjectDetail({ slug: route.params.slug, name: route.params.name }, currentLang.value)
+  loadProjectDetail({ slug: route.query.project, name: route.params.name }, currentLang.value)
 }
 
 onMounted(fetchDetail)

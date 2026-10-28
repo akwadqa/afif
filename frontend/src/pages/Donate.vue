@@ -113,7 +113,6 @@ import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { programIconFallback, gridIconSvg, noFeesIconSvg } from '@/config/donationIcons'
 import DonationProjectCard from '@/components/donation/DonationProjectCard.vue'
-import { useDonationDialog } from '@/composables/useDonationDialog'
 
 const { sidebarOpen } = useSidebar()
 // Use the full width when the sidebar isn't taking space
@@ -122,7 +121,6 @@ const { t, isRTL, currentLang } = useLanguage()
 
 const route = useRoute()
 const router = useRouter()
-const { openFromQuery } = useDonationDialog()
 
 // The URL owns the filter so a copied link opens the same category
 const activeProgram = computed(() => route.query.category || 'all')
@@ -143,12 +141,10 @@ function selectProgram(slug) {
 
 watch(
   programs,
-  async (loadedPrograms) => {
-    if (!loadedPrograms.length) return
+  (loadedPrograms) => {
     // A renamed or unpublished category falls back to "All"
     const isUnknownCategory = route.query.category && !loadedPrograms.some((program) => program.slug === route.query.category)
-    if (isUnknownCategory) await selectProgram(null)
-    openFromQuery(loadedPrograms.flatMap((program) => program.projects))
+    if (loadedPrograms.length && isUnknownCategory) selectProgram(null)
   },
   { immediate: true },
 )
