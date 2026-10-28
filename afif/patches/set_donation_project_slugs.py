@@ -1,6 +1,6 @@
 import frappe
 
-from afif.afif.doctype.donation_project.donation_project import RESERVED_SLUGS, SLUG_MAX_LENGTH
+from afif.afif.doctype.donation_project.donation_project import SLUG_MAX_LENGTH
 from afif.donation_slug import get_english_title, get_unique_slug, slugify
 
 
@@ -12,6 +12,6 @@ def execute():
 			"Donation Project",
 			project.name,
 			"slug",
-			get_unique_slug("Donation Project", slug, project.name, RESERVED_SLUGS),
+			get_unique_slug("Donation Project", slug, project.name),
 			update_modified=False,
 		)

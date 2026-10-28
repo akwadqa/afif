@@ -6,7 +6,7 @@ from frappe import _
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
-def set_slug(doc, max_length: int | None = None, reserved: tuple[str, ...] = ()):
+def set_slug(doc, max_length: int | None = None):
 	"""Normalise a manually entered slug, or generate one from the English title.
 
 	Like Frappe's website routes, a slug is generated once and never follows later title edits,
@@ -20,10 +20,7 @@ def set_slug(doc, max_length: int | None = None, reserved: tuple[str, ...] = ())
 		slug = slugify(get_english_title(doc.title), max_length)
 		if not slug:
 			frappe.throw(_("Enter a slug or add an English translation for the title"))
-		doc.slug = get_unique_slug(doc.doctype, slug, doc.name, reserved)
-
-	if doc.slug in reserved:
-		frappe.throw(_("Slug {0} is reserved, please choose another").format(doc.slug))
+		doc.slug = get_unique_slug(doc.doctype, slug, doc.name)
 
 
 def get_english_title(title: str | None) -> str:
@@ -41,9 +38,9 @@ def slugify(text: str, max_length: int | None = None) -> str:
 	return slug
 
 
-def get_unique_slug(doctype: str, slug: str, name: str | None, reserved: tuple[str, ...] = ()) -> str:
+def get_unique_slug(doctype: str, slug: str, name: str | None) -> str:
 	candidate, suffix = slug, 2
-	while candidate in reserved or frappe.db.exists(doctype, {"slug": candidate, "name": ["!=", name or ""]}):
+	while frappe.db.exists(doctype, {"slug": candidate, "name": ["!=", name or ""]}):
 		candidate = f"{slug}-{suffix}"
 		suffix += 1
 	return candidate

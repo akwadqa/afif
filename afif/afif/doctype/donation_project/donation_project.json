@@ -45,7 +45,7 @@
    "translatable": 1
   },
   {
-   "description": "Used in the project URL, e.g. /donate/wheelchairs. Generated from the English title when left empty. Changing it breaks links already shared; add a Route Redirect in Website Settings for the old URL.",
+   "description": "Used in the project URL, e.g. /donate?project=wheelchairs. Generated from the English title when left empty. Changing it breaks project links already shared.",
    "fieldname": "slug",
    "fieldtype": "Data",
    "label": "Slug",

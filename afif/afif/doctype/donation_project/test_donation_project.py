@@ -126,13 +126,6 @@ class TestDonationProjectSlug(FrappeTestCase):
 
 		self.assertEqual(project.slug, "supporting-students-who-have-dropped-out-of-education-and")
 
-	def test_generated_slug_skips_reserved_route_names(self):
-		self.assertEqual(self.make_project("Success").slug, "success-2")
-
-	def test_manual_reserved_slug_is_rejected(self):
-		with self.assertRaisesRegex(frappe.ValidationError, "reserved"):
-			self.make_project("Reserved Slug", slug="form")
-
 	def test_duplicate_manual_slug_is_rejected(self):
 		self.make_project("Slug Duplicate", slug="slug-duplicate")
 

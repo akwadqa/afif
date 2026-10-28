@@ -11,8 +11,6 @@ from afif.donation_slug import set_slug
 MAX_DONATION_AMOUNTS = 6
 
 SLUG_MAX_LENGTH = 60
-# Project pages live at /donate/<slug>, next to these frontend routes
-RESERVED_SLUGS = ("form", "success", "project")
 
 STATUS_OPEN = "Open"
 STATUS_CLOSED = "Closed"
@@ -28,7 +26,7 @@ class AmountExceedsRemainingError(frappe.ValidationError):
 
 class DonationProject(Document):
 	def validate(self):
-		set_slug(self, SLUG_MAX_LENGTH, RESERVED_SLUGS)
+		set_slug(self, SLUG_MAX_LENGTH)
 		self.update_percentage()
 		self.update_status()
 		self.validate_donation_amounts()
