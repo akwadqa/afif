@@ -12,7 +12,7 @@ from afif.afif.doctype.donation_project.donation_project import (
 	ProjectClosedError,
 	credit_donation,
 )
-from afif.donation_api import create_donation
+from afif.donation_api import create_donation, get_donation_landing, get_project_detail
 
 
 class TestDonationProject(FrappeTestCase):
@@ -103,3 +103,43 @@ class TestDonationProject(FrappeTestCase):
 		with self.stub_payment():
 			result = create_donation(self.project.name, 50000, is_anonymous=1)
 		self.assertEqual(result["payment_url"], "https://pay.test")
+
+
+class TestDonationProjectSlug(FrappeTestCase):
+	def setUp(self):
+		self.program = frappe.get_doc({"doctype": "Donation Program", "title": "Slug Program", "published": 1}).insert()
+
+	def make_project(self, title, slug=None):
+		return frappe.get_doc(
+			{
+				"doctype": "Donation Project",
+				"program": self.program.name,
+				"title": title,
+				"slug": slug,
+				"image": "/files/test-project.png",
+				"published": 1,
+			}
+		).insert()
+
+	def test_long_title_is_cut_at_a_word_boundary(self):
+		project = self.make_project("Supporting Students Who Have Dropped Out Of Education And Need Help Now")
+
+		self.assertEqual(project.slug, "supporting-students-who-have-dropped-out-of-education-and")
+
+	def test_duplicate_manual_slug_is_rejected(self):
+		self.make_project("Slug Duplicate", slug="slug-duplicate")
+
+		with self.assertRaises(frappe.UniqueValidationError):
+			self.make_project("Another", slug="slug-duplicate")
+
+	def test_detail_is_found_by_slug_or_name(self):
+		project = self.make_project("Slug Lookup")
+
+		self.assertEqual(get_project_detail(slug="slug-lookup", lang="en")["name"], project.name)
+		self.assertEqual(get_project_detail(project.name, "en")["slug"], "slug-lookup")
+
+	def test_landing_returns_project_slug(self):
+		project = self.make_project("Slug Landing")
+
+		landing_program = next(p for p in get_donation_landing("en") if p["name"] == self.program.name)
+		self.assertEqual(landing_program["projects"][0]["slug"], project.slug)

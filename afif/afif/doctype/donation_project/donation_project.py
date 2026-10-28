@@ -6,7 +6,11 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
+from afif.donation_slug import set_slug
+
 MAX_DONATION_AMOUNTS = 6
+
+SLUG_MAX_LENGTH = 60
 
 STATUS_OPEN = "Open"
 STATUS_CLOSED = "Closed"
@@ -22,6 +26,7 @@ class AmountExceedsRemainingError(frappe.ValidationError):
 
 class DonationProject(Document):
 	def validate(self):
+		set_slug(self, SLUG_MAX_LENGTH)
 		self.update_percentage()
 		self.update_status()
 		self.validate_donation_amounts()

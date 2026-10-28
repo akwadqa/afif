@@ -189,7 +189,7 @@ const errorMessage = ref('')
 
 function goBack() {
   if (initialProjectQuery) {
-    router.push({ name: 'DonationProject', params: { name: initialProjectQuery } })
+    router.push({ name: 'DonationProjectLegacy', params: { name: initialProjectQuery } })
   } else {
     router.push({ name: 'Donate' })
   }
