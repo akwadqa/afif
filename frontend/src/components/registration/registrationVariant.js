@@ -1,8 +1,11 @@
 // Field layout of the registration wizard for each flow (spec/scholarship_flow/phase-6-registration-parity.md).
 // The cards and the step validation both read it, so what is shown and what is required stay in sync.
 
-// Mirrors SCHOLARSHIP_ATTACHMENT_FIELDS in beneficiaries_registration.py; all of them are required.
-export const SCHOLARSHIP_ATTACHMENT_FIELDS = [
+// Mirrors SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS in beneficiary_request.py; all of them are required.
+export const SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS = ['education_invoice', 'grade_transcript', 'student_id_copy', 'student_passport_copy']
+// The scholarship documents the registration used to hold. Old records keep them, and the wizard
+// must send them back unchanged because frappe.client.save clears every field missing from the payload.
+export const LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS = [
   'scholarship_university_invoice',
   'scholarship_grade_transcript',
   'scholarship_guardian_id',
@@ -54,16 +57,19 @@ export const OBLIGATION_FIELDS = ['family_obligation', 'rent_obligation', 'treat
 
 const MARITAL_STATUSES = ['Married', 'Divorced', 'Widowed', 'Separated']
 
-// The scholarship wizard has every field of the normal one, plus the guardian mobile and Single.
+// The scholarship wizard has every field of the normal one, plus the guardian mobile. Its documents
+// are collected with the request instead of the registration.
 const REGISTRATION_VARIANT = {
   hiddenFields: new Set(['guardian_mobile_number']),
   maritalStatuses: MARITAL_STATUSES,
+  hasRegistrationDocuments: true,
 }
 
 const SCHOLARSHIP_VARIANT = {
   hiddenFields: new Set(),
-  // The server refuses Single on a normal registration.
-  maritalStatuses: ['Single', ...MARITAL_STATUSES],
+  // The server refuses Single on a normal registration and requires it on a scholarship one.
+  maritalStatuses: ['Single'],
+  hasRegistrationDocuments: false,
 }
 
 export function getRegistrationVariant(flow) {

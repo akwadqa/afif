@@ -39,7 +39,7 @@ import { uploadFile } from '@/utils/fileUpload'
 import FormActionsBar from './FormActionsBar.vue'
 import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
-import { SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
+import { LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
 
 // Step 5 of the scholarship wizard for an accepted beneficiary, whose registration is already done.
@@ -92,7 +92,7 @@ async function submit() {
 // Only a Supervisor may save an Accepted registration, so the files are uploaded unattached and the
 // endpoint puts them on the registration after checking they are the user's own.
 async function submitRequest() {
-  for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
+  for (const id of LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS) {
     // Stored back as a URL so a retry after a failed submit reuses the upload.
     if (files.value[id] instanceof File) files.value[id] = await uploadFile(files.value[id], { is_private: '1' })
   }

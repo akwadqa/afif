@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import translations from '@/locales/translations'
 import {
   INCOME_SOURCES,
-  SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
+  SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
   getRegistrationVariant,
 } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
@@ -104,8 +104,8 @@ describe('step 2 (income)', () => {
 })
 
 describe('marital status options', () => {
-  it('offers Single only in the scholarship flow', () => {
-    expect(getRegistrationVariant('scholarship').maritalStatuses).toEqual(['Single', 'Married', 'Divorced', 'Widowed', 'Separated'])
+  it('offers only Single in the scholarship flow, and never in the normal one', () => {
+    expect(getRegistrationVariant('scholarship').maritalStatuses).toEqual(['Single'])
     expect(getRegistrationVariant('registration').maritalStatuses).not.toContain('Single')
   })
 
@@ -139,51 +139,72 @@ describe('step 4 (additional data)', () => {
 })
 
 describe('step 4 (registration attachments)', () => {
-  it('requires the same documents in both flows', () => {
-    const formData = {
-      ...fillFormerlyHiddenFields(makeScholarshipStep1()),
-      familyDetails: { family_visa_type: 'Residence', have_children: 'Yes', visa_dependent: 'Yes' },
-      additionalData: { housing_type: 'Government' },
-      attachments: { files: {}, legalClaims: { correctData: true, verificationRight: true, statusAwareness: true } },
-    }
+  const allClaims = () => ({ correctData: true, verificationRight: true, statusAwareness: true })
+  const makeFormData = legalClaims => ({
+    ...fillFormerlyHiddenFields(makeScholarshipStep1()),
+    familyDetails: { family_visa_type: 'Residence', have_children: 'Yes', visa_dependent: 'Yes' },
+    additionalData: { housing_type: 'Government' },
+    attachments: { files: {}, legalClaims },
+  })
 
-    const scholarship = validate(formData, 4, 'scholarship', 2).fields
-    expect(scholarship).toEqual(validate(formData, 4, 'registration', 2).fields)
-    expect(scholarship).toEqual(expect.arrayContaining(['attach_children_identification', 'attach_id_sponsored']))
+  it('still requires the registration documents in the normal flow', () => {
+    const { fields } = validate(makeFormData(allClaims()), 4, 'registration', 2)
+
+    expect(fields).toEqual(expect.arrayContaining(['attach_qid', 'attach_children_identification', 'attach_id_sponsored']))
+    expect(fields.every(field => field.startsWith('attach_'))).toBe(true)
+  })
+
+  it('requires no documents in the scholarship flow, only the consents', () => {
+    expect(validate(makeFormData(allClaims()), 4, 'scholarship', 2)).toEqual({ errors: [], fields: [] })
+  })
+
+  it('still requires each consent in the scholarship flow', () => {
+    const formData = makeFormData({ ...allClaims(), verificationRight: false })
+
+    expect(validate(formData, 4, 'scholarship', 2).fields).toEqual(['claim_verificationRight'])
   })
 })
 
 describe('step 5 (scholarship request data)', () => {
-  // The documents are registration fields, kept with the other registration files.
+  // The documents belong to the request, so they live in scholarshipRequest.files.
   const completeRequest = () => ({
     scholarshipRequest: {
       requested_amount: '20000',
       request_summary: 'Tuition for the next semester',
       declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, true])),
-    },
-    attachments: {
-      files: Object.fromEntries(SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => [id, `/private/files/${id}.pdf`])),
+      files: {
+        ...Object.fromEntries(SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS.map(id => [id, `/private/files/${id}.pdf`])),
+        other_attachments: [],
+      },
     },
   })
 
-  it('passes when everything is filled in', () => {
+  it('passes when everything is filled in, without other attachments', () => {
     expect(validate(completeRequest(), 5, 'scholarship')).toEqual({ errors: [], fields: [] })
   })
 
-  it('requires every scholarship document from the registration files', () => {
+  it('requires each of the 4 request documents', () => {
     const formData = completeRequest()
-    formData.attachments.files.scholarship_university_invoice = null
-    formData.attachments.files.scholarship_student_bank_statement = undefined
+    formData.scholarshipRequest.files = { other_attachments: [] }
 
-    expect(validate(formData, 5, 'scholarship').errors).toEqual(['فاتورة الجامعة', 'كشف حساب الطالب'])
+    expect(validate(formData, 5, 'scholarship').fields).toEqual([
+      'attach_education_invoice', 'attach_grade_transcript', 'attach_student_id_copy', 'attach_student_passport_copy',
+    ])
   })
 
-  it('checks only the documents once the request is submitted', () => {
+  it('accepts a picked file that is not uploaded yet', () => {
     const formData = completeRequest()
-    formData.scholarshipRequest = { isSubmitted: true, requested_amount: '', request_summary: '', declarations: {} }
-    formData.attachments.files.scholarship_family_ids = null
+    formData.scholarshipRequest.files.education_invoice = new File(['x'], 'invoice.pdf')
 
-    expect(validate(formData, 5, 'registration').fields).toEqual(['attach_scholarship_family_ids'])
+    expect(validate(formData, 5, 'scholarship')).toEqual({ errors: [], fields: [] })
+  })
+
+  it('checks nothing once the request is submitted', () => {
+    const formData = {
+      scholarshipRequest: { isSubmitted: true, requested_amount: '', request_summary: '', declarations: {}, files: {} },
+    }
+
+    expect(validate(formData, 5, 'registration')).toEqual({ errors: [], fields: [] })
   })
 
   it('requires the request summary', () => {
@@ -200,7 +221,6 @@ describe('scholarship translations', () => {
   const keys = [
     ...INCOME_SOURCES.flatMap(src => [src.labelKey, src.sectionTitleKey, src.periodicLabelKey, src.amountLabelKey, src.noteLabelKey]),
     ...getRegistrationVariant('scholarship').maritalStatuses.map(status => `registration.personalInfo.${status.toLowerCase()}`),
-    ...SCHOLARSHIP_ATTACHMENT_FIELDS.map(id => `scholarship.attachments.${id}`),
     'scholarship.acceptedSubtitle',
     'scholarship.success.acceptedMessage',
     'scholarship.applyAgain',

@@ -1,8 +1,8 @@
 import {
   INCOME_SOURCES,
   OBLIGATION_FIELDS,
-  SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
+  SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
   getRegistrationVariant,
 } from './registrationVariant'
 
@@ -40,13 +40,14 @@ class StepErrors {
  * 1 = additional data, 2 = registration attachments.
  */
 export function validateRegistrationStep({ formData, step, subStep4, flow = 'registration', t }) {
-  const check = new StepErrors(getRegistrationVariant(flow))
+  const variant = getRegistrationVariant(flow)
+  const check = new StepErrors(variant)
 
   if (step === 1) validatePersonalStep(check, formData, t)
   if (step === 2) validateIncomeStep(check, formData.incomeDetails, t)
   if (step === 3) validateObligationsStep(check, formData.financialObligations, t)
   if (step === 4 && subStep4 === 1) validateAdditionalDataStep(check, formData.additionalData, t)
-  if (step === 4 && subStep4 === 2) validateAttachmentsStep(check, formData, t)
+  if (step === 4 && subStep4 === 2) validateAttachmentsStep(check, formData, variant, t)
   if (step === 5) validateScholarshipRequestStep(check, formData, t)
 
   return { errors: check.errors, fields: check.fields }
@@ -262,24 +263,25 @@ function getRequiredRegistrationDocs({ personalInfo: pi, additionalInfo: ai, fam
   ].filter(doc => doc.show)
 }
 
-function validateAttachmentsStep(check, formData, t) {
+function validateAttachmentsStep(check, formData, variant, t) {
   const { files, legalClaims } = formData.attachments
-  for (const doc of getRequiredRegistrationDocs(formData)) {
-    if (!files[doc.id]) check.add(`attach_${doc.id}`, t(`registration.attachments.docs.${doc.labelKey}`))
+  if (variant.hasRegistrationDocuments) {
+    for (const doc of getRequiredRegistrationDocs(formData)) {
+      if (!files[doc.id]) check.add(`attach_${doc.id}`, t(`registration.attachments.docs.${doc.labelKey}`))
+    }
   }
   if (!legalClaims.correctData)       check.add('claim_correctData', 'الإقرار بصحة البيانات')
   if (!legalClaims.verificationRight) check.add('claim_verificationRight', 'الإقرار بحق التحقق من الأهلية')
   if (!legalClaims.statusAwareness)   check.add('claim_statusAwareness', 'الإقرار بطبيعة التسجيل')
 }
 
-// Step 5 shows the request data and the scholarship documents, which are saved on the registration.
-// Once the request is submitted, only the documents can change, so only they are checked.
-function validateScholarshipRequestStep(check, { scholarshipRequest: sr, attachments }, t) {
-  for (const id of SCHOLARSHIP_ATTACHMENT_FIELDS) {
-    if (!attachments.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
-  }
+// Step 5 shows the request data and its documents. Once the request is submitted none of it can change.
+function validateScholarshipRequestStep(check, { scholarshipRequest: sr }, t) {
   if (sr.isSubmitted) return
 
+  for (const id of SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS) {
+    if (!sr.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
+  }
   if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
   if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {

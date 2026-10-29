@@ -57,7 +57,7 @@
 
       <div class="space-y-3">
         <div
-          v-for="id in SCHOLARSHIP_ATTACHMENT_FIELDS"
+          v-for="id in LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS"
           :key="id"
           class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl transition-all gap-4"
           :class="isInvalid('attach_' + id)
@@ -166,7 +166,7 @@
 import { ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
-import { SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
+import { LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 // The documents are registration fields, so the parent owns them: it uploads a picked file now

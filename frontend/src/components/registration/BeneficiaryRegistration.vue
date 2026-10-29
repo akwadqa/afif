@@ -143,7 +143,7 @@ import AttachmentsCard from './AttachmentsCard.vue'
 import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
 import {
-  SCHOLARSHIP_ATTACHMENT_FIELDS,
+  LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
   getRegistrationVariant,
 } from './registrationVariant'
@@ -279,7 +279,7 @@ const ATTACHMENT_FIELDS = [
   'partner_death_certificate', 'copy_of_court_judgment', 'id_coresidents', 'id_sponsored',
   'metrash_adress', 'additional_documents',
   // Always sent: frappe.client.save clears every field missing from the payload, even on a normal page.
-  ...SCHOLARSHIP_ATTACHMENT_FIELDS,
+  ...LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
 ]
 
 function onStepError(err) {
@@ -930,7 +930,7 @@ async function uploadAllFiles() {
 function uploadRegistrationFile(file, docName, fieldname) {
   return uploadFile(file, {
     // The registration documents stay public (mentor's decision); the scholarship ones are private.
-    is_private: SCHOLARSHIP_ATTACHMENT_FIELDS.includes(fieldname) ? '1' : '0',
+    is_private: LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS.includes(fieldname) ? '1' : '0',
     doctype: 'Beneficiaries Registration',
     docname: docName,
     fieldname,
