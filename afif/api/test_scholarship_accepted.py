@@ -13,6 +13,7 @@ from afif.api.test_scholarship import (
     SCHOLARSHIP_ATTACHMENTS,
     accept_registration,
     make_beneficiary_user,
+    make_normal_education_request,
     make_registration,
     make_request_data,
     upload_unattached_file,
@@ -197,19 +198,7 @@ class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
             self.make_previous_request()
 
     def make_previous_request(self) -> str:
-        return (
-            frappe.get_doc(
-                {
-                    "doctype": "Beneficiary Request",
-                    "request_category": "Education Assistance",
-                    "educational_assistance": "Tuition Fees",
-                    "requested_amount": "1000",
-                    "request_summary": "Tuition fees",
-                }
-            )
-            .insert()
-            .name
-        )
+        return make_normal_education_request()
 
     def close_request(self, request: str, state: str, **dates) -> None:
         frappe.db.set_value("Beneficiary Request", request, {"workflow_state": state, "status": state, **dates})

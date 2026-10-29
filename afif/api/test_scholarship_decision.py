@@ -13,6 +13,7 @@ from afif.api.test_scholarship import (
     accept_registration,
     make_beneficiary_user,
     make_pdf,
+    make_normal_education_request_data,
     make_registration,
     make_request_data,
 )
@@ -246,15 +247,7 @@ class TestNormalRequestApprovalUnchanged(ScholarshipDecisionTestCase):
         frappe.set_user(user)
         registration = make_registration(is_scholarship=0)
         accept_registration(registration, user)
-        request = frappe.get_doc(
-            {
-                "doctype": "Beneficiary Request",
-                "request_category": "Education Assistance",
-                "educational_assistance": "Tuition Fees",
-                "requested_amount": "1000",
-                "request_summary": "Tuition fees",
-            }
-        ).insert()
+        request = frappe.get_doc(make_normal_education_request_data()).insert()
         frappe.set_user(self.supervisor)
 
         self.apply_request_action("Reject", request.name)
@@ -269,15 +262,7 @@ class TestNormalRequestApprovalUnchanged(ScholarshipDecisionTestCase):
         registration = make_registration(is_scholarship=0)
         accept_registration(registration, user)
         frappe.db.set_value("Beneficiaries Registration", registration, "ben_id", "123")
-        request = frappe.get_doc(
-            {
-                "doctype": "Beneficiary Request",
-                "request_category": "Education Assistance",
-                "educational_assistance": "Tuition Fees",
-                "requested_amount": "1000",
-                "request_summary": "Tuition fees",
-            }
-        ).insert()
+        request = frappe.get_doc(make_normal_education_request_data()).insert()
         frappe.set_user("Administrator")
         frappe.db.set_value("Beneficiary Request", request.name, "declaration", upload_declaration())
         frappe.set_user(self.supervisor)

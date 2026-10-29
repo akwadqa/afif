@@ -345,19 +345,19 @@ def make_request_data() -> dict:
 
 
 def make_normal_education_request() -> str:
-    return (
-        frappe.get_doc(
-            {
-                "doctype": "Beneficiary Request",
-                "request_category": "Education Assistance",
-                "educational_assistance": "Tuition Fees",
-                "requested_amount": "1000",
-                "request_summary": "Tuition fees",
-            }
-        )
-        .insert()
-        .name
-    )
+    return frappe.get_doc(make_normal_education_request_data()).insert().name
+
+
+def make_normal_education_request_data() -> dict:
+    return {
+        "doctype": "Beneficiary Request",
+        "request_category": "Education Assistance",
+        "educational_assistance": "Tuition Fees",
+        "requested_amount": "1000",
+        "request_summary": "Tuition fees",
+        "education_invoice": upload_unattached_file("education_invoice"),
+        "grade_transcript": upload_unattached_file("grade_transcript"),
+    }
 
 
 def upload_unattached_file(label: str) -> str:
