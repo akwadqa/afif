@@ -137,6 +137,22 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
         self.assert_nothing_submitted()
 
+    def test_a_public_file_is_rejected(self):
+        public_file_url = upload_unattached_file("public", is_private=0)
+
+        with self.assertRaises(frappe.PermissionError):
+            submit_scholarship_application(self.registration, {**self.request_data, "student_id_copy": public_file_url})
+
+        self.assert_nothing_submitted()
+
+    def test_other_attachments_must_be_a_list(self):
+        request_data = {**self.request_data, "other_attachments": self.request_data["other_attachments"][0]}
+
+        with self.assertRaises(frappe.ValidationError):
+            submit_scholarship_application(self.registration, request_data)
+
+        self.assert_nothing_submitted()
+
     def test_the_same_file_for_two_documents_is_rejected(self):
         request_data = {**self.request_data, "student_passport_copy": self.request_data["student_id_copy"]}
 
@@ -510,13 +526,13 @@ def make_normal_education_request_data() -> dict:
     }
 
 
-def upload_unattached_file(label: str) -> str:
+def upload_unattached_file(label: str, is_private: int = 1) -> str:
     file = frappe.get_doc(
         {
             "doctype": "File",
             "file_name": f"{label}.pdf",
             "content": make_pdf(),
-            "is_private": 1,
+            "is_private": is_private,
         }
     ).insert()
     return file.file_url

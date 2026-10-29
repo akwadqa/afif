@@ -123,16 +123,25 @@ def get_own_unattached_files(request: dict) -> dict[str, str | None]:
     their request at somebody else's documents. It runs before the request is inserted, so a refused
     file creates nothing.
     """
+    other_attachments = request.get("other_attachments") or []
+    if not isinstance(other_attachments, list):
+        frappe.throw(_("Other Attachments must be a list of file URLs."))
+
     meta = frappe.get_meta("Beneficiary Request")
     wanted = [
         (fieldname, request.get(fieldname), _(meta.get_label(fieldname)))
         for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS
     ]
-    wanted += [(None, file_url, _("Other Attachments")) for file_url in request.get("other_attachments") or []]
+    wanted += [(None, file_url, _("Other Attachments")) for file_url in other_attachments]
 
     files = {}
     for fieldname, file_url, label in wanted:
-        filters = {"file_url": file_url, "owner": frappe.session.user, "attached_to_name": ("is", "not set")}
+        filters = {
+            "file_url": file_url,
+            "owner": frappe.session.user,
+            "attached_to_name": ("is", "not set"),
+            "is_private": 1,
+        }
         # The same file_url sent twice must not resolve to the same File twice.
         if files:
             filters["name"] = ("not in", list(files))

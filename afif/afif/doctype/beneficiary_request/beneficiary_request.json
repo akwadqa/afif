@@ -541,11 +541,11 @@
    "label": "Other Educational Assistance proof"
   },
   {
-   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
+   "depends_on": "eval:doc.educational_assistance==\"Scholarship\"",
    "fieldname": "grade_transcript",
    "fieldtype": "Attach",
-   "hidden": 1,
-   "label": "Grade Transcript or School Certificate for the Last Semester"
+   "label": "Grade Transcript or School Certificate for the Last Semester",
+   "read_only": 1
   },
   {
    "depends_on": "eval:doc.educational_assistance==\"Scholarship\"",
@@ -779,7 +779,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2026-10-29 10:00:00.000000",
+ "modified": "2026-10-29 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",

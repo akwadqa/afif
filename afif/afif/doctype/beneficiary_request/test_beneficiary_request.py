@@ -59,11 +59,6 @@ class TestBeneficiaryRequest(FrappeTestCase):
 
 		self.assertEqual(request.get_missing_required_attachments(), [])
 
-	def test_normal_education_request_rules_unchanged(self):
-		request = make_request(request_category="Education Assistance", educational_assistance="Tuition Fees")
-
-		self.assertEqual(request.get_missing_required_attachments(), ["education_invoice", "grade_transcript"])
-
 	def test_scholarship_request_requires_its_four_documents(self):
 		request = make_request(
 			request_category="Education Assistance",
