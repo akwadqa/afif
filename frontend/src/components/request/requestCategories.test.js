@@ -43,6 +43,6 @@ describe('getAssistanceTypeKey', () => {
   })
 
   it('exposes every sub-category field name', () => {
-    expect(SUBCATEGORY_FIELDS).toHaveLength(7)
+    expect(SUBCATEGORY_FIELDS).toEqual(Object.values(SUBCATEGORY_MAP).map(({ field }) => field))
   })
 })

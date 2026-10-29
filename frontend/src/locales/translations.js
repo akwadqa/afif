@@ -1663,7 +1663,7 @@ export default {
         index: '#',
         serial: 'Request Serial Number',
         beneficiary: 'Beneficiary',
-        type: 'Assistance Type',
+        type: 'Type',
         assistanceType: 'Assistance type',
         date: 'Submission Date',
         status: 'Status',
