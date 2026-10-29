@@ -14,7 +14,44 @@
 | [10 — Link only](phase-10-link-only.md) | done (browser check in Phase 13) | `2f06178` |
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | done (browser check in Phase 13) | `78d442a`, `85c3a70`, `14a29e4`, `11a5526`, `4c22065`, `9fd1900` |
 | [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
-| [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+| [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | done (live site needs `bench restart`) | `4f576f6`, `cb0df73`, `dcf369f`, final-review fixes `853dd8f`, `fcd5f2d`, `ffde84a`, `cba8ca0`, `1ddd317` |
+
+## Phase 13 — log (2026-10-29)
+- **My Requests.** The new column «نوع المساعدة الفرعي» / "Assistance type" comes from `getAssistanceTypeKey`.
+  - Scholarship rows show «منحة الشيخ خالد بن ناصر».
+  - An empty sub-category shows `—`, and an unknown one shows its raw value.
+  - The EN header of the category column was "Assistance Type"; it is now "Type", so the two columns read differently.
+- **Browser QA** (agent-browser, temporary `bench serve` on :8010, stopped afterwards). Users: `qa.p13.{student,student2,normal,redirect,supervisor}@example.com`. Screenshots are in the session scratchpad `qa-p13/`.
+
+| # | Scenario | Result |
+|---|---|---|
+| 1 | No scholarship item in the menus | FAIL on phone at first: `MobileMenu.vue` and `NavLinks.vue` still listed it. Fixed in `dcf369f` and checked again at 390px. Desktop passed. |
+| 2 | Signed out `/scholarship` → login → back; Register keeps `redirect`; `sign_up` sends `redirect_to=/scholarship` | PASS |
+| 3 | Wizard: only Single, consents only on step 4, step 5 has 4 documents and other attachments, the popup appears when one is missing, submit works | PASS (AR desktop, EN phone) |
+| 4 | `REQ3899` has the 4 private files attached by field and the extras with no field; the registration has no files and is Single | PASS |
+| 5 | Restricted: red banner, no apply button, `/request` button disabled with the reason | PASS (flag reset afterwards) |
+| 6 | The column shows the scholarship label (AR, EN, phone) | PASS |
+| 7 | The normal Education form has no Scholarship option | PASS |
+| 8 | A request rejected yesterday, then apply again → `REQ3900` created with no cooldown | PASS |
+| 9 | Profile step 5 shows the documents and extras as read-only links | PASS |
+
+- **Final whole-branch review, fixed:**
+  - Older scholarship requests (`REQ3881`–`3889`, `REQ3896`) couldn't be approved, because the 4 documents were required on every save. They are now required on insert only.
+  - P9-4 is now enforced on the server. Only Supervisor, Specialist, System Manager and Administrator may change a submitted request's documents.
+  - Submitting a scholarship application now requires Single, which closes the gap for old Drafts that hold another status.
+  - `is_account_restricted` can only be set on scholarship registrations.
+  - The read-only request view lists the student's documents.
+- **Final tests.** `test_scholarship` 33, `test_scholarship_accepted` 21, `test_scholarship_decision` 19, `test_beneficiary_request` 6, `test_beneficiaries_registration` 6 — all OK. Vitest 80 OK. `yarn build` OK.
+- **Follow-ups (not done):**
+  - Should the Committee and Afif roles be able to replace scholarship documents through the API? The desk fields are read only anyway; mentor to decide.
+  - If two students upload byte-identical files, Frappe can link the other student's File.
+  - No count limit on other attachments.
+  - The marital-status select is blank on old non-Single records.
+  - The read-only request view on My Requests doesn't list the other attachments.
+  - `ValidationErrorPopup` text is Arabic only (it was already).
+  - The step-4 consent wording ("registration only, not an aid request") reads oddly in the scholarship flow; ask the client for wording.
+  - Orphan private files stay behind when a file is removed before submit.
+  - The menu item lists are duplicated in 3 components.
 
 ## Phase 12 — log (2026-10-29)
 - **Field.** `is_account_restricted` on `Beneficiaries Registration`: a Check at `permlevel: 1`, shown only for scholarship records, and a standard filter.
