@@ -257,6 +257,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
 import { SCHOLARSHIP_DECLARATION_FIELDS } from '@/components/registration/registrationVariant'
+import { SUBCATEGORY_MAP, getSubcategoryOptions } from './requestCategories'
 import { REQUEST_ATTACHMENT_FIELDS, getRequiredRequestDocs, isScholarshipSubcategory } from './requestAttachments'
 
 const props = defineProps({
@@ -369,44 +370,6 @@ const categories = computed(() => [
   { value: 'Awareness Assistance', label: t('request.categories.awareness') },
 ])
 
-const SUBCATEGORY_MAP = {
-  'Medical Assistance': {
-    field: 'medical_assistance',
-    key: 'medical',
-    options: ['Medical Procedures', 'Medical Equipment', 'Medication', 'Medical Supplies', 'Natural Treatment', 'Other Medical Assistance'],
-  },
-  'Education Assistance': {
-    field: 'educational_assistance',
-    key: 'education',
-    options: ['Tuition Fees', 'Transportation Fees', 'Books And Resources', 'Educational Equipment', 'Other Educational Assistance', 'Scholarship'],
-  },
-  'Social Assistance': {
-    field: 'social_assistance',
-    key: 'social',
-    options: ['Garmeen', 'Orphan sponsorship', 'Marriage assistance', 'Economic empowerment assistance', 'Travel ticket assistance', 'Widow assistance', 'Divorced women assistance', 'Elderly assistance', 'Unemployed assistance', 'Visitor assistance', 'Emergency assistance', 'Psychological support assistance', 'Other social assistance'],
-  },
-  'Family Assistance': {
-    field: 'family_assistance',
-    key: 'family',
-    options: ['Emergency lump-sum financial assistance', 'Monthly financial assistance', 'In-kind assistance', 'Family nursery sponsorship', 'Seasonal financial assistance', 'Food basket (food aid)', 'In-kind assistance with a monthly shopping card', 'In-kind assistance with a Ramadan shopping card', 'Utility bills', 'Fines support', 'Other family assistance'],
-  },
-  'Housing Assistance': {
-    field: 'housing_assistance',
-    key: 'housing',
-    options: ['Rent support', 'Land purchase', 'Real estate purchase', 'Land purchase and construction', 'Demolition and construction', 'Maintenance and restoration', 'Furnishing support', 'Other social housing assistance'],
-  },
-  'Training Assistance': {
-    field: 'training_assistance',
-    key: 'training',
-    options: ['Secretarial training', 'Entrepreneurship training', 'Student training', 'Prisoner training', 'Other training and rehabilitation'],
-  },
-  'Awareness Assistance': {
-    field: 'awareness_assistance',
-    key: 'awareness',
-    options: ['National Awareness', 'Cultural Awareness', 'Social Awareness', 'Health Awareness', 'Environmental Awareness', 'Charitable Awareness', 'Consumer Awareness', 'Other Awareness Assistance'],
-  },
-}
-
 const subcategoryConfig = computed(() => SUBCATEGORY_MAP[form.value.request_category] || null)
 const subcategoryField = computed(() => subcategoryConfig.value?.field || '')
 
@@ -419,11 +382,7 @@ const subcategoryLabel = computed(() => {
 const subcategoryOptions = computed(() => {
   if (!subcategoryConfig.value) return []
   const k = subcategoryConfig.value.key
-  // Scholarship is applied for on /scholarship; it is listed here only to show an existing request.
-  const options = subcategoryConfig.value.options.filter(
-    val => props.readOnly || !isScholarshipSubcategory(form.value.request_category, val),
-  )
-  return options.map(val => ({
+  return getSubcategoryOptions(form.value.request_category, { includeScholarship: props.readOnly }).map(val => ({
     value: val,
     label: t(`request.subtypes.${k}.${val}`),
   }))
