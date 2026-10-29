@@ -198,7 +198,7 @@ After reviewing phases 1–8, the client asked for the changes below. Each one i
 | P9-4 | **Read only after submitting.** Request documents can't be edited once the request is submitted. On the profile, step 5 shows them read only. This replaces the document editing of **P8-1/P8-2**. |
 | P9-5 | **Single only.** The scholarship marital status is `Single`, enforced on the server. |
 | P9-6 | **Account restriction.** A Supervisor can set `is_account_restricted` on a scholarship registration. The student keeps logging in and sees «تم تقييد حسابك لإنتهاء المنحة», and no new request is accepted. |
-| P9-7 | **No cooldowns.** Scholarship requests skip the 3-month (rejected) and 6-month (approved) waits. The "a previous request is pending review" block stays. |
+| P9-7 | **No cooldowns.** A scholarship student skips the 3-month (rejected) and 6-month (approved) waits for every request: scholarship requests through the link, and normal requests through "Create new request" on My Requests (widened 2026-10-29 after the client found the My Requests button blocked). The "a previous request is pending review" block stays. Students of the normal flow keep both waits. |
 | P9-8 | **My Requests.** A new "Assistance type" column shows the sub-category; scholarship rows show «منحة الشيخ خالد بن ناصر». |
 | P9-9 | **Not in the normal flow.** The Scholarship option stays out of the normal request form, and the server keeps refusing it. Both already hold since Phase 6; Phase 9 adds the regression checks. |
 

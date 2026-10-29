@@ -18,6 +18,7 @@
 
 ## After Phase 13 — client notes (2026-10-29)
 - **Partner phone hidden.** «رقم هاتف الشريك» is no longer shown or checked in the scholarship wizard, because the applicant is always Single (`partners_phone_number` added to the scholarship `hiddenFields`). The normal flow still requires it. Vitest **81 passed**; the 4 new cases fail with the fix reverted. Commit `7e09718`.
+- **Bug: My Requests blocked a scholarship student for 6 months.** After REQ3901 (scholarship) was approved, "Create new request" on `/request` was disabled with the 6-month message, because that page and `before_insert_request` exempted only scholarship requests. Per the user, a scholarship student files normal requests there with no 3- or 6-month wait, so the exemption now follows the registration's `is_scholarship` (P9-7 widened), on the server and on My Requests. The pending block stays. Backend: 2 new tests in `test_scholarship_accepted` (fail before the fix) → **23 OK**; `test_scholarship` **33 OK**, `test_beneficiary_request` **6 OK**. Vitest **81 passed**; `yarn build` done. The Python part needs `bench restart`.
 - **OQ17 opened** for the mentor: is «هل لديك أبناء؟» needed in the scholarship flow? See [plan.md §7](plan.md#7-open-questions).
 
 ## Phase 13 — log (2026-10-29)
