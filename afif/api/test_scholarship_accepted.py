@@ -6,10 +6,14 @@ from frappe.model.workflow import apply_workflow
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, add_months, now_datetime
 
-from afif.hooks_call import AccountRestrictedError
-from afif.afif.doctype.beneficiary_request.beneficiary_request import IncompleteScholarshipRequestError
+from afif.hooks_call import AccountRestrictedError, beneficiary_update_required_status_for_document, get_missing_required_attachments
+from afif.afif.doctype.beneficiary_request.beneficiary_request import (
+    SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+    IncompleteScholarshipRequestError,
+)
 from afif.api.scholarship import create_scholarship_request, get_account_status
 from afif.api.test_scholarship import (
+    REGISTRATION_ATTACHMENTS,
     REQUEST_FILE_TARGETS,
     accept_registration,
     assert_documents_attached_to_request,
@@ -329,3 +333,65 @@ class TestAccountRestriction(AcceptedBeneficiaryTestCase):
         get_account_status()
 
         self.assertFalse(frappe.response["data"]["is_account_restricted"])
+
+
+class TestScholarshipUpdateRequired(AcceptedBeneficiaryTestCase):
+    """After "Update Required", a scholarship student re-uploads the normal registration documents (P9-10 to P9-15)."""
+
+    def test_update_required_keeps_the_request_documents(self):
+        request = self.create_request()
+        documents = frappe.db.get_value("Beneficiary Request", request, SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS, as_dict=True)
+        files = self.get_request_files(request)
+
+        self.mark_update_required()
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", self.registration, "status"), "Update Required")
+        self.assertEqual(
+            frappe.db.get_value("Beneficiary Request", request, SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS, as_dict=True),
+            documents,
+        )
+        self.assertEqual(self.get_request_files(request), files)
+        self.assertEqual(len(files), len(SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS) + 1)
+
+    def test_scholarship_registration_needs_its_documents_after_update_required(self):
+        self.mark_update_required()
+
+        self.save_registration()
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", self.registration, "status"), "Update Required")
+        missing = get_missing_required_attachments(frappe.get_doc("Beneficiaries Registration", self.registration))
+        self.assertTrue({"qid", "passport", "metrash_adress"} <= set(missing))
+        self.assertFalse({"wife_id", "partner_work_certificate", "divorce_paper"} & set(missing))
+
+    def test_scholarship_registration_is_updated_once_the_documents_are_in(self):
+        self.mark_update_required()
+
+        self.save_registration(**REGISTRATION_ATTACHMENTS)
+
+        self.assertEqual(
+            frappe.db.get_value("Beneficiaries Registration", self.registration, "status"), "Updated beneficiary"
+        )
+
+    def test_scholarship_registration_needs_no_documents_before_any_update(self):
+        registration = frappe.get_doc("Beneficiaries Registration", self.registration)
+
+        self.assertFalse(registration.last_required_update_date)
+        self.assertEqual(get_missing_required_attachments(registration), [])
+
+    def mark_update_required(self) -> None:
+        frappe.set_user("Administrator")
+        beneficiary_update_required_status_for_document(self.registration)
+        frappe.set_user(self.user)
+
+    def save_registration(self, **fields) -> None:
+        registration = frappe.get_doc("Beneficiaries Registration", self.registration)
+        registration.update(fields)
+        registration.save()
+
+    def get_request_files(self, request: str) -> list:
+        return frappe.get_all(
+            "File",
+            filters={"attached_to_doctype": "Beneficiary Request", "attached_to_name": request},
+            fields=["name", "file_url", "attached_to_field"],
+            order_by="name",
+        )

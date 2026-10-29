@@ -111,8 +111,9 @@ def link_user(doc, method):
 
 
 def get_missing_required_attachments(doc):
-    # Scholarship applicants upload their documents with each scholarship request instead.
-    if doc.is_scholarship:
+    # A scholarship applicant uploads their documents with each scholarship request instead, until
+    # "Update Required" asks them for the normal registration documents.
+    if doc.is_scholarship and not doc.last_required_update_date:
         return []
 
     is_married = doc.marital_status == "Married"
