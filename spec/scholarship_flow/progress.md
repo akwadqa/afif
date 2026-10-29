@@ -11,10 +11,17 @@
 | [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
 | [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | done (live site still needs `bench restart`) | `09557c1`, `2d41dc7`, `9b4a572` |
 | [9 — No cooldowns](phase-9-no-cooldowns.md) | done (live site needs `bench restart`) | `c0960f7`, `6935fa2`, `03def4d` |
-| [10 — Link only](phase-10-link-only.md) | todo | |
+| [10 — Link only](phase-10-link-only.md) | done (browser check in Phase 13) | `2f06178` |
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | todo | |
 | [12 — Account restriction](phase-12-account-restriction.md) | todo | |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+
+## Phase 10 — log (2026-10-29)
+- The sidebar no longer has the scholarship item. `/scholarship` keeps `requiresAuth`.
+- When the guard sends a signed-out visitor to Login, it adds `?redirect=<fullPath>`.
+- Login and sign-up (`redirect_to`) read the parameter through `utils/safeRedirect.js` `getSafeRedirect`. The function refuses `//`, `/\`, absolute URLs and the auth routes, and falls back to `/beneficiary-profile`. Desk users still go to `/desk`.
+- The Login↔Register links pass `redirect` along.
+- Tests: Vitest 69 OK (14 new for the helper); `yarn build` OK.
 
 ## Phase 9 — log (2026-10-29)
 - **Server.** `before_insert_request` keeps the pending-review block. The 3/6-month checks moved into `check_request_cooldowns` and are skipped when `doc.is_scholarship` (P9-7). The three messages are now in `_()`.
