@@ -94,9 +94,9 @@ const registrationName = ref(null)
 // The user's submitted scholarship registration, and all their requests (newest first).
 const registration = ref(null)
 const requests = ref([])
-// Same rules as the request page; the server enforces them again.
+// Same rules as the request page, minus the cooldowns; the server enforces them again.
 const canApplyAgain = computed(
-  () => !getRequestBlockReason(requests.value, { isAccepted: registration.value?.status === 'Accepted' }),
+  () => !getRequestBlockReason(requests.value, { isAccepted: registration.value?.status === 'Accepted', isScholarship: true }),
 )
 
 const myRegistrations = createResource({

@@ -27,6 +27,18 @@ describe('getRequestBlockReason', () => {
     expect(getRequestBlockReason([last, { status: 'Pending Supervisor Approval' }], accepted)).toBe(reason)
   })
 
+  it.each([
+    ['rejected', { status: 'Rejected', rejected_date: '2026-10-19' }],
+    ['approved for aid', { status: 'Approved For Aid', approved_for_aid_date: '2026-10-19' }],
+  ])('ignores the cooldowns for a scholarship request last %s yesterday', (_case, last) => {
+    expect(getRequestBlockReason([last], { ...accepted, isScholarship: true })).toBe('')
+  })
+
+  it('still blocks a scholarship request while one is pending', () => {
+    const pending = [{ status: 'Pending Supervisor Approval' }]
+    expect(getRequestBlockReason(pending, { ...accepted, isScholarship: true })).toBe('pending')
+  })
+
   it.each(['ar', 'en'])('has a message in %s for every reason', language => {
     const reasons = ['notAccepted', 'pending', 'cooldownRejected', 'cooldownApproved']
     expect(reasons.filter(reason => typeof translations[language].myRequests.disabledReasons[reason] !== 'string')).toEqual([])
