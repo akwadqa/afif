@@ -118,11 +118,13 @@ class BeneficiaryRequest(Document):
             )
 
     def get_missing_scholarship_fields(self) -> list[str]:
-        missing = [
-            fieldname
-            for fieldname in (*SCHOLARSHIP_DECLARATION_FIELDS, *SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS)
-            if not self.get(fieldname)
-        ]
+        required = SCHOLARSHIP_DECLARATION_FIELDS
+        # Requests filed before the documents moved to the request (plan P9-4) hold none of them and
+        # must stay decidable, so the documents are only required on a new request.
+        if self.is_new():
+            required += SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS
+
+        missing = [fieldname for fieldname in required if not self.get(fieldname)]
         if not (self.request_summary or "").strip():
             missing.insert(0, "request_summary")
         if flt(self.requested_amount) <= 0:

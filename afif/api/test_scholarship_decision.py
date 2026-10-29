@@ -7,7 +7,10 @@ from frappe.tests import IntegrationTestCase
 from frappe.utils import random_string
 
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import ScholarshipDecisionError
-from afif.afif.doctype.beneficiary_request.beneficiary_request import ScholarshipCascadeError
+from afif.afif.doctype.beneficiary_request.beneficiary_request import (
+    SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+    ScholarshipCascadeError,
+)
 from afif.api.scholarship import submit_scholarship_application
 from afif.api.test_scholarship import (
     accept_registration,
@@ -178,6 +181,27 @@ class TestScholarshipSupervisorDecision(ScholarshipDecisionTestCase):
         request = frappe.get_doc("Beneficiary Request", self.request)
 
         self.assertTrue(request.check_beneficiary_id()["success"])
+
+
+class TestOlderScholarshipRequestDecision(ScholarshipDecisionTestCase):
+    """Requests filed before the documents moved to the request (plan P9-4) hold none of them."""
+
+    def setUp(self):
+        super().setUp()
+        frappe.db.set_value(
+            "Beneficiary Request", self.request, dict.fromkeys(SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS)
+        )
+
+    def test_older_request_without_documents_can_be_approved(self):
+        self.apply_request_action("Approve")
+
+        self.assertEqual(self.get_request_state(), "Pending Specialist Approval")
+        self.assertEqual(self.get_registration_state(), "Accepted")
+
+    def test_older_request_without_documents_can_be_rejected(self):
+        self.apply_request_action("Reject")
+
+        self.assertEqual(self.get_request_state(), "Rejected by Supervisor")
 
 
 class TestScholarshipRegistrationGuard(ScholarshipDecisionTestCase):

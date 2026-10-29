@@ -59,15 +59,20 @@ class TestBeneficiaryRequest(FrappeTestCase):
 
 		self.assertEqual(request.get_missing_required_attachments(), [])
 
-	def test_scholarship_request_requires_its_four_documents(self):
-		request = make_request(
-			request_category="Education Assistance",
-			educational_assistance="Scholarship",
-			is_scholarship=1,
-			is_data_accuracy_declared=1,
-			is_eligibility_check_accepted=1,
+	def test_new_scholarship_request_requires_its_four_documents(self):
+		# new_doc, as the scholarship endpoints use, marks the request as new before it is inserted.
+		request = frappe.new_doc("Beneficiary Request")
+		request.update(
+			{
+				"requested_amount": "1000",
+				"request_summary": "Test",
+				"request_category": "Education Assistance",
+				"educational_assistance": "Scholarship",
+				"is_scholarship": 1,
+				"is_data_accuracy_declared": 1,
+				"is_eligibility_check_accepted": 1,
+			}
 		)
-		request.flags.is_scholarship_submission = True
 
 		self.assertEqual(
 			request.get_missing_scholarship_fields(),
