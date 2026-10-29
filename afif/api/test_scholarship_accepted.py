@@ -372,6 +372,17 @@ class TestScholarshipUpdateRequired(AcceptedBeneficiaryTestCase):
             frappe.db.get_value("Beneficiaries Registration", self.registration, "status"), "Updated beneficiary"
         )
 
+    def test_beneficiary_save_keeps_the_update_required_marker(self):
+        self.mark_update_required()
+        marker = frappe.db.get_value("Beneficiaries Registration", self.registration, "last_required_update_date")
+
+        self.save_registration(last_required_update_date=None)
+
+        self.assertEqual(
+            frappe.db.get_value("Beneficiaries Registration", self.registration, "last_required_update_date"), marker
+        )
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", self.registration, "status"), "Update Required")
+
     def test_scholarship_registration_needs_no_documents_before_any_update(self):
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
 

@@ -41,9 +41,17 @@ class BeneficiariesRegistration(Document):
         self.validate_single_marital_status()
         self.validate_scholarship_marital_status()
         self.validate_account_restriction_scope()
+        self.keep_last_required_update_date()
 
     def on_update(self):
         self.delete_replaced_attachments()
+
+    def keep_last_required_update_date(self):
+        # Only "Update Required" sets this date; it decides whether a scholarship registration needs its
+        # documents, and the portal's save rebuilds the doc without it.
+        previous = self.get_doc_before_save()
+        if previous and frappe.get_cached_value("User", frappe.session.user, "user_type") == "Website User":
+            self.last_required_update_date = previous.last_required_update_date
 
     def validate_scholarship_flag_unchanged(self):
         if not self.is_new() and self.has_value_changed("is_scholarship"):
