@@ -66,7 +66,8 @@ const REGISTRATION_VARIANT = {
 }
 
 const SCHOLARSHIP_VARIANT = {
-  hiddenFields: new Set(),
+  // A scholarship applicant is always Single, so there is no partner to contact.
+  hiddenFields: new Set(['partners_phone_number']),
   // The server refuses Single on a normal registration and requires it on a scholarship one.
   maritalStatuses: ['Single'],
   hasRegistrationDocuments: false,

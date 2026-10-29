@@ -60,10 +60,14 @@ function fillFormerlyHiddenFields(formData) {
 }
 
 describe('step 1 (personal data)', () => {
-  it.each(['scholarship', 'registration'])('requires every normal field in the %s flow', flow => {
-    const { fields } = validate(makeScholarshipStep1(), 1, flow)
+  it('requires every normal field in the normal flow', () => {
+    expect(validate(makeScholarshipStep1(), 1, 'registration').fields).toEqual(FORMERLY_HIDDEN_STEP_1_FIELDS)
+  })
 
-    expect(fields).toEqual(FORMERLY_HIDDEN_STEP_1_FIELDS)
+  it('requires every normal field except the partner phone in the scholarship flow', () => {
+    const { fields } = validate(makeScholarshipStep1(), 1, 'scholarship')
+
+    expect(fields).toEqual(FORMERLY_HIDDEN_STEP_1_FIELDS.filter(field => field !== 'partners_phone_number'))
   })
 
   it.each(['scholarship', 'registration'])('passes in the %s flow once they are filled in', flow => {
@@ -109,26 +113,23 @@ describe('marital status options', () => {
     expect(getRegistrationVariant('registration').maritalStatuses).not.toContain('Single')
   })
 
-  it('needs no partner details for a single applicant', () => {
+  it('hides the partner phone only in the scholarship flow', () => {
+    expect(getRegistrationVariant('scholarship').isShown('partners_phone_number')).toBe(false)
+    expect(getRegistrationVariant('registration').isShown('partners_phone_number')).toBe(true)
+  })
+
+  it.each(['', '5511'])('ignores the partner phone %j in the scholarship flow', phone => {
     const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
-    formData.personalInfo.marital_status = 'Single'
-    formData.personalInfo.partners_phone_number = ''
+    Object.assign(formData.personalInfo, { marital_status: 'Single', partners_phone_number: phone })
 
     expect(validate(formData, 1, 'scholarship')).toEqual({ errors: [], fields: [] })
   })
 
-  it.each(['Married', 'Divorced', 'Widowed', 'Separated'])('still requires the partner phone when %s', status => {
+  it.each(['Married', 'Divorced', 'Widowed', 'Separated'])('still requires the partner phone in the normal flow when %s', status => {
     const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
     Object.assign(formData.personalInfo, { marital_status: status, partners_phone_number: '' })
 
-    expect(validate(formData, 1, 'scholarship').fields).toContain('partners_phone_number')
-  })
-
-  it('still checks the format of a partner phone given by a single applicant', () => {
-    const formData = fillFormerlyHiddenFields(makeScholarshipStep1())
-    Object.assign(formData.personalInfo, { marital_status: 'Single', partners_phone_number: '5511' })
-
-    expect(validate(formData, 1, 'scholarship').fields).toEqual(['partners_phone_number'])
+    expect(validate(formData, 1, 'registration').fields).toContain('partners_phone_number')
   })
 })
 

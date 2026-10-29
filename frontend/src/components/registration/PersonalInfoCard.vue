@@ -221,9 +221,9 @@
         </select>
       </div>
 
-      <!-- Partner Phone (always shown) -->
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span v-if="modelValue.marital_status !== 'Single'" class="text-red-500">*</span></label>
+      <!-- Partner Phone -->
+      <div v-if="variant.isShown('partners_phone_number')" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
           :value="modelValue.partners_phone_number"
