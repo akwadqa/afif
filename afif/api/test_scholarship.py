@@ -17,6 +17,7 @@ from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration imp
     SingleMaritalStatusError,
 )
 from afif.afif.doctype.beneficiary_request.beneficiary_request import (
+    SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
     IncompleteScholarshipRequestError,
     ScholarshipSubcategoryError,
 )
@@ -37,9 +38,7 @@ REGISTRATION_ATTACHMENTS = {
     "vehicle_certificate": "/files/test-vehicle.pdf",
     "iban_picture": "/files/test-iban.pdf",
 }
-SCHOLARSHIP_ATTACHMENTS = {
-    fieldname: f"/private/files/test-{fieldname.replace('_', '-')}.pdf" for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS
-}
+REQUEST_FILE_TARGETS = ("student_id_copy", "other_attachments")
 
 
 class TestSubmitScholarshipApplication(IntegrationTestCase):
@@ -68,10 +67,22 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         self.assertEqual(request.educational_assistance, "Scholarship")
         self.assertEqual(request.is_scholarship, 1)
         self.assertTrue(request.request_date)
-        self.assertEqual(
-            {fieldname: registration.get(fieldname) for fieldname in SCHOLARSHIP_ATTACHMENT_FIELDS},
-            SCHOLARSHIP_ATTACHMENTS,
-        )
+
+    def test_submit_attaches_the_documents_to_the_request(self):
+        submit_scholarship_application(self.registration, self.request_data)
+
+        assert_documents_attached_to_request(self, frappe.response["data"]["request"], self.request_data)
+        assert_no_registration_scholarship_documents(self, self.registration)
+
+    def test_submit_without_registration_documents_succeeds(self):
+        registration = frappe.get_doc("Beneficiaries Registration", self.registration)
+        attach_fields = registration.meta.get("fields", {"fieldtype": ("in", ("Attach", "Attach Image"))})
+        uploaded = [df.fieldname for df in attach_fields if (registration.get(df.fieldname) or "").startswith("/")]
+        self.assertEqual(uploaded, [])
+
+        submit_scholarship_application(self.registration, self.request_data)
+
+        self.assertEqual(registration.reload().workflow_state, "New Registration")
 
     def test_applicant_can_read_only_their_own_request(self):
         submit_scholarship_application(self.registration, self.request_data)
@@ -82,17 +93,44 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         frappe.set_user(make_beneficiary_user())
         self.assertFalse(frappe.has_permission("Beneficiary Request", "read", request))
 
-    def test_missing_registration_attachment_creates_nothing(self):
-        for fieldname in ("qid", "scholarship_university_invoice", "scholarship_student_bank_statement"):
-            with self.subTest(fieldname):
-                frappe.db.savepoint("missing_attachment")
-                frappe.db.set_value("Beneficiaries Registration", self.registration, fieldname, None)
+    def test_missing_request_document_creates_nothing(self):
+        for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS:
+            with self.subTest(fieldname), self.assertRaises(IncompleteScholarshipRequestError):
+                submit_scholarship_application(self.registration, {**self.request_data, fieldname: None})
 
-                with self.assertRaises(IncompleteScholarshipApplicationError):
-                    submit_scholarship_application(self.registration, self.request_data)
+        self.assert_nothing_submitted()
+        assert_files_unattached(self, self.request_data)
 
-                self.assert_nothing_submitted()
-                frappe.db.rollback(save_point="missing_attachment")
+    def test_another_users_file_is_rejected(self):
+        frappe.set_user("Administrator")
+        frappe.set_user(make_beneficiary_user())
+        other_file_url = upload_unattached_file("other-user")
+        frappe.set_user(self.user)
+
+        for target in REQUEST_FILE_TARGETS:
+            with self.subTest(target), self.assertRaises(frappe.PermissionError):
+                submit_scholarship_application(self.registration, replace_file(self.request_data, target, other_file_url))
+
+        self.assert_nothing_submitted()
+
+    def test_a_file_already_attached_elsewhere_is_rejected(self):
+        for target in REQUEST_FILE_TARGETS:
+            request_data = make_request_data()
+            attached_url = upload_unattached_file("attached-elsewhere")
+            attach_file_to(attached_url, "Beneficiaries Registration", self.registration)
+
+            with self.subTest(target), self.assertRaises(frappe.PermissionError):
+                submit_scholarship_application(self.registration, replace_file(request_data, target, attached_url))
+
+        self.assert_nothing_submitted()
+
+    def test_the_same_file_for_two_documents_is_rejected(self):
+        request_data = {**self.request_data, "student_passport_copy": self.request_data["student_id_copy"]}
+
+        with self.assertRaises(frappe.PermissionError):
+            submit_scholarship_application(self.registration, request_data)
+
+        self.assert_nothing_submitted()
 
     def test_missing_registration_consent_creates_nothing(self):
         frappe.db.set_value("Beneficiaries Registration", self.registration, "verification_consent", 0)
@@ -328,8 +366,8 @@ def make_registration(is_scholarship: int) -> str:
             "cancellation_right": 1,
             "guardian_mobile_number": "55123456" if is_scholarship else None,
             "current_step": 5,
-            **REGISTRATION_ATTACHMENTS,
-            **(SCHOLARSHIP_ATTACHMENTS if is_scholarship else {}),
+            # A scholarship applicant uploads their documents with the request, not the registration.
+            **({} if is_scholarship else REGISTRATION_ATTACHMENTS),
         }
     ).insert()
     return registration.name
@@ -341,7 +379,55 @@ def make_request_data() -> dict:
         "request_summary": "Scholarship test request",
         "is_data_accuracy_declared": 1,
         "is_eligibility_check_accepted": 1,
+        **{fieldname: upload_unattached_file(fieldname) for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS},
+        "other_attachments": [upload_unattached_file("other-attachment")],
     }
+
+
+def replace_file(request_data: dict, target: str, file_url: str) -> dict:
+    """Point one of the request's files, a named document or the extra file, at another file_url."""
+    if target == "other_attachments":
+        return {**request_data, "other_attachments": [file_url]}
+    return {**request_data, target: file_url}
+
+
+def attach_file_to(file_url: str, doctype: str, name: str) -> None:
+    file_name = frappe.db.get_value("File", {"file_url": file_url}, "name")
+    frappe.db.set_value("File", file_name, {"attached_to_doctype": doctype, "attached_to_name": name})
+
+
+def assert_documents_attached_to_request(testcase: IntegrationTestCase, request: str, request_data: dict) -> None:
+    request_doc = frappe.get_doc("Beneficiary Request", request)
+    expected = [(fieldname, request_data[fieldname]) for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS]
+    expected += [(None, file_url) for file_url in request_data["other_attachments"]]
+
+    for fieldname, file_url in expected:
+        if fieldname:
+            testcase.assertEqual(request_doc.get(fieldname), file_url)
+        file = frappe.db.get_value(
+            "File",
+            {"file_url": file_url},
+            ["attached_to_doctype", "attached_to_name", "attached_to_field", "is_private"],
+            as_dict=True,
+        )
+        testcase.assertEqual(
+            (file.attached_to_doctype, file.attached_to_name, file.attached_to_field or None, file.is_private),
+            ("Beneficiary Request", request, fieldname, 1),
+        )
+
+
+def assert_files_unattached(testcase: IntegrationTestCase, request_data: dict) -> None:
+    file_urls = [request_data[fieldname] for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS]
+    file_urls += request_data["other_attachments"]
+    attached = frappe.get_all(
+        "File", filters={"file_url": ("in", file_urls), "attached_to_name": ("is", "set")}, pluck="file_url"
+    )
+    testcase.assertEqual(attached, [])
+
+
+def assert_no_registration_scholarship_documents(testcase: IntegrationTestCase, registration: str) -> None:
+    values = frappe.db.get_value("Beneficiaries Registration", registration, SCHOLARSHIP_ATTACHMENT_FIELDS, as_dict=True)
+    testcase.assertFalse(any(values.values()))
 
 
 def make_normal_education_request() -> str:
