@@ -9,10 +9,7 @@
 
       <ScholarshipRequestCard
         v-model="scholarshipRequest"
-        :files="files"
         :invalid-fields="invalidFields"
-        @select-file="(id, file) => (files = { ...files, [id]: file })"
-        @remove-file="id => (files = { ...files, [id]: null })"
       />
 
       <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 rounded-2xl px-6 py-4 text-sm">
@@ -35,12 +32,12 @@
 import { ref } from 'vue'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
-import { uploadFile } from '@/utils/fileUpload'
 import FormActionsBar from './FormActionsBar.vue'
 import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
-import { LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
+import { SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
+import { createScholarshipRequestFiles, uploadScholarshipRequestFiles } from './scholarshipRequestFiles'
 
 // Step 5 of the scholarship wizard for an accepted beneficiary, whose registration is already done.
 const emit = defineEmits(['submitted'])
@@ -50,8 +47,8 @@ const scholarshipRequest = ref({
   requested_amount: '',
   request_summary: '',
   declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false])),
+  files: createScholarshipRequestFiles(),
 })
-const files = ref({})
 const invalidFields = ref([])
 const validationErrors = ref([])
 const error = ref('')
@@ -67,7 +64,7 @@ const createScholarshipRequest = createResource({
 async function submit() {
   error.value = ''
   const { errors, fields } = validateRegistrationStep({
-    formData: { scholarshipRequest: scholarshipRequest.value, attachments: { files: files.value } },
+    formData: { scholarshipRequest: scholarshipRequest.value },
     step: 5,
     flow: 'scholarship',
     t,
@@ -89,21 +86,15 @@ async function submit() {
   }
 }
 
-// Only a Supervisor may save an Accepted registration, so the files are uploaded unattached and the
-// endpoint puts them on the registration after checking they are the user's own.
 async function submitRequest() {
-  for (const id of LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS) {
-    // Stored back as a URL so a retry after a failed submit reuses the upload.
-    if (files.value[id] instanceof File) files.value[id] = await uploadFile(files.value[id], { is_private: '1' })
-  }
-
   const sr = scholarshipRequest.value
+  const uploadedFiles = await uploadScholarshipRequestFiles(sr.files)
   await createScholarshipRequest.submit({
     request: {
       requested_amount: sr.requested_amount,
       request_summary: sr.request_summary,
-      ...files.value,
       ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
+      ...uploadedFiles,
     },
   })
 }

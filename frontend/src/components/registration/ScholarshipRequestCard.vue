@@ -57,7 +57,7 @@
 
       <div class="space-y-3">
         <div
-          v-for="id in LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS"
+          v-for="id in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS"
           :key="id"
           class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl transition-all gap-4"
           :class="isInvalid('attach_' + id)
@@ -69,72 +69,129 @@
               {{ t(`scholarship.attachments.${id}`) }}
               <span class="text-red-500">*</span>
             </div>
-            <div v-if="uploadErrors[id]" class="text-xs text-red-500 mt-1">
-              {{ uploadErrors[id] }}
+          </div>
+
+          <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
+            <template v-if="!documentsReadOnly">
+              <button
+                v-if="!files[id]"
+                type="button"
+                @click="triggerFileInput(id)"
+                class="flex items-center gap-1.5 px-4 py-2 border border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                </svg>
+                <span>{{ t('registration.attachments.upload') }}</span>
+              </button>
+
+              <template v-else>
+                <button
+                  type="button"
+                  @click="triggerFileInput(id)"
+                  class="flex items-center gap-1.5 px-4 py-2 border border-sky-100 text-sky-600 rounded-xl bg-sky-50/40 hover:bg-sky-50 transition-colors text-xs font-semibold"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <span>{{ t('registration.attachments.reupload') }}</span>
+                </button>
+
+                <button
+                  type="button"
+                  @click="updateFiles({ [id]: null })"
+                  class="flex items-center gap-1.5 px-3 py-2 border border-red-100 text-red-500 rounded-xl bg-red-50/30 hover:bg-red-50 transition-colors text-xs font-semibold"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" :d="DELETE_ICON_PATH" />
+                  </svg>
+                  <span>{{ t('registration.attachments.delete') }}</span>
+                </button>
+              </template>
+
+              <input
+                :id="`scholarship-input-${id}`"
+                type="file"
+                :accept="ACCEPTED_FILE_TYPES"
+                class="hidden"
+                @change="handleFileSelected($event, file => updateFiles({ [id]: file }))"
+              />
+            </template>
+
+            <span
+              v-if="files[id]"
+              class="text-xs text-gray-500 font-mono truncate max-w-[140px] md:max-w-[180px] inline-block align-middle"
+              dir="ltr"
+            >
+              <a
+                v-if="typeof files[id] === 'string'"
+                :href="files[id]"
+                target="_blank"
+                rel="noopener"
+                class="document-link underline hover:text-sky-500"
+              >{{ fileLabel(files[id]) }}</a>
+              <span v-else>{{ fileLabel(files[id]) }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Other attachments (optional, multiple) -->
+        <div
+          v-for="(file, index) in files.other_attachments"
+          :key="index"
+          class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-xl gap-4 bg-gray-50/50 hover:bg-gray-50/80 border-gray-100/70"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-700">
+              {{ t('scholarship.attachments.other_attachments') }} #{{ index + 1 }}
             </div>
           </div>
 
           <div class="flex items-center gap-3 self-end md:self-auto shrink-0 flex-wrap rtl:flex-row-reverse">
-            <span
-              v-if="uploading[id]"
-              class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-gray-400"
-            >
-              <svg class="w-4 h-4 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
-              </svg>
-              <span>{{ t('registration.attachments.uploading') }}</span>
-            </span>
-
             <button
-              v-else-if="!files[id]"
+              v-if="!documentsReadOnly"
               type="button"
-              @click="triggerFileInput(id)"
-              class="flex items-center gap-1.5 px-4 py-2 border border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm"
+              @click="removeOtherAttachment(index)"
+              class="flex items-center gap-1.5 px-3 py-2 border border-red-100 text-red-500 rounded-xl bg-red-50/30 hover:bg-red-50 transition-colors text-xs font-semibold"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" :d="DELETE_ICON_PATH" />
               </svg>
-              <span>{{ t('registration.attachments.upload') }}</span>
+              <span>{{ t('registration.attachments.delete') }}</span>
             </button>
 
-            <template v-else>
-              <button
-                type="button"
-                @click="triggerFileInput(id)"
-                class="flex items-center gap-1.5 px-4 py-2 border border-sky-100 text-sky-600 rounded-xl bg-sky-50/40 hover:bg-sky-50 transition-colors text-xs font-semibold"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-                <span>{{ t('registration.attachments.reupload') }}</span>
-              </button>
-
-              <button
-                type="button"
-                @click="emit('remove-file', id)"
-                class="flex items-center gap-1.5 px-3 py-2 border border-red-100 text-red-500 rounded-xl bg-red-50/30 hover:bg-red-50 transition-colors text-xs font-semibold"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                </svg>
-                <span>{{ t('registration.attachments.delete') }}</span>
-              </button>
-
-              <span class="text-xs text-gray-500 font-mono truncate max-w-[140px] md:max-w-[180px] inline-block align-middle" dir="ltr">
-                {{ fileLabel(id) }}
-              </span>
-            </template>
-
-            <input
-              :id="`scholarship-input-${id}`"
-              type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
-              class="hidden"
-              @change="handleFileSelected($event, id)"
-            />
+            <span class="text-xs text-gray-500 font-mono truncate max-w-[140px] md:max-w-[180px] inline-block align-middle" dir="ltr">
+              <a
+                v-if="typeof file === 'string'"
+                :href="file"
+                target="_blank"
+                rel="noopener"
+                class="document-link underline hover:text-sky-500"
+              >{{ fileLabel(file) }}</a>
+              <span v-else>{{ fileLabel(file) }}</span>
+            </span>
           </div>
         </div>
+
+        <template v-if="!documentsReadOnly">
+          <button
+            type="button"
+            @click="triggerFileInput('other_attachments')"
+            class="flex items-center gap-1.5 px-4 py-2 border border-dashed border-sky-200 text-sky-600 rounded-xl bg-white hover:bg-sky-50 transition-colors text-xs font-bold shadow-sm w-full justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>{{ t('scholarship.attachments.addOther') }}</span>
+          </button>
+          <input
+            id="scholarship-input-other_attachments"
+            type="file"
+            :accept="ACCEPTED_FILE_TYPES"
+            class="hidden"
+            @change="handleFileSelected($event, file => updateFiles({ other_attachments: [...files.other_attachments, file] }))"
+          />
+        </template>
       </div>
     </div>
 
@@ -163,29 +220,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
-import { LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS, SCHOLARSHIP_DECLARATION_FIELDS } from './registrationVariant'
+import { SCHOLARSHIP_DECLARATION_FIELDS, SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
-// The documents are registration fields, so the parent owns them: it uploads a picked file now
-// (Draft) or on submit (accepted beneficiary).
+// The documents are kept in modelValue.files as picked File objects, and uploaded only when the
+// request is submitted (see scholarshipRequestFiles.js).
 const props = defineProps({
   modelValue: { type: Object, required: true },
-  files: { type: Object, required: true },
   invalidFields: { type: Array, default: () => [] },
-  uploading: { type: Object, default: () => ({}) },
-  uploadErrors: { type: Object, default: () => ({}) },
   // The request's status, when a submitted application is shown read only.
   status: { type: String, default: '' },
   // The request is already submitted: its amount, summary and declarations can no longer change.
   requestReadOnly: { type: Boolean, default: false },
+  // Its documents are shown as links only.
+  documentsReadOnly: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:modelValue', 'select-file', 'remove-file'])
+const emit = defineEmits(['update:modelValue'])
 
 const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png']
+const ACCEPTED_FILE_TYPES = ALLOWED_EXTENSIONS.map(ext => `.${ext}`).join(',')
+const DELETE_ICON_PATH = 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'
 const amountLetterWarning = ref(false)
+const files = computed(() => props.modelValue.files)
 
 function isInvalid(field) {
   return props.invalidFields.includes(field)
@@ -193,6 +252,14 @@ function isInvalid(field) {
 
 function update(changes) {
   emit('update:modelValue', { ...props.modelValue, ...changes })
+}
+
+function updateFiles(changes) {
+  update({ files: { ...files.value, ...changes } })
+}
+
+function removeOtherAttachment(index) {
+  updateFiles({ other_attachments: files.value.other_attachments.filter((_, i) => i !== index) })
 }
 
 function onAmountInput(event) {
@@ -203,18 +270,16 @@ function onAmountInput(event) {
   update({ requested_amount: value })
 }
 
-function fileLabel(id) {
-  const value = props.files[id]
+function fileLabel(value) {
   if (value instanceof File) return value.name
-  if (typeof value === 'string') return value.split('/').pop()
-  return ''
+  return value.split('/').pop()
 }
 
 function triggerFileInput(id) {
   document.getElementById(`scholarship-input-${id}`)?.click()
 }
 
-function handleFileSelected(event, id) {
+function handleFileSelected(event, onAccepted) {
   const file = event.target.files[0]
   event.target.value = ''
   if (!file) return
@@ -228,7 +293,7 @@ function handleFileSelected(event, id) {
     alert(t('registration.attachments.fileTooLarge'))
     return
   }
-  emit('select-file', id, file)
+  onAccepted(file)
 }
 </script>
 

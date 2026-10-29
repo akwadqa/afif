@@ -51,6 +51,7 @@
             :invalid-fields="invalidFields"
             :uploading="attachmentUploading"
             :upload-errors="attachmentUploadErrors"
+            :show-documents="variant.hasRegistrationDocuments"
             @select-file="handleAttachmentFileSelected"
           />
         </div>
@@ -58,14 +59,10 @@
         <div v-else-if="currentStep === 5 && hasRequestStep">
           <ScholarshipRequestCard
             v-model="formData.scholarshipRequest"
-            :files="formData.attachments.files"
             :status="scholarshipRequestStatus"
             :request-read-only="isSubmittedApplication"
+            :documents-read-only="isSubmittedApplication"
             :invalid-fields="invalidFields"
-            :uploading="attachmentUploading"
-            :upload-errors="attachmentUploadErrors"
-            @select-file="handleAttachmentFileSelected"
-            @remove-file="removeScholarshipAttachment"
           />
         </div>
       </div>
@@ -145,9 +142,11 @@ import ValidationErrorPopup from './ValidationErrorPopup.vue'
 import {
   LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
+  SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
   getRegistrationVariant,
 } from './registrationVariant'
 import { validateRegistrationStep } from './registrationValidation'
+import { createScholarshipRequestFiles, uploadScholarshipRequestFiles } from './scholarshipRequestFiles'
 import { uploadFile } from '@/utils/fileUpload'
 
 const props = defineProps({
@@ -183,7 +182,7 @@ const isScholarshipFlow = computed(() => props.flow === 'scholarship')
 // A scholarship registration has the request step wherever it is opened, the profile page included;
 // a normal registration never has it.
 const hasRequestStep = computed(() => isScholarshipFlow.value || Boolean(docMeta.value.is_scholarship))
-// Its request is already submitted: only the documents, which are registration fields, can change.
+// Its request is already submitted, so the request step is shown read only.
 const isSubmittedApplication = computed(() => Boolean(docMeta.value.is_scholarship) && docMeta.value.status !== 'Draft')
 // A scholarship registration keeps its fields when it is edited from the normal profile page.
 const fieldsFlow = computed(() => (docMeta.value.is_scholarship ? 'scholarship' : props.flow))
@@ -260,12 +259,13 @@ const formData = ref({
       statusAwareness: false,
     },
   },
-  // Kept in memory only: it becomes the Beneficiary Request when the application is submitted.
-  // The scholarship documents are registration fields, kept in attachments.files.
+  // Kept in memory only, with its documents: it becomes the Beneficiary Request when the
+  // application is submitted.
   scholarshipRequest: {
     requested_amount: '',
     request_summary: '',
     declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false])),
+    files: createScholarshipRequestFiles(),
   },
 })
 
@@ -500,7 +500,10 @@ function populateFromDoc(doc) {
     latestScholarshipRequest.submit({
       doctype: 'Beneficiary Request',
       filters: { beneficiaries: doc.name, is_scholarship: 1 },
-      fields: ['status', 'requested_amount', 'request_summary', ...SCHOLARSHIP_DECLARATION_FIELDS],
+      fields: [
+        'name', 'status', 'requested_amount', 'request_summary',
+        ...SCHOLARSHIP_DECLARATION_FIELDS, ...SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+      ],
       order_by: 'creation desc',
       limit_page_length: 1,
     })
@@ -517,7 +520,33 @@ const latestScholarshipRequest = createResource({
       requested_amount: request.requested_amount,
       request_summary: request.request_summary,
       declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!request[field]])),
+      files: {
+        ...Object.fromEntries(SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS.map(field => [field, request[field] || null])),
+        other_attachments: [],
+      },
     }
+    // The other attachments have no field: they are the request's Files attached to no field.
+    otherRequestAttachments.submit({
+      doctype: 'File',
+      filters: {
+        attached_to_doctype: 'Beneficiary Request',
+        attached_to_name: request.name,
+        attached_to_field: ['is', 'not set'],
+      },
+      fields: ['file_url'],
+      order_by: 'creation asc',
+      limit_page_length: 0,
+    })
+  },
+  onError(err) {
+    error.value = err.message || t('registration.submitError')
+  },
+})
+
+const otherRequestAttachments = createResource({
+  url: 'frappe.client.get_list',
+  onSuccess(files) {
+    formData.value.scholarshipRequest.files.other_attachments = files.map(file => file.file_url)
   },
   onError(err) {
     error.value = err.message || t('registration.submitError')
@@ -754,7 +783,7 @@ async function handleNext() {
 
   const isAttachmentsStep = currentStep.value === 4 && subStep4.value === 2
   const isScholarshipRequestStep = currentStep.value === 5
-  if ((isAttachmentsStep || isScholarshipRequestStep) && pendingAttachmentOps.size) {
+  if (isAttachmentsStep && pendingAttachmentOps.size) {
     submitting.value = true
     await waitForPendingAttachmentOps()
     submitting.value = false
@@ -836,8 +865,8 @@ async function handleNext() {
   maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
 }
 
-// Saves the edited registration with its documents, and applies the same workflow action the
-// attachments step applies for a normal registration (e.g. Review for a Not Accepted one).
+// Saves the edited registration, and applies the same workflow action the attachments step applies
+// for a normal registration (e.g. Review for a Not Accepted one).
 async function finishScholarshipRegistrationEdit() {
   try {
     const data = await saveStep(5)
@@ -849,17 +878,21 @@ async function finishScholarshipRegistrationEdit() {
   }
 }
 
-// The scholarship documents were saved on the Draft as they were picked, so only the request data is sent.
 async function submitScholarshipApplication() {
   const sr = formData.value.scholarshipRequest
-  const request = {
-    requested_amount: sr.requested_amount,
-    request_summary: sr.request_summary,
-    ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
-  }
   try {
-    await submitScholarship.submit({ registration: docName.value, request })
+    const uploadedFiles = await uploadScholarshipRequestFiles(sr.files)
+    await submitScholarship.submit({
+      registration: docName.value,
+      request: {
+        requested_amount: sr.requested_amount,
+        request_summary: sr.request_summary,
+        ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
+        ...uploadedFiles,
+      },
+    })
   } catch (e) {
+    error.value ||= e.message || t('registration.submitError')
     return
   }
   emit('submitted', docName.value)
@@ -929,8 +962,8 @@ async function uploadAllFiles() {
 
 function uploadRegistrationFile(file, docName, fieldname) {
   return uploadFile(file, {
-    // The registration documents stay public (mentor's decision); the scholarship ones are private.
-    is_private: LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS.includes(fieldname) ? '1' : '0',
+    // The registration documents stay public (mentor's decision).
+    is_private: '0',
     doctype: 'Beneficiaries Registration',
     docname: docName,
     fieldname,
@@ -967,16 +1000,6 @@ function handleAttachmentFileSelected(id, file) {
   pendingAttachmentOps.add(op)
   op.finally(() => pendingAttachmentOps.delete(op))
   return op
-}
-
-// Saving the cleared field also deletes its File on the server.
-function removeScholarshipAttachment(id) {
-  formData.value.attachments.files = { ...formData.value.attachments.files, [id]: null }
-  const op = queueAttachmentSave().catch(e => {
-    attachmentUploadErrors.value = { ...attachmentUploadErrors.value, [id]: e.message || t('registration.submitError') }
-  })
-  pendingAttachmentOps.add(op)
-  op.finally(() => pendingAttachmentOps.delete(op))
 }
 
 async function uploadAndSaveAttachment(id, file) {
@@ -1017,5 +1040,10 @@ async function uploadAndSaveAttachment(id, file) {
 
 .read-only-form :deep(button) {
   opacity: 0.5;
+}
+
+/* The submitted scholarship documents stay downloadable while the form is read only. */
+.read-only-form :deep(.document-link) {
+  pointer-events: auto;
 }
 </style>

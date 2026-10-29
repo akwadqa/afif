@@ -221,6 +221,7 @@ describe('scholarship translations', () => {
   const keys = [
     ...INCOME_SOURCES.flatMap(src => [src.labelKey, src.sectionTitleKey, src.periodicLabelKey, src.amountLabelKey, src.noteLabelKey]),
     ...getRegistrationVariant('scholarship').maritalStatuses.map(status => `registration.personalInfo.${status.toLowerCase()}`),
+    ...[...SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS, 'other_attachments', 'addOther'].map(id => `scholarship.attachments.${id}`),
     'scholarship.acceptedSubtitle',
     'scholarship.success.acceptedMessage',
     'scholarship.applyAgain',
