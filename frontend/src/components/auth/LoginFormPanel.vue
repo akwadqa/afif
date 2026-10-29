@@ -136,7 +136,7 @@
     <!-- Register link -->
     <div class="mt-6 flex items-center justify-center gap-[7px] text-base text-[#3E4850]">
       {{ t('login.noAccount') }}
-      <RouterLink to="/register" class="text-sm font-semibold text-[#0570B6] hover:underline">
+      <RouterLink :to="{ path: '/register', query: redirectQuery }" class="text-sm font-semibold text-[#0570B6] hover:underline">
         {{ t('login.createAccount') }}
       </RouterLink>
     </div>
@@ -145,12 +145,14 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
 
+const route = useRoute()
+const redirectQuery = computed(() => (route.query.redirect ? { redirect: route.query.redirect } : {}))
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
