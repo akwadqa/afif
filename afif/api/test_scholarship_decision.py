@@ -19,6 +19,7 @@ from afif.api.test_scholarship import (
     make_normal_education_request_data,
     make_registration,
     make_request_data,
+    upload_unattached_file,
 )
 from afif.hooks_call import UnmappedAidLookupError, get_aid_lookup_parent_id, new_aid_request
 
@@ -202,6 +203,43 @@ class TestOlderScholarshipRequestDecision(ScholarshipDecisionTestCase):
         self.apply_request_action("Reject")
 
         self.assertEqual(self.get_request_state(), "Rejected by Supervisor")
+
+
+class TestSubmittedScholarshipDocumentsLocked(ScholarshipDecisionTestCase):
+    def change_student_id_copy(self, request: str | None = None) -> str:
+        request_doc = frappe.get_doc("Beneficiary Request", request or self.request)
+        request_doc.student_id_copy = upload_declaration()
+        request_doc.save()
+        return request_doc.student_id_copy
+
+    def test_applicant_cannot_change_a_document_of_their_submitted_request(self):
+        stored = frappe.db.get_value("Beneficiary Request", self.request, "student_id_copy")
+        # An accepted beneficiary may write their own requests, unlike a new registration.
+        accept_registration(self.registration, self.applicant)
+
+        with self.assertRaises(frappe.PermissionError):
+            self.change_student_id_copy()
+
+        self.assertEqual(frappe.db.get_value("Beneficiary Request", self.request, "student_id_copy"), stored)
+
+    def test_supervisor_can_change_a_document(self):
+        new_file_url = self.change_student_id_copy()
+
+        self.assertEqual(frappe.db.get_value("Beneficiary Request", self.request, "student_id_copy"), new_file_url)
+
+    def test_normal_education_request_documents_stay_editable(self):
+        frappe.set_user("Administrator")
+        user = make_beneficiary_user()
+        frappe.set_user(user)
+        accept_registration(make_registration(is_scholarship=0), user)
+        request = frappe.get_doc(make_normal_education_request_data()).insert()
+        request.education_invoice = upload_unattached_file("new-education-invoice")
+
+        request.save()
+
+        self.assertEqual(
+            frappe.db.get_value("Beneficiary Request", request.name, "education_invoice"), request.education_invoice
+        )
 
 
 class TestScholarshipRegistrationGuard(ScholarshipDecisionTestCase):

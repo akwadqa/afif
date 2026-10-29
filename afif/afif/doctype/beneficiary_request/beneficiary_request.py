@@ -15,6 +15,7 @@ SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS = (
     "student_id_copy",
     "student_passport_copy",
 )
+SCHOLARSHIP_DOCUMENT_EDITOR_ROLES = ("Supervisor", "Specialist", "System Manager", "Administrator")
 
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
@@ -60,6 +61,7 @@ class BeneficiaryRequest(Document):
         self.validate_scholarship_flag()
         self.validate_scholarship_subcategory()
         self.validate_scholarship_request()
+        self.validate_scholarship_documents_locked()
         self.validate_scholarship_aid_lookup()
 
         # Only on insert, so existing incomplete requests stay editable by staff
@@ -130,6 +132,20 @@ class BeneficiaryRequest(Document):
         if flt(self.requested_amount) <= 0:
             missing.insert(0, "requested_amount")
         return [_(self.meta.get_label(fieldname)) for fieldname in missing]
+
+    def validate_scholarship_documents_locked(self):
+        # The beneficiary may write their own requests, so the read-only form alone does not stop
+        # them from swapping a submitted document (plan P9-4).
+        if not self.is_scholarship or self.is_new():
+            return
+        if not any(self.has_value_changed(fieldname) for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS):
+            return
+        if set(frappe.get_roles()) & set(SCHOLARSHIP_DOCUMENT_EDITOR_ROLES):
+            return
+
+        frappe.throw(
+            _("The documents of a submitted scholarship request cannot be changed."), frappe.PermissionError
+        )
 
     @property
     def is_scholarship_supervisor_approval(self) -> bool:
