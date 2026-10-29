@@ -15,7 +15,25 @@
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | done (browser check in Phase 13) | `78d442a`, `85c3a70`, `14a29e4`, `11a5526`, `4c22065`, `9fd1900` |
 | [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | done (live site needs `bench restart`) | `4f576f6`, `cb0df73`, `dcf369f`, final-review fixes `853dd8f`, `fcd5f2d`, `ffde84a`, `cba8ca0`, `1ddd317` |
-| [14 — Registration documents after "Update Required"](phase-14-update-required-documents.md) | todo | — |
+| [14 — Registration documents after "Update Required"](phase-14-update-required-documents.md) | done (live site needs `bench restart`) | `5f2d20c`, `b38c0d1`, `6f2599d` |
+
+## Phase 14 — log (2026-10-29)
+- **Server (`5f2d20c`).** `get_missing_required_attachments` returns `[]` for a scholarship registration only while `last_required_update_date` is empty; after "Update Required" the normal rules apply. The 26 desk `mandatory_depends_on` expressions follow the same rule: `(!doc.is_scholarship || doc.last_required_update_date) && …`.
+- **Marker kept (`b38c0d1`, not in the phase plan).** The portal's `frappe.client.save` rebuilds the doc without `last_required_update_date`, so the student's first save would have wiped it, and a crafted save could clear it on purpose to skip the documents. `BeneficiariesRegistration.keep_last_required_update_date` restores the stored value whenever a Website User saves. Staff saves and the reset itself (`db.set_value`) are unaffected. This also stops the portal from wiping the date the daily job reads, for normal beneficiaries too.
+- **Profile (`6f2599d`).** `getRegistrationVariant(flow, { hasBeenUpdateRequired })` turns `hasRegistrationDocuments` on. `validateRegistrationStep` takes the same option, and the profile reads `last_required_update_date` into `docMeta`. The plan named a separate `hasRegistrationDocuments(flow, …)` function; an option on the existing variant was smaller.
+- **Tests.** Backend `test_scholarship_accepted` **28 OK** (5 new: the request documents survive the reset, the documents are required after it, the status moves once they are in, a fresh scholarship registration needs none, a beneficiary save keeps the marker; the second and fifth fail without their fix). `test_scholarship` **33 OK**, `test_scholarship_decision` **19 OK**, `test_beneficiaries_registration` **6 OK**, `test_beneficiary_request` **6 OK**. Vitest **83 passed** (2 new, failing before the fix). `yarn build` done; `bench migrate` run for the JSON.
+- **Browser QA** (agent-browser, `bench --site afif.akwad.qa serve --port 8010`, stopped afterwards; screenshots in the session scratchpad `qa-p14/`):
+
+| # | Scenario | Result |
+|---|---|---|
+| 1 | "Update Required" on `SA-6638-2026` (`qa.p13.student`), which has REQ3898 and REQ3900 | Pass: status Update Required; REQ3898 keeps 6 files (2 extras), REQ3900 keeps 4 |
+| 2 | Profile, step 4 | Pass: the normal card with 9 documents for this student's answers (ID, passport, property deed, bank statement, credit bureau, social security, vehicle, IBAN, Metrash), no spouse documents; step 5 read only. Same at 390px, no page overflow |
+| 3 | Submit with nothing uploaded | Pass: popup lists the 9 documents; status stays Update Required |
+| 4 | Upload all 9 | Pass: "Updated beneficiary", marker kept; My Requests disabled («يمكنك تقديم طلبات جديدة بعد قبول ملف المستفيد الخاص بك»), no apply button on `/scholarship` |
+| 5 | `qa.p13.student2` (never updated), step 4 | Pass: consents only, no documents card |
+
+- **QA data left on the dev site.** `SA-6638-2026` is now "Updated beneficiary" with 9 test documents (identical PDFs, so Frappe stored them as one file).
+- **Found, not fixed.** The portal save still wipes `update_required` (and the other desk-only fields noted in Phase 6), which the daily job reads. It is the same pre-existing wizard issue and needs its own fix.
 
 ## After Phase 13 — client notes (2026-10-29)
 - **Partner phone hidden.** «رقم هاتف الشريك» is no longer shown or checked in the scholarship wizard, because the applicant is always Single (`partners_phone_number` added to the scholarship `hiddenFields`). The normal flow still requires it. Vitest **81 passed**; the 4 new cases fail with the fix reverted. Commit `7e09718`.

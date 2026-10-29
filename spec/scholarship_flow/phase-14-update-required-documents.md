@@ -37,15 +37,15 @@
 **Interfaces:**
 - Produces: `get_missing_required_attachments(doc)` returns `[]` for a scholarship registration only while `doc.last_required_update_date` is empty. After that it applies the normal rules.
 
-- [ ] **Step 1: Write the failing tests** (new class `TestScholarshipUpdateRequired(AcceptedBeneficiaryTestCase)`)
+- [x] **Step 1: Write the failing tests** (new class `TestScholarshipUpdateRequired(AcceptedBeneficiaryTestCase)`)
   - `test_update_required_keeps_the_request_documents`: create a scholarship request, call `beneficiary_update_required_status_for_document(registration)`. The registration's status is "Update Required", and the request's 4 fields and the File rows (named and other attachments) are unchanged.
   - `test_scholarship_registration_needs_its_documents_after_update_required`: after the reset, save the registration as the beneficiary with no documents. The status stays "Update Required".
   - `test_scholarship_registration_is_updated_once_the_documents_are_in`: upload `qid`, `passport` and `metrash_adress`, plus whatever the fixture's answers require. Save: the status is "Updated beneficiary".
   - `test_scholarship_registration_needs_no_documents_before_any_update`: a regression check that a fresh scholarship registration returns `[]`.
-- [ ] **Step 2: Run** `bench --site afif.akwad.qa run-tests --module afif.api.test_scholarship_accepted`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Change the scholarship early return to `if doc.is_scholarship and not doc.last_required_update_date: return []`, and update the comment.
-- [ ] **Step 4: Run** that module, plus `afif.api.test_scholarship` and `afif.api.test_scholarship_decision`. Expected: PASS.
-- [ ] **Step 5: Commit.** `fix(scholarship): require the registration documents after update required`
+- [x] **Step 2: Run** `bench --site afif.akwad.qa run-tests --module afif.api.test_scholarship_accepted`. Expected: FAIL.
+- [x] **Step 3: Implement.** Change the scholarship early return to `if doc.is_scholarship and not doc.last_required_update_date: return []`, and update the comment.
+- [x] **Step 4: Run** that module, plus `afif.api.test_scholarship` and `afif.api.test_scholarship_decision`. Expected: PASS.
+- [x] **Step 5: Commit.** `fix(scholarship): require the registration documents after update required`
 
 ### Task 2: Profile — show the documents card after an update
 
@@ -60,17 +60,17 @@
 - Consumes: the `showDocuments` prop on `AttachmentsCard.vue` (Phase 11).
 - Produces: `hasRegistrationDocuments(flow, { hasBeenUpdateRequired }) -> boolean`. It is true for the normal flow, and true for the scholarship flow only when `hasBeenUpdateRequired`. It replaces direct reads of the variant flag.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - With `hasBeenUpdateRequired`, a scholarship step-4 validation with no documents lists `qid`, `passport` and `metrash_adress`.
   - Without it, the scholarship validation passes with no documents.
   - The normal flow is unchanged.
-- [ ] **Step 2: Run** `npx vitest run registrationValidation`. Expected: FAIL.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run** `npx vitest run registrationValidation`. Expected: FAIL.
+- [x] **Step 3: Implement.**
   - The profile reads `last_required_update_date` with the registration.
   - When it is set, step 4 shows `AttachmentsCard` with the normal list and the normal upload behaviour.
   - Step 5 (the request documents) stays read only.
-- [ ] **Step 4: Run** `npx vitest run` and `yarn build`. Expected: PASS.
-- [ ] **Step 5: Commit.** `feat(scholarship): ask for the registration documents in the profile after update required`
+- [x] **Step 4: Run** `npx vitest run` and `yarn build`. Expected: PASS.
+- [x] **Step 5: Commit.** `feat(scholarship): ask for the registration documents in the profile after update required`
 
 ### Task 3: Browser QA (agent-browser)
 
@@ -82,8 +82,8 @@
 | 4 | Upload all of them, then save | "Updated beneficiary"; `/request` and `/scholarship` stay blocked until the Supervisor accepts again |
 | 5 | A new scholarship student registers through the link | No documents card (unchanged) |
 
-- [ ] **Step 1:** Run the scenarios in AR, and repeat scenario 2 at 390px. Record the results in progress.md.
-- [ ] **Step 2: Commit.** `docs(scholarship): log phase 14 progress`
+- [x] **Step 1:** Run the scenarios in AR, and repeat scenario 2 at 390px. Record the results in progress.md.
+- [x] **Step 2: Commit.** `docs(scholarship): log phase 14 progress`
 
 ## Done when
 - The tests and the 5 scenarios pass.
