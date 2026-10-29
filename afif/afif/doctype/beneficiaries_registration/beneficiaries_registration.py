@@ -102,10 +102,10 @@ class BeneficiariesRegistration(Document):
 
     def validate_scholarship_marital_status(self):
         # The scholarship is for single students; older scholarship registrations with another status
-        # can still be saved, so only setting one is refused.
+        # can still be saved, so only setting one, or submitting an older Draft that holds one, is refused.
         if not self.is_scholarship or self.marital_status in (None, "", "Single"):
             return
-        if self.is_new() or self.has_value_changed("marital_status"):
+        if self.is_new() or self.has_value_changed("marital_status") or self.flags.is_scholarship_submission:
             frappe.throw(
                 _("A scholarship application is only available to single applicants."),
                 ScholarshipMaritalStatusError,

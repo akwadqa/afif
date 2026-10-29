@@ -185,6 +185,14 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
 
         self.assert_nothing_submitted()
 
+    def test_older_draft_that_is_not_single_cannot_be_submitted(self):
+        frappe.db.set_value("Beneficiaries Registration", self.registration, "marital_status", "Separated")
+
+        with self.assertRaises(ScholarshipMaritalStatusError):
+            submit_scholarship_application(self.registration, self.request_data)
+
+        self.assert_nothing_submitted()
+
     def test_missing_request_data_creates_nothing(self):
         cases = {
             "missing amount": {"requested_amount": None},
