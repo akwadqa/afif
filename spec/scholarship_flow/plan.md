@@ -26,14 +26,14 @@ The normal registration flow and the normal aid request flow stay unchanged.
 |---|---|
 | D1 | Add a read-only Check `is_scholarship` to `Beneficiaries Registration` and to `Beneficiary Request`. It shows in the list view and as a standard filter. It can only be set on insert; `validate` throws if it changes afterwards. On the request it means "created through the scholarship flow", and that is what triggers the approval cascade (D11). Since Phase 6, a request is Education → Scholarship if and only if it has the flag, and only the scholarship endpoints set it. |
 | D2 | A scholarship is a **subcategory of Education Assistance**: `request_category = "Education Assistance"` and `educational_assistance = "Scholarship"`. There is no new category and no new DocType. The `Categories` tree already has `Education Assistance`, so it is not touched. |
-| D3 | Wizard steps: 1 البيانات الشخصية · 2 تفاصيل الدخل · 3 الالتزامات المالية · 4 بيانات إضافية, followed by the **same registration attachments sub-step** as the normal flow · 5 بيانات الطلب. |
+| D3 | *(Changed in Phase 11: the scholarship wizard asks for no registration documents; the attachments sub-step keeps only the consents.)* Wizard steps: 1 البيانات الشخصية · 2 تفاصيل الدخل · 3 الالتزامات المالية · 4 بيانات إضافية, followed by the **same registration attachments sub-step** as the normal flow · 5 بيانات الطلب. |
 | D4 | *(Superseded by Phase 6: the 10 attachments are registration fields, in their own tab; step 5 still shows them.)* Step 5 belongs entirely to the **request**: the requested amount, the request summary (OQ1b), 10 required attachments (8 at first; 2 bank statements added in Phase 5) and the request declarations. All of it is stored on the Beneficiary Request, not on the registration. Two of the attachments reuse existing Education fields (§3); this attachment list replaces the older one in Figma. |
 | D5 | Drafts are saved step by step, exactly as today. A single whitelisted endpoint, `submit_scholarship_application`, validates **all** registration attachments and consents **and** all step-5 data. In one transaction it submits the registration and creates the request. If anything is missing, nothing is submitted. |
 | D6 | The existing DB Workflows stay as they are. The cascade logic lives in server hooks. Moving to status-only workflows is out of scope. |
 | D7 | Eligibility: the scholarship wizard is open to users with no registration, or with their own scholarship Draft. Since Phase 7, `/scholarship` is only for scholarship registrations: a normal-flow beneficiary cannot apply there, and an accepted scholarship beneficiary can file a new scholarship request under the request page's rules. |
 | D8 | *(Superseded by Phase 6: same fields and labels as the normal registration; father/mother income removed.)* Where a field means the same thing, reuse it with a scholarship label. Where the meaning differs, add a new field (§3). The father and mother incomes are **new fields**. |
 | D9 | *(Replaced in Phase 8.)* Rejecting a scholarship request only rejects the request, as in the normal request flow; the registration is left as it is and follows its own workflow. |
-| D10 | Frontend: add a sidebar item "منحة الشيخ خالد بن ناصر" at route `/scholarship`. `BeneficiaryRegistration.vue` is reused with `flow="scholarship"`, and each card reads a variant config. The public nav link `khaledGrant` (terms page) stays unchanged. |
+| D10 | *(Changed in Phase 10: no sidebar item; `/scholarship` is reached only through the shared link.)* Frontend: add a sidebar item "منحة الشيخ خالد بن ناصر" at route `/scholarship`. `BeneficiaryRegistration.vue` is reused with `flow="scholarship"`, and each card reads a variant config. The public nav link `khaledGrant` (terms page) stays unchanged. |
 | D11 | **The request is the control point.** When the Supervisor approves a scholarship request, the linked registration is accepted in the same action. The registration is accepted first, so Sanadi creates the beneficiary and sets `ben_id` before the request's Sanadi hooks run. |
 
 ## 3. Data model
@@ -185,7 +185,25 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ16 | Should the yearly "Update Required" also clear the 10 scholarship documents? On hold until the question about the yearly update is answered (Phase 8). | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 
-## 8. Phases
+## 8. Client feedback (2026-10-29)
+
+After reviewing phases 1–8, the client asked for the changes below. Each one is limited to scholarship records, and the normal flow stays unchanged (the mentor's Phase 8 constraint).
+
+| # | Decision |
+|---|---|
+| P9-1 | **Link only.** `/scholarship` is removed from the sidebar. The company shares the URL with its clients. A signed-out visitor who signs in or registers lands back on the link. There is no secret token. |
+| P9-2 | **Registration without documents.** The scholarship registration asks for no file at all: no general registration documents and none of the 10 `scholarship_*` files. The consents stay. This reverses **OQ11**. |
+| P9-3 | **The documents are on the request.** Required: فاتورة الجامعة (`education_invoice`), السجل التراكمي (`grade_transcript`), صورة البطاقة الشخصية للطالب (`student_id_copy`), صورة جواز السفر للطالب (`student_passport_copy`). Optional: مرفقات أخرى, 0–n files attached to the request without a field. |
+| P9-4 | **Read only after submitting.** Request documents can't be edited once the request is submitted. On the profile, step 5 shows them read only. This replaces the document editing of **P8-1/P8-2**. |
+| P9-5 | **Single only.** The scholarship marital status is `Single`, enforced on the server. |
+| P9-6 | **Account restriction.** A Supervisor can set `is_account_restricted` on a scholarship registration. The student keeps logging in and sees «تم تقييد حسابك لإنتهاء المنحة», and no new request is accepted. |
+| P9-7 | **No cooldowns.** Scholarship requests skip the 3-month (rejected) and 6-month (approved) waits. The "a previous request is pending review" block stays. |
+| P9-8 | **My Requests.** A new "Assistance type" column shows the sub-category; scholarship rows show «منحة الشيخ خالد بن ناصر». |
+| P9-9 | **Not in the normal flow.** The Scholarship option stays out of the normal request form, and the server keeps refusing it. Both already hold since Phase 6; Phase 9 adds the regression checks. |
+
+**Old data.** `REQ3881`–`REQ3888` and their registrations keep the 10 documents on the registration. The fields are kept and shown read-only in the desk; nothing is deleted.
+
+## 9. Phases
 
 1. [Phase 1 — Tracer: end-to-end scholarship submit](phase-1-tracer.md)
 2. [Phase 2 — Scholarship field variants](phase-2-field-variants.md)
@@ -195,5 +213,10 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 6. [Phase 6 — Registration parity and attachments on the registration](phase-6-registration-parity.md)
 7. [Phase 7 — What the applicant sees after submitting](phase-7-scholarship-views.md)
 8. [Phase 8 — Editing a scholarship application, and request rejection](phase-8-profile-edit-and-rejection.md)
+9. [Phase 9 — Scholarship requests without cooldowns](phase-9-no-cooldowns.md)
+10. [Phase 10 — Reached only through the link](phase-10-link-only.md)
+11. [Phase 11 — Documents on the request, Single only](phase-11-request-documents.md)
+12. [Phase 12 — Account restriction](phase-12-account-restriction.md)
+13. [Phase 13 — Assistance type on My Requests, and the browser QA](phase-13-my-requests-and-qa.md)
 
 Progress: [progress.md](progress.md)

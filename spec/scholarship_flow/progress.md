@@ -10,6 +10,19 @@
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
 | [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
 | [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | done (live site still needs `bench restart`) | `09557c1`, `2d41dc7`, `9b4a572` |
+| [9 — No cooldowns](phase-9-no-cooldowns.md) | todo | |
+| [10 — Link only](phase-10-link-only.md) | todo | |
+| [11 — Documents on the request, Single only](phase-11-request-documents.md) | todo | |
+| [12 — Account restriction](phase-12-account-restriction.md) | todo | |
+| [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+
+## Master merge — 2026-10-29
+
+`upstream/master` (`8801f7c`) was merged into the branch as `ef7f3d0`.
+- **Conflicts.** `patches.txt` kept both lists. In `beneficiary_request.py`, `validate` runs the scholarship checks and then master's insert-only `validate_required_attachments`. `BeneficiaryRequest.vue` takes master's upload-before-insert, limited to the current `requiredDocs`.
+- **Tests.** Master's rule needs the invoice and transcript on a normal Education request. The test fixtures now upload both (`c9576af`).
+- **Site schema.** The site had been migrated from master, so the registration meta had lost `is_scholarship`. `bench migrate` on this branch restored it.
+- **Results.** `test_scholarship` 20 OK, `test_scholarship_accepted` 14 OK, `test_scholarship_decision` 14 OK, `test_beneficiary_request` 5 OK, Vitest 48 OK.
 
 ## Phase 8 — log (2026-10-20)
 
