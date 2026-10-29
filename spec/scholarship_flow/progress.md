@@ -12,9 +12,34 @@
 | [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | done (live site still needs `bench restart`) | `09557c1`, `2d41dc7`, `9b4a572` |
 | [9 — No cooldowns](phase-9-no-cooldowns.md) | done (live site needs `bench restart`) | `c0960f7`, `6935fa2`, `03def4d` |
 | [10 — Link only](phase-10-link-only.md) | done (browser check in Phase 13) | `2f06178` |
-| [11 — Documents on the request, Single only](phase-11-request-documents.md) | todo | |
+| [11 — Documents on the request, Single only](phase-11-request-documents.md) | done (browser check in Phase 13) | `78d442a`, `85c3a70`, `14a29e4`, `11a5526`, `4c22065`, `9fd1900` |
 | [12 — Account restriction](phase-12-account-restriction.md) | todo | |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+
+## Phase 11 — log (2026-10-29)
+- **Request.**
+  - New Attach fields `student_id_copy` and `student_passport_copy`.
+  - `education_invoice` and `grade_transcript` are now shown on scholarship requests. `grade_transcript` was `hidden: 1` and now shows only for Scholarship, read only, so the normal desk form is unchanged.
+  - `get_missing_scholarship_fields` requires the 4 documents.
+- **Endpoints.**
+  - Both endpoints take the 4 URLs plus `other_attachments` (list).
+  - `get_own_unattached_files` runs **before** any write. It accepts only the user's own private, unattached and distinct Files, and raises `PermissionError`, so nothing is created.
+  - After insert, `attach_files_to_request` attaches exactly those Files: with a field for the 4 documents, and without one for the extras.
+  - The lookup has to happen before insert because Frappe's `attach_files_to_document` hook links unattached Files by URL during insert.
+- **Registration.**
+  - `validate_scholarship_marital_status` makes it Single only.
+  - `get_missing_required_attachments` returns `[]` for scholarship registrations.
+  - 26 desk `mandatory_depends_on` gained `!doc.is_scholarship && `.
+  - The "Scholarship Attachments" tab shows only on old records.
+  - The `SCHOLARSHIP_ATTACHMENT_FIELDS` constant was removed.
+- **Frontend.**
+  - The scholarship variant offers only Single and `hasRegistrationDocuments: false`. `AttachmentsCard` keeps only the consents there.
+  - Step 5 and `ScholarshipApplyForm` keep the files in memory and upload them private on submit through `scholarshipRequestFiles.js`. Retries reuse the uploads.
+  - On the profile, step 5 shows the request documents as read-only links (P9-4).
+  - The 10 legacy fields are still sent back on save so they are not cleared.
+- **Reversed.** OQ11 (the passport copy on the registration) and the document editing of P8-1/P8-2.
+- **Tests.** `test_scholarship` 32, `test_scholarship_accepted` 15, `test_scholarship_decision` 14, `test_beneficiary_request` 6, `test_beneficiaries_registration` 4 — all OK. Vitest 74 OK. `yarn build` OK.
+- **Not run.** `yarn lint`: it rewrites unrelated files with `--write`.
 
 ## Phase 10 — log (2026-10-29)
 - The sidebar no longer has the scholarship item. `/scholarship` keeps `requiresAuth`.
