@@ -75,6 +75,8 @@
   "ed_equipement",
   "ed_other",
   "grade_transcript",
+  "student_id_copy",
+  "student_passport_copy",
   "is_data_accuracy_declared",
   "is_eligibility_check_accepted",
   "garmeen_proof",
@@ -539,11 +541,25 @@
    "label": "Other Educational Assistance proof"
   },
   {
-   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && doc.educational_assistance != \"Scholarship\"",
+   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
    "fieldname": "grade_transcript",
    "fieldtype": "Attach",
    "hidden": 1,
    "label": "Grade Transcript or School Certificate for the Last Semester"
+  },
+  {
+   "depends_on": "eval:doc.educational_assistance==\"Scholarship\"",
+   "fieldname": "student_id_copy",
+   "fieldtype": "Attach",
+   "label": "Student ID Copy",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.educational_assistance==\"Scholarship\"",
+   "fieldname": "student_passport_copy",
+   "fieldtype": "Attach",
+   "label": "Student Passport Copy",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -700,7 +716,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category) && doc.educational_assistance != \"Scholarship\"",
+   "depends_on": "eval:in_list([\"Education Assistance\", \"Akwad\"], doc.request_category)",
    "fieldname": "education_invoice",
    "fieldtype": "Attach",
    "label": "School/university dues invoice",
@@ -763,7 +779,7 @@
    "table_fieldname": "beneficiary_request"
   }
  ],
- "modified": "2026-10-20 10:00:00.000000",
+ "modified": "2026-10-29 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Request",

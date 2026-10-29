@@ -9,6 +9,12 @@ from frappe.utils import flt
 from afif.hooks_call import get_aid_lookup_parent_id
 
 SCHOLARSHIP_DECLARATION_FIELDS = ("is_data_accuracy_declared", "is_eligibility_check_accepted")
+SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS = (
+    "education_invoice",
+    "grade_transcript",
+    "student_id_copy",
+    "student_passport_copy",
+)
 
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
@@ -112,7 +118,11 @@ class BeneficiaryRequest(Document):
             )
 
     def get_missing_scholarship_fields(self) -> list[str]:
-        missing = [fieldname for fieldname in SCHOLARSHIP_DECLARATION_FIELDS if not self.get(fieldname)]
+        missing = [
+            fieldname
+            for fieldname in (*SCHOLARSHIP_DECLARATION_FIELDS, *SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS)
+            if not self.get(fieldname)
+        ]
         if not (self.request_summary or "").strip():
             missing.insert(0, "request_summary")
         if flt(self.requested_amount) <= 0:

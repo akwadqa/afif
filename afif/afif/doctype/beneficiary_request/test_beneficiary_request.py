@@ -6,6 +6,8 @@ from unittest.mock import patch
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
+from afif.afif.doctype.beneficiary_request.beneficiary_request import SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS
+
 HOUSING_ATTACHMENTS = {
 	"rent_contract": "/files/test-rent-contract.pdf",
 	"onwer_qid": "/files/test-owner-qid.pdf",
@@ -56,6 +58,31 @@ class TestBeneficiaryRequest(FrappeTestCase):
 		request = make_request(request_category="Education Assistance", educational_assistance="Scholarship")
 
 		self.assertEqual(request.get_missing_required_attachments(), [])
+
+	def test_normal_education_request_rules_unchanged(self):
+		request = make_request(request_category="Education Assistance", educational_assistance="Tuition Fees")
+
+		self.assertEqual(request.get_missing_required_attachments(), ["education_invoice", "grade_transcript"])
+
+	def test_scholarship_request_requires_its_four_documents(self):
+		request = make_request(
+			request_category="Education Assistance",
+			educational_assistance="Scholarship",
+			is_scholarship=1,
+			is_data_accuracy_declared=1,
+			is_eligibility_check_accepted=1,
+		)
+		request.flags.is_scholarship_submission = True
+
+		self.assertEqual(
+			request.get_missing_scholarship_fields(),
+			[request.meta.get_label(fieldname) for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS],
+		)
+
+		request.update(
+			{fieldname: f"/private/files/test-{fieldname}.pdf" for fieldname in SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS}
+		)
+		self.assertEqual(request.get_missing_scholarship_fields(), [])
 
 	def test_existing_incomplete_request_can_still_be_saved(self):
 		request = make_request(request_category="Housing Assistance", housing_assistance="Rent support")
