@@ -184,6 +184,7 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ15 | Should the Supervisor be able to ask for an update on a pending scholarship application, instead of only Approve/Reject? Left as is (Phase 8). | — |
 | OQ16 | Should the yearly "Update Required" also clear the 10 scholarship documents? On hold until the question about the yearly update is answered (Phase 8). | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
+| OQ17 | Is «هل لديك أبناء؟» (`have_children`) needed in the scholarship flow? The applicant is always Single (P9-5), yet the field is required in step 2, and «Yes» opens the children fields and the children's ID attachment. Ask the mentor: hide it (and the children fields) for scholarship, or keep it. | — |
 
 ## 8. Client feedback (2026-10-29)
 

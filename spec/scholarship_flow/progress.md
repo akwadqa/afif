@@ -16,6 +16,10 @@
 | [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | done (live site needs `bench restart`) | `4f576f6`, `cb0df73`, `dcf369f`, final-review fixes `853dd8f`, `fcd5f2d`, `ffde84a`, `cba8ca0`, `1ddd317` |
 
+## After Phase 13 — client notes (2026-10-29)
+- **Partner phone hidden.** «رقم هاتف الشريك» is no longer shown or checked in the scholarship wizard, because the applicant is always Single (`partners_phone_number` added to the scholarship `hiddenFields`). The normal flow still requires it. Vitest **81 passed**; the 4 new cases fail with the fix reverted. Commit `7e09718`.
+- **OQ17 opened** for the mentor: is «هل لديك أبناء؟» needed in the scholarship flow? See [plan.md §7](plan.md#7-open-questions).
+
 ## Phase 13 — log (2026-10-29)
 - **My Requests.** The new column «نوع المساعدة الفرعي» / "Assistance type" comes from `getAssistanceTypeKey`.
   - Scholarship rows show «منحة الشيخ خالد بن ناصر».
