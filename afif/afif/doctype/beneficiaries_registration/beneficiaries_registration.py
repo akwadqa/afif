@@ -28,6 +28,10 @@ class ScholarshipMaritalStatusError(frappe.ValidationError):
     pass
 
 
+class AccountRestrictionScopeError(frappe.ValidationError):
+    pass
+
+
 class BeneficiariesRegistration(Document):
     def validate(self):
         self.validate_scholarship_flag_unchanged()
@@ -36,6 +40,7 @@ class BeneficiariesRegistration(Document):
         self.validate_guardian_mobile_number()
         self.validate_single_marital_status()
         self.validate_scholarship_marital_status()
+        self.validate_account_restriction_scope()
 
     def on_update(self):
         self.delete_replaced_attachments()
@@ -109,6 +114,13 @@ class BeneficiariesRegistration(Document):
             frappe.throw(
                 _("A scholarship application is only available to single applicants."),
                 ScholarshipMaritalStatusError,
+            )
+
+    def validate_account_restriction_scope(self):
+        # Restriction ends a scholarship (plan P9-6); it has no meaning for a normal beneficiary.
+        if self.is_account_restricted and not self.is_scholarship:
+            frappe.throw(
+                _("Only a scholarship registration can be restricted."), AccountRestrictionScopeError
             )
 
     def delete_replaced_attachments(self):

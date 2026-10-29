@@ -4,6 +4,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import AccountRestrictionScopeError
 from afif.api.test_scholarship import make_beneficiary_user, make_pdf, make_registration
 
 
@@ -72,3 +73,30 @@ class TestReplacedAttachmentCleanup(IntegrationTestCase):
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
         registration.set(fieldname, value)
         registration.save()
+
+
+class TestAccountRestrictionScope(IntegrationTestCase):
+    def setUp(self):
+        self.addCleanup(frappe.set_user, "Administrator")
+        frappe.set_user(make_beneficiary_user())
+
+    def restrict(self, registration: str) -> None:
+        frappe.set_user("Administrator")
+        registration_doc = frappe.get_doc("Beneficiaries Registration", registration)
+        registration_doc.is_account_restricted = 1
+        registration_doc.save()
+
+    def test_normal_registration_cannot_be_restricted(self):
+        registration = make_registration(is_scholarship=0)
+
+        with self.assertRaises(AccountRestrictionScopeError):
+            self.restrict(registration)
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_account_restricted"), 0)
+
+    def test_scholarship_registration_can_be_restricted(self):
+        registration = make_registration(is_scholarship=1)
+
+        self.restrict(registration)
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_account_restricted"), 1)
