@@ -15,6 +15,7 @@
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | done (browser check in Phase 13) | `78d442a`, `85c3a70`, `14a29e4`, `11a5526`, `4c22065`, `9fd1900` |
 | [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | done (live site needs `bench restart`) | `4f576f6`, `cb0df73`, `dcf369f`, final-review fixes `853dd8f`, `fcd5f2d`, `ffde84a`, `cba8ca0`, `1ddd317` |
+| [14 — Registration documents after "Update Required"](phase-14-update-required-documents.md) | todo | — |
 
 ## After Phase 13 — client notes (2026-10-29)
 - **Partner phone hidden.** «رقم هاتف الشريك» is no longer shown or checked in the scholarship wizard, because the applicant is always Single (`partners_phone_number` added to the scholarship `hiddenFields`). The normal flow still requires it. Vitest **81 passed**; the 4 new cases fail with the fix reverted. Commit `7e09718`.
@@ -588,7 +589,7 @@ Password for all of them: `Scholarship@2026`.
 - **Supervisor approval on the dev site.** Only `Administrator` has Sanadi Integration Settings (pointing at staging, `stgapi.raca.gov.qa`). Any other Supervisor, including the demo one, gets "Sanadi Integration Settings not available for current user." when approving any request, normal or scholarship. Approving `REQ3884` as Administrator would create a real beneficiary and request in Sanadi staging, so it was **not done**. It needs a go-ahead, or Sanadi settings for the demo Supervisor.
 - **OQ13 — after a scholarship rejection (new, for the mentor).** The applicant can fix and resubmit through the normal wizard, and the registration is then reviewed as a normal one with no scholarship request. Is that intended, or should they be able to reapply through `/scholarship`?
 - **OQ6 is temporary.** Scholarship shares Sanadi code `1001050` with Other Educational Assistance, so Sanadi reports can't tell the two apart until a dedicated code exists.
-- Still open with the mentor: OQ10 (to check later) and OQ13. OQ14 was closed in Phase 6 (asked of everyone, as in the normal wizard).
+- Still open with the mentor: OQ10 (to check later) and OQ13. OQ16 was answered on 2026-10-29 (Phase 14). OQ14 was closed in Phase 6 (asked of everyone, as in the normal wizard).
 - **Older scholarship requests and the new statements.** `REQ3881`–`REQ3888` have 8 documents; saving one in the desk now fails until the mother's and student's statements are added. Fine for demo data; check before go-live whether real requests exist by then. OQ1b, OQ3, OQ4, OQ5, OQ6 (for now), OQ11 and OQ12 are answered (see [plan.md §7](plan.md#7-open-questions)).
 - **OQ10 — minimum age (note, mentor to check later).** The wizard requires the applicant to be at least 21 (`MINIMUM_AGE` in `registrationValidation.js`). There is no server-side check, in the normal flow either. The scholarship keeps the rule, so a student under 21 cannot apply as the applicant.
 - **Demo record `SA-6620-2026` (Phase 2)** was submitted while the passport was hidden, so it has no passport number. If it is used to try the Phase 3 approval, add a passport number to it first.

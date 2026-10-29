@@ -176,13 +176,13 @@ In the Sanadi integration, `father_income` and `mother_income` map to income typ
 | OQ14 | Phase 6: the scholarship wizard is identical to the normal one, so years of residence is asked of every applicant. |
 | OQ13 | Phase 8: a rejected scholarship request stays final, as in the normal request flow, and the registration is not touched by the rejection. The applicant edits the registration in the profile; a new scholarship request follows the request rules. |
 | OQ12 | Keep today's rule: the passport number (and the secondary-ID group that carries it to Sanadi) is required. No beneficiary has ever been accepted without one, so there is no evidence Sanadi accepts it empty. |
+| OQ16 | No. "Update Required" leaves the scholarship request documents as they were; the student re-uploads the normal registration documents instead (P9-10 to P9-15, Phase 14). |
 
 ### Still open
 
 | # | Question | Blocks |
 |---|---|---|
 | OQ15 | Should the Supervisor be able to ask for an update on a pending scholarship application, instead of only Approve/Reject? Left as is (Phase 8). | — |
-| OQ16 | Should the yearly "Update Required" also clear the 10 scholarship documents? On hold until the question about the yearly update is answered (Phase 8). | — |
 | OQ10 | The wizard requires the applicant to be at least 21; there is no server-side age check, in the normal flow either. The scholarship keeps the same rule for now. If the applicant is the student, most students are blocked. Mentor to check later. | — |
 | OQ17 | Is «هل لديك أبناء؟» (`have_children`) needed in the scholarship flow? The applicant is always Single (P9-5), yet the field is required in step 2, and «Yes» opens the children fields and the children's ID attachment. Ask the mentor: hide it (and the children fields) for scholarship, or keep it. | — |
 
@@ -201,6 +201,12 @@ After reviewing phases 1–8, the client asked for the changes below. Each one i
 | P9-7 | **No cooldowns.** A scholarship student skips the 3-month (rejected) and 6-month (approved) waits for every request: scholarship requests through the link, and normal requests through "Create new request" on My Requests (widened 2026-10-29 after the client found the My Requests button blocked). The "a previous request is pending review" block stays. Students of the normal flow keep both waits. |
 | P9-8 | **My Requests.** A new "Assistance type" column shows the sub-category; scholarship rows show «منحة الشيخ خالد بن ناصر». |
 | P9-9 | **Not in the normal flow.** The Scholarship option stays out of the normal request form, and the server keeps refusing it. Both already hold since Phase 6; Phase 9 adds the regression checks. |
+| P9-10 | **Update Required: both triggers.** The rules below apply after the desk button "Update Required" and after the daily automatic job, as for a normal beneficiary (agreed 2026-10-29). |
+| P9-11 | **Update Required: the normal documents.** The student uploads the normal registration documents, worked out from their own answers by the normal rules. There is no scholarship-specific list. |
+| P9-12 | **Update Required: only after an update.** First-time scholarship registration still has no documents (P9-2). They are required only once the registration has been through "Update Required" (`last_required_update_date` is set). |
+| P9-13 | **Update Required: same place, server-enforced.** The student uploads in the profile's documents step. The save reaches "Updated beneficiary" only when every required document is present, and the server enforces this. |
+| P9-14 | **Update Required: requests blocked.** As for a normal beneficiary, new requests (scholarship and normal) stay blocked until a Supervisor accepts the registration again. |
+| P9-15 | **Update Required: request documents untouched.** The scholarship request documents are not deleted or cleared, and stay read only. This answers OQ16. |
 
 **Old data.** `REQ3881`–`REQ3888` and their registrations keep the 10 documents on the registration. The fields are kept and shown read-only in the desk; nothing is deleted.
 
@@ -219,5 +225,6 @@ After reviewing phases 1–8, the client asked for the changes below. Each one i
 11. [Phase 11 — Documents on the request, Single only](phase-11-request-documents.md)
 12. [Phase 12 — Account restriction](phase-12-account-restriction.md)
 13. [Phase 13 — Assistance type on My Requests, and the browser QA](phase-13-my-requests-and-qa.md)
+14. [Phase 14 — Registration documents after "Update Required"](phase-14-update-required-documents.md)
 
 Progress: [progress.md](progress.md)
