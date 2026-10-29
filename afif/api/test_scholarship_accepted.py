@@ -6,6 +6,7 @@ from frappe.model.workflow import apply_workflow
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, add_months, now_datetime
 
+from afif.hooks_call import AccountRestrictedError
 from afif.afif.doctype.beneficiary_request.beneficiary_request import IncompleteScholarshipRequestError
 from afif.api.scholarship import create_scholarship_request
 from afif.api.test_scholarship import (
@@ -22,7 +23,7 @@ from afif.api.test_scholarship import (
     replace_file,
     upload_unattached_file,
 )
-from afif.api.test_scholarship_decision import ScholarshipDecisionTestCase, upload_declaration
+from afif.api.test_scholarship_decision import ScholarshipDecisionTestCase, make_supervisor_user, upload_declaration
 
 
 class AcceptedBeneficiaryTestCase(IntegrationTestCase):
@@ -244,3 +245,59 @@ class TestAcceptedBeneficiaryScholarshipApproval(ScholarshipDecisionTestCase):
             frappe.db.get_value("Beneficiaries Registration", registration, "workflow_state"), "Not Accepted"
         )
 
+
+
+class TestAccountRestriction(AcceptedBeneficiaryTestCase):
+    def setUp(self):
+        super().setUp()
+        # Saving an Accepted registration runs create_new_beneficiary, which calls Sanadi.
+        sanadi_sync = patch("afif.hooks_call.create_new_beneficiary")
+        sanadi_sync.start()
+        self.addCleanup(sanadi_sync.stop)
+
+    def restrict(self) -> None:
+        frappe.db.set_value("Beneficiaries Registration", self.registration, "is_account_restricted", 1)
+
+    def is_restricted(self) -> int:
+        return frappe.db.get_value("Beneficiaries Registration", self.registration, "is_account_restricted")
+
+    def save_as(self, user: str, **values) -> None:
+        frappe.set_user(user)
+        registration = frappe.get_doc("Beneficiaries Registration", self.registration)
+        registration.update(values)
+        registration.save()
+
+    def make_staff_user(self, role: str) -> str:
+        frappe.set_user("Administrator")
+        user = make_supervisor_user()
+        if role != "Supervisor":
+            frappe.db.delete("Has Role", {"parent": user, "role": "Supervisor"})
+            frappe.get_doc("User", user).add_roles(role)
+        return user
+
+    def test_restricted_student_cannot_file_a_request(self):
+        self.restrict()
+
+        with self.assertRaises(AccountRestrictedError):
+            create_scholarship_request(make_request_data())
+
+        self.assertEqual(self.get_request_count(), 0)
+
+    def test_beneficiary_save_keeps_the_restriction(self):
+        self.restrict()
+
+        self.save_as(self.user, is_account_restricted=0, guardian_mobile_number="55555555")
+
+        self.assertEqual(self.is_restricted(), 1)
+
+    def test_specialist_cannot_restrict(self):
+        specialist = self.make_staff_user("Specialist")
+
+        self.save_as(specialist, is_account_restricted=1)
+
+        self.assertEqual(self.is_restricted(), 0)
+
+    def test_supervisor_can_restrict(self):
+        self.save_as(self.make_staff_user("Supervisor"), is_account_restricted=1)
+
+        self.assertEqual(self.is_restricted(), 1)

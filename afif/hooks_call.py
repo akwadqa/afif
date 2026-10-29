@@ -758,6 +758,10 @@ def check_request_cooldowns(last_created_request) -> None:
             frappe.throw(_("Six months must pass since the last approved request before a new one can be created."))
 
 
+class AccountRestrictedError(frappe.PermissionError):
+    pass
+
+
 def before_insert_request(doc, method):
     frappe.log_error("before_insert_request")
     user = frappe.session.user
@@ -770,6 +774,9 @@ def before_insert_request(doc, method):
 
     if frappe.get_value("Beneficiaries Registration", {"user": user}, "workflow_state") == "Accepted":
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
+
+        if frappe.db.get_value("Beneficiaries Registration", beneficiary, "is_account_restricted"):
+            raise AccountRestrictedError(_("Your account has been restricted because the scholarship has ended."))
 
         try:
             last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})

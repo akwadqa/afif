@@ -15,6 +15,7 @@
   "beneficiary_section",
   "status",
   "is_scholarship",
+  "is_account_restricted",
   "current_step",
   "ben_id",
   "registration_acceptance_date",
@@ -238,6 +239,15 @@
    "in_standard_filter": 1,
    "label": "Is Scholarship",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "is_account_restricted",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Account Restricted (Scholarship Ended)",
+   "permlevel": 1
   },
   {
    "default": "1",
@@ -1579,6 +1589,18 @@
    "print": 1,
    "read": 1,
    "role": "Specialist",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Supervisor",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Administrator",
    "write": 1
   }
  ],
