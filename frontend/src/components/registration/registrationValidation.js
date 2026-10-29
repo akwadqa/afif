@@ -39,8 +39,8 @@ class StepErrors {
  * Validate one wizard step. `step` is the visible step (1-5); step 4 has two sub-steps:
  * 1 = additional data, 2 = registration attachments.
  */
-export function validateRegistrationStep({ formData, step, subStep4, flow = 'registration', t }) {
-  const variant = getRegistrationVariant(flow)
+export function validateRegistrationStep({ formData, step, subStep4, flow = 'registration', hasBeenUpdateRequired = false, t }) {
+  const variant = getRegistrationVariant(flow, { hasBeenUpdateRequired })
   const check = new StepErrors(variant)
 
   if (step === 1) validatePersonalStep(check, formData, t)

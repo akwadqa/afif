@@ -159,6 +159,20 @@ describe('step 4 (registration attachments)', () => {
     expect(validate(makeFormData(allClaims()), 4, 'scholarship', 2)).toEqual({ errors: [], fields: [] })
   })
 
+  it('requires the normal documents in the scholarship flow after an update was required', () => {
+    const formData = makeFormData(allClaims())
+    const { fields } = validateRegistrationStep({ formData, step: 4, subStep4: 2, flow: 'scholarship', hasBeenUpdateRequired: true, t })
+
+    expect(fields).toEqual(validate(formData, 4, 'registration', 2).fields)
+    expect(fields).toEqual(expect.arrayContaining(['attach_qid', 'attach_passport', 'attach_metrash_adress']))
+  })
+
+  it('shows the documents card for a scholarship registration only after an update was required', () => {
+    expect(getRegistrationVariant('scholarship').hasRegistrationDocuments).toBe(false)
+    expect(getRegistrationVariant('scholarship', { hasBeenUpdateRequired: true }).hasRegistrationDocuments).toBe(true)
+    expect(getRegistrationVariant('registration').hasRegistrationDocuments).toBe(true)
+  })
+
   it('still requires each consent in the scholarship flow', () => {
     const formData = makeFormData({ ...allClaims(), verificationRight: false })
 

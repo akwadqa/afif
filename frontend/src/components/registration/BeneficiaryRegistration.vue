@@ -186,7 +186,9 @@ const hasRequestStep = computed(() => isScholarshipFlow.value || Boolean(docMeta
 const isSubmittedApplication = computed(() => Boolean(docMeta.value.is_scholarship) && docMeta.value.status !== 'Draft')
 // A scholarship registration keeps its fields when it is edited from the normal profile page.
 const fieldsFlow = computed(() => (docMeta.value.is_scholarship ? 'scholarship' : props.flow))
-const variant = computed(() => getRegistrationVariant(fieldsFlow.value))
+// Set by "Update Required"; from then on a scholarship registration needs the normal documents too.
+const hasBeenUpdateRequired = computed(() => Boolean(docMeta.value.last_required_update_date))
+const variant = computed(() => getRegistrationVariant(fieldsFlow.value, { hasBeenUpdateRequired: hasBeenUpdateRequired.value }))
 
 // Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
 // 6 = scholarship request data (scholarship flow only).
@@ -321,6 +323,7 @@ function toDocMeta(doc) {
     status: doc.status,
     custom_notes: doc.custom_notes,
     is_scholarship: doc.is_scholarship,
+    last_required_update_date: doc.last_required_update_date,
   }
 }
 
@@ -751,6 +754,7 @@ function validateStep(targetStep, targetSubStep4) {
     step: targetStep,
     subStep4: targetSubStep4,
     flow: fieldsFlow.value,
+    hasBeenUpdateRequired: hasBeenUpdateRequired.value,
     t,
   })
 }

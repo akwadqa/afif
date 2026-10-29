@@ -58,7 +58,8 @@ export const OBLIGATION_FIELDS = ['family_obligation', 'rent_obligation', 'treat
 const MARITAL_STATUSES = ['Married', 'Divorced', 'Widowed', 'Separated']
 
 // The scholarship wizard has every field of the normal one, plus the guardian mobile. Its documents
-// are collected with the request instead of the registration.
+// are collected with the request instead of the registration, until "Update Required" asks for the
+// normal registration documents.
 const REGISTRATION_VARIANT = {
   hiddenFields: new Set(['guardian_mobile_number']),
   maritalStatuses: MARITAL_STATUSES,
@@ -73,10 +74,11 @@ const SCHOLARSHIP_VARIANT = {
   hasRegistrationDocuments: false,
 }
 
-export function getRegistrationVariant(flow) {
+export function getRegistrationVariant(flow, { hasBeenUpdateRequired = false } = {}) {
   const variant = flow === 'scholarship' ? SCHOLARSHIP_VARIANT : REGISTRATION_VARIANT
   return {
     ...variant,
+    hasRegistrationDocuments: variant.hasRegistrationDocuments || hasBeenUpdateRequired,
     isShown: field => !variant.hiddenFields.has(field),
   }
 }
