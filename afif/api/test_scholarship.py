@@ -12,7 +12,7 @@ from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration imp
     ScholarshipFlagChangeError as RegistrationFlagChangeError,
 )
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import (
-    SCHOLARSHIP_ATTACHMENT_FIELDS,
+    ScholarshipMaritalStatusError,
     ScholarshipSubmissionError,
     SingleMaritalStatusError,
 )
@@ -25,7 +25,7 @@ from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     ScholarshipFlagChangeError as RequestFlagChangeError,
 )
 from afif.api.scholarship import IncompleteScholarshipApplicationError, submit_scholarship_application
-from afif.hooks_call import get_marital_status
+from afif.hooks_call import get_marital_status, get_missing_required_attachments, is_registration_complete
 
 REGISTRATION_ATTACHMENTS = {
     "qid": "/files/test-qid.pdf",
@@ -38,6 +38,19 @@ REGISTRATION_ATTACHMENTS = {
     "vehicle_certificate": "/files/test-vehicle.pdf",
     "iban_picture": "/files/test-iban.pdf",
 }
+# Older scholarship registrations hold their documents here; new applications leave them empty.
+REGISTRATION_SCHOLARSHIP_FIELDS = (
+    "scholarship_university_invoice",
+    "scholarship_grade_transcript",
+    "scholarship_guardian_id",
+    "scholarship_guardian_passport",
+    "scholarship_student_id",
+    "scholarship_student_passport",
+    "scholarship_family_ids",
+    "scholarship_guardian_bank_statement",
+    "scholarship_mother_bank_statement",
+    "scholarship_student_bank_statement",
+)
 REQUEST_FILE_TARGETS = ("student_id_copy", "other_attachments")
 
 
@@ -274,7 +287,35 @@ class TestSingleMaritalStatus(IntegrationTestCase):
 
         self.assertEqual(get_marital_status(registration.reload()), 1)
 
-    def test_normal_registration_cannot_be_set_to_single(self):
+    def test_scholarship_registration_accepts_single(self):
+        registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=1))
+
+        self.assertEqual(registration.marital_status, "Single")
+
+    def test_scholarship_registration_refuses_married(self):
+        name = make_registration(is_scholarship=1)
+
+        for marital_status in ("Married", "Divorced", "Widowed", "Separated"):
+            with self.subTest(marital_status):
+                with self.assertRaises(ScholarshipMaritalStatusError):
+                    make_registration(is_scholarship=1, marital_status=marital_status)
+
+                registration = frappe.get_doc("Beneficiaries Registration", name)
+                registration.marital_status = marital_status
+                with self.assertRaises(ScholarshipMaritalStatusError):
+                    registration.save()
+
+    def test_older_married_scholarship_registration_can_still_be_saved(self):
+        name = make_registration(is_scholarship=1)
+        frappe.db.set_value("Beneficiaries Registration", name, "marital_status", "Married")
+        registration = frappe.get_doc("Beneficiaries Registration", name)
+        registration.en_name = "Older Married Scholarship Registration"
+
+        registration.save()
+
+        self.assertEqual(registration.reload().marital_status, "Married")
+
+    def test_normal_registration_still_refuses_single(self):
         registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=0))
         registration.marital_status = "Single"
 
@@ -290,6 +331,27 @@ class TestSingleMaritalStatus(IntegrationTestCase):
         registration.save()
 
         self.assertEqual(registration.reload().marital_status, "Single")
+
+
+class TestScholarshipRegistrationAttachments(IntegrationTestCase):
+    def setUp(self):
+        self.addCleanup(frappe.set_user, "Administrator")
+        frappe.set_user(make_beneficiary_user())
+
+    def test_scholarship_registration_needs_no_attachments(self):
+        registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=1))
+
+        self.assertEqual(get_missing_required_attachments(registration), [])
+        self.assertTrue(is_registration_complete(registration))
+
+    def test_normal_registration_attachment_rules_unchanged(self):
+        registration = frappe.get_doc("Beneficiaries Registration", make_registration(is_scholarship=0))
+        self.assertEqual(get_missing_required_attachments(registration), [])
+
+        registration.qid = None
+        registration.marital_status = "Married"
+        self.assertEqual(get_missing_required_attachments(registration), ["qid", "wife_id", "wife_passport"])
+        self.assertFalse(is_registration_complete(registration))
 
 
 class TestNormalFlowUnchanged(IntegrationTestCase):
@@ -348,7 +410,7 @@ def accept_registration(registration: str, user: str) -> None:
     frappe.set_user(user)
 
 
-def make_registration(is_scholarship: int) -> str:
+def make_registration(is_scholarship: int, **fields) -> str:
     registration = frappe.get_doc(
         {
             "doctype": "Beneficiaries Registration",
@@ -359,7 +421,8 @@ def make_registration(is_scholarship: int) -> str:
             "ben_primary_idtype": "Qatari Id",
             "ben_primary_idnumber": str(random.randint(10**10, 10**11 - 1)),
             "passport_number": "A1234567",
-            "marital_status": "Separated",
+            # Single is for scholarship applicants only, and the only status they may hold.
+            "marital_status": "Single" if is_scholarship else "Separated",
             "currently_working": "Yes",
             "documents_confirmation": 1,
             "verification_consent": 1,
@@ -368,6 +431,7 @@ def make_registration(is_scholarship: int) -> str:
             "current_step": 5,
             # A scholarship applicant uploads their documents with the request, not the registration.
             **({} if is_scholarship else REGISTRATION_ATTACHMENTS),
+            **fields,
         }
     ).insert()
     return registration.name
@@ -426,7 +490,7 @@ def assert_files_unattached(testcase: IntegrationTestCase, request_data: dict) -
 
 
 def assert_no_registration_scholarship_documents(testcase: IntegrationTestCase, registration: str) -> None:
-    values = frappe.db.get_value("Beneficiaries Registration", registration, SCHOLARSHIP_ATTACHMENT_FIELDS, as_dict=True)
+    values = frappe.db.get_value("Beneficiaries Registration", registration, REGISTRATION_SCHOLARSHIP_FIELDS, as_dict=True)
     testcase.assertFalse(any(values.values()))
 
 

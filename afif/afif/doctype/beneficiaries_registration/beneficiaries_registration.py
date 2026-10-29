@@ -7,20 +7,6 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-# All of them are required to submit a scholarship application (plan Phase 6).
-SCHOLARSHIP_ATTACHMENT_FIELDS = (
-    "scholarship_university_invoice",
-    "scholarship_grade_transcript",
-    "scholarship_guardian_id",
-    "scholarship_guardian_passport",
-    "scholarship_student_id",
-    "scholarship_student_passport",
-    "scholarship_family_ids",
-    "scholarship_guardian_bank_statement",
-    "scholarship_mother_bank_statement",
-    "scholarship_student_bank_statement",
-)
-
 
 class ScholarshipFlagChangeError(frappe.ValidationError):
     pass
@@ -38,6 +24,10 @@ class SingleMaritalStatusError(frappe.ValidationError):
     pass
 
 
+class ScholarshipMaritalStatusError(frappe.ValidationError):
+    pass
+
+
 class BeneficiariesRegistration(Document):
     def validate(self):
         self.validate_scholarship_flag_unchanged()
@@ -45,6 +35,7 @@ class BeneficiariesRegistration(Document):
         self.validate_scholarship_decided_through_request()
         self.validate_guardian_mobile_number()
         self.validate_single_marital_status()
+        self.validate_scholarship_marital_status()
 
     def on_update(self):
         self.delete_replaced_attachments()
@@ -107,6 +98,17 @@ class BeneficiariesRegistration(Document):
             frappe.throw(
                 _("Marital status Single is only available for scholarship applications."),
                 SingleMaritalStatusError,
+            )
+
+    def validate_scholarship_marital_status(self):
+        # The scholarship is for single students; older scholarship registrations with another status
+        # can still be saved, so only setting one is refused.
+        if not self.is_scholarship or self.marital_status in (None, "", "Single"):
+            return
+        if self.is_new() or self.has_value_changed("marital_status"):
+            frappe.throw(
+                _("A scholarship application is only available to single applicants."),
+                ScholarshipMaritalStatusError,
             )
 
     def delete_replaced_attachments(self):

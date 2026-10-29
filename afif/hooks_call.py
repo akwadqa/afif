@@ -111,6 +111,9 @@ def link_user(doc, method):
 
 
 def get_missing_required_attachments(doc):
+    # Scholarship applicants upload their documents with each scholarship request instead.
+    if doc.is_scholarship:
+        return []
 
     is_married = doc.marital_status == "Married"
     is_divorced = doc.marital_status == "Divorced"
