@@ -32,10 +32,10 @@
       <div class="divider" />
 
       <div class="actions-row">
-        <button type="button" class="primary-btn" @click.stop="openDonationDialog(project)">
-          {{ t('donation.donateNow') }}
+        <button type="button" class="primary-btn" :disabled="isClosed" @click.stop="openDonationDialog(project)">
+          {{ isClosed ? t('donation.targetReached') : t('donation.donateNow') }}
         </button>
-        <router-link :to="{ name: 'DonationProject', params: { name: project.name } }" class="secondary-btn" @click.stop>
+        <router-link :to="detailRoute" class="secondary-btn" @click.stop>
           {{ t('donation.detail.details') }}
         </router-link>
       </div>
@@ -45,9 +45,11 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { qatarFlagSvg } from '@/config/donationIcons'
+import { isProjectClosed } from '@/data/donation'
 
 const props = defineProps({
   project: { type: Object, required: true },
@@ -55,7 +57,14 @@ const props = defineProps({
 
 const { t, isRTL } = useLanguage()
 const { openDonationDialog } = useDonationDialog()
+const router = useRouter()
 
+const detailRoute = computed(() => ({
+  name: 'Donate',
+  query: { project: props.project.slug },
+}))
+
+const isClosed = computed(() => isProjectClosed(props.project))
 const coveragePercentage = computed(() => Math.min(Math.round(props.project.percentage || 0), 100))
 
 // Starts at 0 and animates up to the real percentage once mounted, so the
@@ -76,7 +85,7 @@ function formatAmount(value) {
 }
 
 async function share() {
-  const url = `${window.location.origin}/donate/project/${props.project.name}`
+  const url = `${window.location.origin}${router.resolve(detailRoute.value).href}`
   if (navigator.share) {
     try {
       await navigator.share({ title: props.project.title, url })
@@ -253,5 +262,9 @@ async function share() {
   background: #00adef;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   border-radius: 12px;
+}
+
+.primary-btn:disabled {
+  @apply opacity-50 cursor-not-allowed hover:opacity-50;
 }
 </style>

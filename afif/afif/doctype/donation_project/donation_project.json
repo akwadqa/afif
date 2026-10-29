@@ -9,7 +9,9 @@
  "field_order": [
   "program",
   "title",
+  "slug",
   "published",
+  "status",
   "content_section",
   "image",
   "location",
@@ -43,12 +45,31 @@
    "translatable": 1
   },
   {
+   "description": "Used in the project URL, e.g. /donate?project=wheelchairs. Generated from the English title when left empty. Changing it breaks project links already shared.",
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug",
+   "unique": 1
+  },
+  {
    "default": "0",
    "fieldname": "published",
    "fieldtype": "Check",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Published"
+  },
+  {
+   "default": "Open",
+   "description": "Closes automatically once the Donated Amount reaches the Required Amount",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Open\nClosed",
+   "read_only": 1
   },
   {
    "fieldname": "content_section",
@@ -134,7 +155,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-11 16:00:00.000000",
+ "modified": "2026-10-28 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project",
@@ -153,6 +174,7 @@
    "write": 1
   }
  ],
+ "search_fields": "slug",
  "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",

@@ -552,14 +552,6 @@ const insertDoc = createResource({
   },
 })
 
-const setFieldValue = createResource({
-  url: 'frappe.client.set_value',
-  onError(err) {
-    error.value = extractError(err)
-    submitting.value = false
-  },
-})
-
 async function handleSubmit() {
   error.value = ''
 
@@ -587,23 +579,17 @@ async function handleSubmit() {
   }
 
   try {
-    const result = await insertDoc.submit({ doc })
-    if (!result?.name) return
-
-    const docName = result.name
-
+    // Upload before inserting so a failed upload never leaves a request without its attachments.
+    // Frappe links the uploaded files to the request when it is saved.
     for (const { id: fieldname } of requiredDocs.value) {
       const file = files.value[fieldname]
       if (file instanceof File) {
-        const fileUrl = await uploadFile(file, { is_private: '0', doctype: 'Beneficiary Request', docname: docName, fieldname })
-        await setFieldValue.submit({
-          doctype: 'Beneficiary Request',
-          name: docName,
-          fieldname,
-          value: fileUrl,
-        })
+        doc[fieldname] = await uploadFile(file)
       }
     }
+
+    const result = await insertDoc.submit({ doc })
+    if (!result?.name) return
 
     submitted.value = true
     emit('submitted')
@@ -616,11 +602,10 @@ async function handleSubmit() {
   submitting.value = false
 }
 
-async function uploadFile(file, fields) {
+async function uploadFile(file) {
   const fd = new FormData()
   fd.append('file', file, file.name)
   fd.append('folder', 'Home/Attachments')
-  for (const [key, value] of Object.entries(fields)) fd.append(key, value)
 
   const headers = { 'X-Frappe-Site-Name': window.location.hostname }
   if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {

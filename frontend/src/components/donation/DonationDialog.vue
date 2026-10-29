@@ -147,7 +147,7 @@
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
 
           <button type="button" class="submit-btn" :disabled="!canSubmit || createDonation.loading" @click="submitDonation">
-            {{ createDonation.loading ? t('donation.submitting') : `${t('donation.confirmDonate')} ${donationAmount || 0} ${t('donation.currency')}` }}
+            {{ isClosed ? t('donation.targetReached') : createDonation.loading ? t('donation.submitting') : `${t('donation.confirmDonate')} ${donationAmount || 0} ${t('donation.currency')}` }}
           </button>
 
           <p class="license-text">{{ t('donation.licenseText') }}</p>
@@ -165,6 +165,12 @@ import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { useDonationDialog } from '@/composables/useDonationDialog'
 import { validateDonor, donorPayload } from '@/utils/donorValidation'
+import {
+  isProjectClosed,
+  isProjectClosedError,
+  isAmountExceedsRemainingError,
+  getAmountExceedsMessage,
+} from '@/data/donation'
 
 const { t, isRTL } = useLanguage()
 const { isOpen, activeProject, closeDonationDialog } = useDonationDialog()
@@ -252,15 +258,32 @@ const createDonation = createResource({
     window.location.href = data.payment_url
   },
   onError(err) {
+    if (isProjectClosedError(err)) {
+      // Same object the card/detail page shows, so their Donate buttons switch to closed as well
+      activeProject.value.status = 'Closed'
+      errorMessage.value = t('donation.projectCompleted')
+      return
+    }
+    if (isAmountExceedsRemainingError(err)) {
+      errorMessage.value = getAmountExceedsMessage(err, t)
+      return
+    }
     errorMessage.value = extractError(err)
   },
 })
 
+const isClosed = computed(() => isProjectClosed(activeProject.value))
+
 const canSubmit = computed(
-  () => !!activeProject.value?.name && !!donationAmount.value && donationAmount.value > 0
+  () => !!activeProject.value?.name && !isClosed.value && !!donationAmount.value && donationAmount.value > 0
 )
 
 const donorFieldsRequired = computed(() => !donorForm.isAnonymous)
+
+// The donor is correcting the amount, so the previous error no longer applies
+watch(donationAmount, () => {
+  errorMessage.value = ''
+})
 
 // Toggling the benefactor option changes which donor fields are required, so drop any stale validation error
 watch(() => donorForm.isAnonymous, () => {

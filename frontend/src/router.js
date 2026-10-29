@@ -53,12 +53,13 @@ const routes = [
       {
         path: '',
         name: 'Donate',
-        component: () => import('@/pages/Donate.vue'),
+        component: () => import('@/pages/DonateHome.vue'),
         meta: { public: true },
       },
       {
+        // Links shared before projects had slugs; the page redirects to /donate?project=<slug>
         path: 'project/:name',
-        name: 'DonationProject',
+        name: 'DonationProjectLegacy',
         component: () => import('@/pages/DonationProjectDetail.vue'),
         meta: { public: true },
       },

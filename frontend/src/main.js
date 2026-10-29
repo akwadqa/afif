@@ -1,6 +1,7 @@
 import { createApp } from "vue"
 
 import App from "./App.vue"
+import { initAnalytics } from "./analytics"
 import router from "./router"
 import { initSocket } from "./socket"
 
@@ -31,6 +32,8 @@ const globalComponents = {
 	Alert,
 	Badge,
 }
+
+initAnalytics()
 
 const app = createApp(App)
 

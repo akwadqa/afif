@@ -6,6 +6,11 @@ from frappe import _
 from frappe.rate_limiter import rate_limit
 
 from afif import dibsy
+from afif.afif.doctype.donation_project.donation_project import (
+	STATUS_CLOSED,
+	AmountExceedsRemainingError,
+	ProjectClosedError,
+)
 from afif.donation_order import get_program_positions, get_project_positions, sort_by_position
 
 
@@ -83,6 +88,7 @@ def get_projects(program, lang=None):
 			"title",
 			"quote",
 			"body",
+			"status",
 			"show_progress",
 			"required_amount",
 			"donated_amount",
@@ -108,7 +114,7 @@ def get_donation_landing(lang=None):
 	programs = frappe.get_all(
 		"Donation Program",
 		filters={"published": 1},
-		fields=["name", "title", "intro", "icon"],
+		fields=["name", "title", "slug", "intro", "icon"],
 		order_by="creation desc",
 		ignore_permissions=True,
 	)
@@ -122,9 +128,11 @@ def get_donation_landing(lang=None):
 			filters={"program": program["name"], "published": 1},
 			fields=[
 				"name",
+				"slug",
 				"title",
 				"image",
 				"location",
+				"status",
 				"show_progress",
 				"required_amount",
 				"donated_amount",
@@ -147,19 +155,23 @@ def get_donation_landing(lang=None):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_project_detail(project_name, lang=None):
+def get_project_detail(project_name=None, lang=None, slug=None):
+	# Project pages use the slug; links shared before slugs existed still carry the name
 	lang = _normalize_lang(lang)
 
+	filters = {"slug": slug} if slug else {"name": project_name}
 	project = frappe.db.get_value(
 		"Donation Project",
-		{"name": project_name, "published": 1},
+		{**filters, "published": 1},
 		[
 			"name",
+			"slug",
 			"title",
 			"quote",
 			"body",
 			"image",
 			"location",
+			"status",
 			"show_progress",
 			"required_amount",
 			"donated_amount",
@@ -174,7 +186,7 @@ def get_project_detail(project_name, lang=None):
 	program = frappe.db.get_value(
 		"Donation Program",
 		project.program,
-		["title", "intro", "icon"],
+		["title", "slug", "intro", "icon"],
 		as_dict=True,
 	)
 
@@ -184,6 +196,7 @@ def get_project_detail(project_name, lang=None):
 	project["program_title"] = _localize(program.title, lang)
 	project["program_intro"] = _localize(program.intro, lang)
 	project["program_icon"] = program.icon
+	project["program_slug"] = program.slug
 	_apply_progress_visibility(project)
 	_attach_amounts([project], lang)
 
@@ -198,15 +211,32 @@ def create_donation(
 	project = frappe.db.get_value(
 		"Donation Project",
 		{"name": donation_project, "published": 1},
-		["name"],
+		["name", "status", "required_amount", "donated_amount"],
 		as_dict=True,
 	)
 	if not project:
 		frappe.throw(_("Donation Project not found"), frappe.DoesNotExistError)
+	if project.status == STATUS_CLOSED:
+		frappe.throw(
+			_("This project has reached its required amount and is no longer accepting donations"),
+			ProjectClosedError,
+		)
 
 	amount = frappe.utils.flt(amount)
 	if amount <= 0:
 		frappe.throw(_("Amount must be greater than 0"))
+
+	remaining = frappe.utils.flt(
+		frappe.utils.flt(project.required_amount) - frappe.utils.flt(project.donated_amount), 2
+	)
+	if frappe.utils.flt(project.required_amount) > 0 and amount > remaining:
+		# Returned alongside the error so the frontend can show the limit in the donor's language,
+		# even for projects that hide their funding figures
+		frappe.local.response["message"] = {"remaining_amount": remaining}
+		frappe.throw(
+			_("The amount is greater than the {0} still needed for this project").format(remaining),
+			AmountExceedsRemainingError,
+		)
 
 	donation = frappe.get_doc({
 		"doctype": "Donation",
