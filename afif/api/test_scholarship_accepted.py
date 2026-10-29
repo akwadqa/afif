@@ -8,7 +8,7 @@ from frappe.utils import add_days, add_months, now_datetime
 
 from afif.hooks_call import AccountRestrictedError
 from afif.afif.doctype.beneficiary_request.beneficiary_request import IncompleteScholarshipRequestError
-from afif.api.scholarship import create_scholarship_request
+from afif.api.scholarship import create_scholarship_request, get_account_status
 from afif.api.test_scholarship import (
     REQUEST_FILE_TARGETS,
     accept_registration,
@@ -301,3 +301,18 @@ class TestAccountRestriction(AcceptedBeneficiaryTestCase):
         self.save_as(self.make_staff_user("Supervisor"), is_account_restricted=1)
 
         self.assertEqual(self.is_restricted(), 1)
+
+    def test_account_status_reports_the_restriction(self):
+        get_account_status()
+        self.assertFalse(frappe.response["data"]["is_account_restricted"])
+
+        self.restrict()
+        get_account_status()
+        self.assertTrue(frappe.response["data"]["is_account_restricted"])
+
+    def test_account_status_without_a_registration_is_not_restricted(self):
+        frappe.set_user("Administrator")
+
+        get_account_status()
+
+        self.assertFalse(frappe.response["data"]["is_account_restricted"])

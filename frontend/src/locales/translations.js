@@ -616,6 +616,7 @@ export default {
       title: 'منحة الشيخ خالد بن ناصر',
       subtitle: 'أكمل بيانات التسجيل وبيانات الطلب لتقديم طلب المنحة',
       acceptedSubtitle: 'ملف المستفيد الخاص بك مقبول، أكمل بيانات الطلب والمرفقات لتقديم طلب المنحة',
+      restricted: 'تم تقييد حسابك لإنتهاء المنحة',
       applyAgain: 'تقديم طلب منحة جديد',
       steps: {
         request: 'بيانات الطلب',
@@ -684,6 +685,7 @@ export default {
         status: 'الحالة',
       },
       disabledReasons: {
+        restricted: 'تم تقييد حسابك لإنتهاء المنحة',
         pending: 'لا يمكنك تقديم طلب جديد حتى تتم مراجعة طلبك السابق.',
         cooldownRejected: 'يجب الانتظار 3 أشهر من تاريخ رفض الطلب السابق قبل تقديم طلب جديد.',
         cooldownApproved: 'يجب الانتظار 6 أشهر من تاريخ الموافقة على المساعدة السابقة قبل تقديم طلب جديد.',
@@ -1596,6 +1598,7 @@ export default {
       title: 'Sheikh Khalid bin Nasser Scholarship',
       subtitle: 'Complete your registration and request data to apply for the scholarship',
       acceptedSubtitle: 'Your beneficiary profile is accepted. Complete the request data and attachments to apply for the scholarship',
+      restricted: 'Your account has been restricted because the scholarship has ended.',
       applyAgain: 'Apply for a new scholarship',
       steps: {
         request: 'Request Data',
@@ -1664,6 +1667,7 @@ export default {
         status: 'Status',
       },
       disabledReasons: {
+        restricted: 'Your account has been restricted because the scholarship has ended.',
         pending: 'You cannot submit a new request until your previous request has been reviewed.',
         cooldownRejected: 'Three months must pass since the last rejected request before a new one can be created.',
         cooldownApproved: 'Six months must pass since the last approved request before a new one can be created.',

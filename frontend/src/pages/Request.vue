@@ -152,6 +152,7 @@ import { useLanguage } from '@/composables/useLanguage'
 import bgImg from '@/assets/images/background.png'
 import BeneficiaryRequest from '@/components/request/BeneficiaryRequest.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import { useAccountStatus } from '@/composables/useAccountStatus'
 import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
@@ -175,7 +176,9 @@ const CATEGORY_KEYS = {
   'Awareness Assistance': 'request.categories.awareness',
 }
 
-const blockReason = computed(() => getRequestBlockReason(requests.value, { isAccepted: isAccepted.value }))
+const { isRestricted } = useAccountStatus()
+
+const blockReason = computed(() => getRequestBlockReason(requests.value, { isAccepted: isAccepted.value, isRestricted: isRestricted.value }))
 const canCreateRequest = computed(() => !blockReason.value)
 const disabledReason = computed(() => (blockReason.value ? t(`myRequests.disabledReasons.${blockReason.value}`) : ''))
 

@@ -14,6 +14,11 @@ describe('getRequestBlockReason', () => {
     expect(getRequestBlockReason([], { isAccepted: false, now })).toBe('notAccepted')
   })
 
+  it('blocks a restricted beneficiary first, even with no requests', () => {
+    expect(getRequestBlockReason([], { ...accepted, isRestricted: true })).toBe('restricted')
+    expect(getRequestBlockReason([], { isAccepted: false, isRestricted: true, now })).toBe('restricted')
+  })
+
   it('blocks while the last request is open', () => {
     expect(getRequestBlockReason([{ status: 'Pending Supervisor Approval' }], accepted)).toBe('pending')
   })
@@ -40,7 +45,7 @@ describe('getRequestBlockReason', () => {
   })
 
   it.each(['ar', 'en'])('has a message in %s for every reason', language => {
-    const reasons = ['notAccepted', 'pending', 'cooldownRejected', 'cooldownApproved']
+    const reasons = ['restricted', 'notAccepted', 'pending', 'cooldownRejected', 'cooldownApproved']
     expect(reasons.filter(reason => typeof translations[language].myRequests.disabledReasons[reason] !== 'string')).toEqual([])
   })
 })

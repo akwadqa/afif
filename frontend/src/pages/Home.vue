@@ -16,6 +16,7 @@
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
     <div class="max-w-5xl mx-auto">
+      <Alert v-if="isRestricted" theme="red" :title="t('scholarship.restricted')" class="mb-6" />
       <div class="flex justify-between items-center mb-6">
         <div>
           <h1 class="text-2xl font-bold text-sky-900 mb-4">{{ t('beneficiaryList.title') }}</h1>
@@ -98,14 +99,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { createResource } from 'frappe-ui'
+import { Alert, createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
+import { useAccountStatus } from '@/composables/useAccountStatus'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 
 const { t, isRTL } = useLanguage()
 const router = useRouter()
+const { isRestricted } = useAccountStatus()
 
 const view = ref('loading')
 const registrationName = ref(null)

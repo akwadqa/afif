@@ -11,7 +11,8 @@ function addMonths(date, months) {
  * Why the beneficiary cannot create a request now, or '' when they can.
  * `requests` is newest first; scholarship requests have no cooldowns, like before_insert_request; the reason is a key under myRequests.disabledReasons.
  */
-export function getRequestBlockReason(requests, { isAccepted, isScholarship = false, now = new Date() }) {
+export function getRequestBlockReason(requests, { isAccepted, isScholarship = false, isRestricted = false, now = new Date() }) {
+  if (isRestricted) return 'restricted'
   if (!isAccepted) return 'notAccepted'
 
   const last = requests[0]

@@ -39,23 +39,27 @@
   />
 
   <!-- A submitted application: the registration and the latest scholarship request, read only -->
-  <BeneficiaryRegistration
-    v-else-if="view === 'application'"
-    flow="scholarship"
-    read-only
-    :registration-name="registration.name"
-    @back="goHome"
-  >
-    <template #actions>
-      <button
-        v-if="canApplyAgain"
-        @click="view = 'apply'"
-        class="bg-[#34B0EE] text-white hover:opacity-90 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap active:scale-[0.99]"
-      >
-        {{ t('scholarship.applyAgain') }}
-      </button>
-    </template>
-  </BeneficiaryRegistration>
+  <template v-else-if="view === 'application'">
+    <div v-if="isRestricted" class="px-4 md:px-8 pt-6" style="background: #EBF4FF;" :dir="isRTL ? 'rtl' : 'ltr'">
+      <Alert theme="red" :title="t('scholarship.restricted')" class="max-w-5xl mx-auto" />
+    </div>
+    <BeneficiaryRegistration
+      flow="scholarship"
+      read-only
+      :registration-name="registration.name"
+      @back="goHome"
+    >
+      <template #actions>
+        <button
+          v-if="canApplyAgain"
+          @click="view = 'apply'"
+          class="bg-[#34B0EE] text-white hover:opacity-90 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap active:scale-[0.99]"
+        >
+          {{ t('scholarship.applyAgain') }}
+        </button>
+      </template>
+    </BeneficiaryRegistration>
+  </template>
 
   <!-- A new scholarship request, once the request rules allow it -->
   <ScholarshipApplyForm v-else-if="view === 'apply'" @submitted="view = 'appliedSuccess'" />
@@ -78,9 +82,10 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { createResource } from 'frappe-ui'
+import { Alert, createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
+import { useAccountStatus } from '@/composables/useAccountStatus'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 import ScholarshipApplyForm from '@/components/registration/ScholarshipApplyForm.vue'
@@ -88,6 +93,7 @@ import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
 const router = useRouter()
+const { isRestricted } = useAccountStatus()
 
 const view = ref('loading')
 const registrationName = ref(null)
@@ -96,7 +102,12 @@ const registration = ref(null)
 const requests = ref([])
 // Same rules as the request page, minus the cooldowns; the server enforces them again.
 const canApplyAgain = computed(
-  () => !getRequestBlockReason(requests.value, { isAccepted: registration.value?.status === 'Accepted', isScholarship: true }),
+  () =>
+    !getRequestBlockReason(requests.value, {
+      isAccepted: registration.value?.status === 'Accepted',
+      isScholarship: true,
+      isRestricted: isRestricted.value,
+    }),
 )
 
 const myRegistrations = createResource({

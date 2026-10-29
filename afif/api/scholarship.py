@@ -79,6 +79,14 @@ def create_scholarship_request(request: dict | str) -> None:
     gen_response(200, _("Scholarship request submitted"), {"request": request_doc.name})
 
 
+@frappe.whitelist()
+def get_account_status() -> None:
+    is_restricted = frappe.db.get_value(
+        "Beneficiaries Registration", {"user": frappe.session.user}, "is_account_restricted"
+    )
+    gen_response(200, "", {"is_account_restricted": bool(is_restricted)})
+
+
 def get_own_scholarship_draft(registration: str) -> Document:
     registration_doc = frappe.get_doc("Beneficiaries Registration", registration)
     if registration_doc.user != frappe.session.user:
