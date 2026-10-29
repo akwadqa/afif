@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 import re
 import requests
 import json
@@ -744,6 +745,16 @@ def get_beneficiary_income_set(doc):
 
 
 
+def check_request_cooldowns(last_created_request) -> None:
+    if last_created_request.rejected_date:
+        if now_datetime() < last_created_request.rejected_date + relativedelta(months=3):
+            frappe.throw(_("Three months must pass since the last rejected request before a new one can be created."))
+
+    elif last_created_request.approved_for_aid_date:
+        if now_datetime() < last_created_request.approved_for_aid_date + relativedelta(months=6):
+            frappe.throw(_("Six months must pass since the last approved request before a new one can be created."))
+
+
 def before_insert_request(doc, method):
     frappe.log_error("before_insert_request")
     user = frappe.session.user
@@ -771,23 +782,10 @@ def before_insert_request(doc, method):
 
         if last_created_request:
             if last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-                frappe.throw("A previous request is pending review.")
+                frappe.throw(_("A previous request is pending review."))
 
-            elif last_created_request.rejected_date:
-                # Calculate the exact date 3 months after the rejected_date
-                three_months_later = last_created_request.rejected_date + relativedelta(months=3)
-                
-                # Compare with the current datetime
-                if now_datetime() < three_months_later:
-                    frappe.throw("Three months must pass since the last rejected request before a new one can be created.")
-
-            elif last_created_request.approved_for_aid_date:
-                # Calculate the exact date 6 months after the approved_for_aid_date
-                six_months_later = last_created_request.approved_for_aid_date + relativedelta(months=6)
-
-                # Compare with the current datetime
-                if now_datetime() < six_months_later:
-                    frappe.throw("Six months must pass since the last approved request before a new one can be created.")
+            if not doc.is_scholarship:
+                check_request_cooldowns(last_created_request)
 
         # set request ben id
         doc.beneficiaries = beneficiary

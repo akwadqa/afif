@@ -4,7 +4,7 @@ from unittest.mock import patch
 import frappe
 from frappe.model.workflow import apply_workflow
 from frappe.tests import IntegrationTestCase
-from frappe.utils import add_months, now_datetime
+from frappe.utils import add_days, add_months, now_datetime
 
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import SCHOLARSHIP_ATTACHMENT_FIELDS
 from afif.afif.doctype.beneficiary_request.beneficiary_request import IncompleteScholarshipRequestError
@@ -143,7 +143,7 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
 
 
 class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
-    """The normal request rules apply to scholarship requests (OQ5)."""
+    """A pending request still blocks a scholarship request; the rejection and approval waits do not."""
 
     def test_pending_request_blocks_a_scholarship_request(self):
         self.make_previous_request()
@@ -153,19 +153,29 @@ class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
 
         self.assertEqual(self.get_request_count(), 1)
 
-    def test_recent_rejection_blocks_a_scholarship_request(self):
-        self.close_request(self.make_previous_request(), "Rejected", rejected_date=add_months(now_datetime(), -2))
+    def test_recent_rejection_does_not_block_a_scholarship_request(self):
+        self.close_request(self.make_previous_request(), "Rejected", rejected_date=add_days(now_datetime(), -1))
 
-        with self.assertRaisesRegex(frappe.ValidationError, "Three months"):
-            self.create_request()
+        self.assertTrue(self.create_request())
 
-    def test_recent_approval_blocks_a_scholarship_request(self):
+    def test_recent_approval_does_not_block_a_scholarship_request(self):
         self.close_request(
-            self.make_previous_request(), "Approved For Aid", approved_for_aid_date=add_months(now_datetime(), -5)
+            self.make_previous_request(), "Approved For Aid", approved_for_aid_date=add_days(now_datetime(), -1)
         )
 
-        with self.assertRaisesRegex(frappe.ValidationError, "Six months"):
-            self.create_request()
+        self.assertTrue(self.create_request())
+
+    def test_recent_rejection_still_blocks_a_normal_request(self):
+        frappe.set_user("Administrator")
+        user = make_beneficiary_user()
+        frappe.set_user(user)
+        registration = make_registration(is_scholarship=0)
+        accept_registration(registration, user)
+        rejected_request = make_normal_education_request()
+        self.close_request(rejected_request, "Rejected", rejected_date=add_days(now_datetime(), -1))
+
+        with self.assertRaisesRegex(frappe.ValidationError, "Three months"):
+            make_normal_education_request()
 
     def test_scholarship_request_is_allowed_after_the_cooldowns(self):
         self.close_request(
@@ -182,14 +192,13 @@ class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
         )
         self.assertTrue(self.create_request())
 
-    def test_approved_scholarship_request_blocks_the_next_request_for_six_months(self):
+    def test_approved_scholarship_request_does_not_block_the_next_request(self):
         scholarship_request = self.create_request()
         self.close_request(
-            scholarship_request, "Approved For Aid", approved_for_aid_date=add_months(now_datetime(), -1)
+            scholarship_request, "Approved For Aid", approved_for_aid_date=add_days(now_datetime(), -1)
         )
 
-        with self.assertRaisesRegex(frappe.ValidationError, "Six months"):
-            self.make_previous_request()
+        self.assertTrue(self.create_request())
 
     def test_pending_scholarship_request_blocks_the_next_request(self):
         self.create_request()
