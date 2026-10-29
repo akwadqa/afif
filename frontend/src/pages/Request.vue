@@ -166,6 +166,7 @@ const beneficiaryDisplayName = ref('')
 const requests = ref([])
 const selectedRequestName = ref('')
 const isAccepted = ref(false)
+const isScholarship = ref(false)
 
 const PENDING_STATUSES = ['Pending Supervisor Approval', 'Pending Specialist Approval', 'Saved']
 
@@ -181,7 +182,13 @@ const CATEGORY_KEYS = {
 
 const { isRestricted } = useAccountStatus()
 
-const blockReason = computed(() => getRequestBlockReason(requests.value, { isAccepted: isAccepted.value, isRestricted: isRestricted.value }))
+const blockReason = computed(() =>
+  getRequestBlockReason(requests.value, {
+    isAccepted: isAccepted.value,
+    isScholarship: isScholarship.value,
+    isRestricted: isRestricted.value,
+  }),
+)
 const canCreateRequest = computed(() => !blockReason.value)
 const disabledReason = computed(() => (blockReason.value ? t(`myRequests.disabledReasons.${blockReason.value}`) : ''))
 
@@ -195,6 +202,7 @@ const myRegistration = createResource({
 
     // A scholarship applicant has a request before being accepted, so the list is shown, read only.
     isAccepted.value = rows[0].status === 'Accepted'
+    isScholarship.value = Boolean(rows[0].is_scholarship)
     beneficiaryName.value = rows[0].name
     beneficiaryDisplayName.value = rows[0].ar_name || rows[0].en_name || ''
     fetchRequests()
@@ -233,7 +241,7 @@ onMounted(() => {
   myRegistration.submit({
     doctype: 'Beneficiaries Registration',
     filters: { user: session.user },
-    fields: ['name', 'status', 'ar_name', 'en_name'],
+    fields: ['name', 'status', 'ar_name', 'en_name', 'is_scholarship'],
     limit_page_length: 1,
   })
 })

@@ -775,7 +775,10 @@ def before_insert_request(doc, method):
     if frappe.get_value("Beneficiaries Registration", {"user": user}, "workflow_state") == "Accepted":
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
 
-        if frappe.db.get_value("Beneficiaries Registration", beneficiary, "is_account_restricted"):
+        registration = frappe.db.get_value(
+            "Beneficiaries Registration", beneficiary, ["is_account_restricted", "is_scholarship"], as_dict=True
+        )
+        if registration.is_account_restricted:
             raise AccountRestrictedError(_("Your account has been restricted because the scholarship has ended."))
 
         try:
@@ -794,7 +797,7 @@ def before_insert_request(doc, method):
             if last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
                 frappe.throw(_("A previous request is pending review."))
 
-            if not doc.is_scholarship:
+            if not registration.is_scholarship:
                 check_request_cooldowns(last_created_request)
 
         # set request ben id

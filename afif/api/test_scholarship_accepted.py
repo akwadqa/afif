@@ -130,7 +130,7 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
 
 
 class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
-    """A pending request still blocks a scholarship request; the rejection and approval waits do not."""
+    """A scholarship student has no rejection or approval waits, for any request; a pending request still blocks."""
 
     def test_pending_request_blocks_a_scholarship_request(self):
         self.make_previous_request()
@@ -186,6 +186,19 @@ class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
         )
 
         self.assertTrue(self.create_request())
+
+    def test_recent_scholarship_approval_does_not_block_a_normal_request(self):
+        scholarship_request = self.create_request()
+        self.close_request(
+            scholarship_request, "Approved For Aid", approved_for_aid_date=add_days(now_datetime(), -1)
+        )
+
+        self.assertTrue(make_normal_education_request())
+
+    def test_recent_rejection_does_not_block_a_scholarship_students_normal_request(self):
+        self.close_request(self.make_previous_request(), "Rejected", rejected_date=add_days(now_datetime(), -1))
+
+        self.assertTrue(make_normal_education_request())
 
     def test_pending_scholarship_request_blocks_the_next_request(self):
         self.create_request()
