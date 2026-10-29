@@ -10,11 +10,21 @@
 | [6 — Registration parity](phase-6-registration-parity.md) | done (live site still needs `bench restart`) | `c832071`, `69ba9dc`, `1297605`, `163509b`, `f1f71b3`, `a1f4225` |
 | [7 — What the applicant sees](phase-7-scholarship-views.md) | done (live site still needs `bench restart`) | `3dac039`, `aa6762a`, `7570946`, `e748836`, `124a858`, `83b91f7` |
 | [8 — Profile edit and request rejection](phase-8-profile-edit-and-rejection.md) | done (live site still needs `bench restart`) | `09557c1`, `2d41dc7`, `9b4a572` |
-| [9 — No cooldowns](phase-9-no-cooldowns.md) | todo | |
+| [9 — No cooldowns](phase-9-no-cooldowns.md) | done (live site needs `bench restart`) | `c0960f7`, `6935fa2`, `03def4d` |
 | [10 — Link only](phase-10-link-only.md) | todo | |
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | todo | |
 | [12 — Account restriction](phase-12-account-restriction.md) | todo | |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+
+## Phase 9 — log (2026-10-29)
+- **Server.** `before_insert_request` keeps the pending-review block. The 3/6-month checks moved into `check_request_cooldowns` and are skipped when `doc.is_scholarship` (P9-7). The three messages are now in `_()`.
+- **Client.** `getRequestBlockReason(..., { isScholarship })` skips the cooldowns. Only `Scholarship.vue` passes it, so `Request.vue` is unchanged.
+- **P9-9.** `SUBCATEGORY_MAP` moved to `components/request/requestCategories.js`, with `getSubcategoryOptions(category, { includeScholarship })`. The normal form still hides Scholarship. The server side was already covered by `test_plain_insert_of_scholarship_request_is_blocked_for_accepted_user` and `test_normal_flow_beneficiary_cannot_create_a_scholarship_request`.
+- **Tests.**
+  - `test_scholarship` 20 OK.
+  - `test_scholarship_accepted` 15 OK: the 3 cooldown tests now assert the request goes through, and there is a new regression test where a normal request is still blocked for 3 months.
+  - `test_scholarship_decision` 14 OK.
+  - Vitest 55 OK.
 
 ## Master merge — 2026-10-29
 
