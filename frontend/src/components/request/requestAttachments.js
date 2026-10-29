@@ -1,7 +1,10 @@
+import { SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS } from '@/components/registration/registrationVariant'
+
 // Every Attach field the request page can show, so the read-only view lists what was uploaded.
 export const REQUEST_ATTACHMENT_FIELDS = [
   'medical_bill', 'education_invoice', 'grade_transcript', 'garmeen_proof', 'garmeen_disclosure',
   'travel_ticket_doc', 'rent_contract', 'onwer_qid', 'late_letter', 'estate_pruchase',
+  'student_id_copy', 'student_passport_copy',
 ]
 
 export function isScholarshipSubcategory(category, subcategory) {
@@ -9,8 +12,10 @@ export function isScholarshipSubcategory(category, subcategory) {
 }
 
 export function getRequiredRequestDocs(category, subcategory) {
-  // A scholarship request's documents are on the registration (plan Phase 6).
-  if (isScholarshipSubcategory(category, subcategory)) return []
+  // The scholarship form uploads these (plan P9-4); this page only ever shows a scholarship request read-only.
+  if (isScholarshipSubcategory(category, subcategory)) {
+    return SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS.map(id => ({ id, labelKey: `scholarship.attachments.${id}` }))
+  }
 
   const docs = []
   if (category === 'Medical Assistance') {

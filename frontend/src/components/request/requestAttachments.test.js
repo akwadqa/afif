@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import translations from '@/locales/translations'
-import { getRequiredRequestDocs, isScholarshipSubcategory } from './requestAttachments'
+import { REQUEST_ATTACHMENT_FIELDS, getRequiredRequestDocs, isScholarshipSubcategory } from './requestAttachments'
 
 function lookup(language, key) {
   return key.split('.').reduce((node, part) => node?.[part], translations[language])
@@ -9,8 +9,15 @@ function lookup(language, key) {
 const ids = docs => docs.map(doc => doc.id)
 
 describe('getRequiredRequestDocs', () => {
-  it('lists no documents for a scholarship request: the scholarship form collects them', () => {
-    expect(getRequiredRequestDocs('Education Assistance', 'Scholarship')).toEqual([])
+  it('lists the 4 student documents for a scholarship request, so its read-only view shows them', () => {
+    const docs = getRequiredRequestDocs('Education Assistance', 'Scholarship')
+    const scholarshipIds = ['education_invoice', 'grade_transcript', 'student_id_copy', 'student_passport_copy']
+
+    expect(ids(docs)).toEqual(scholarshipIds)
+    expect(scholarshipIds.filter(id => !REQUEST_ATTACHMENT_FIELDS.includes(id))).toEqual([])
+    for (const language of ['ar', 'en']) {
+      expect(docs.filter(doc => typeof lookup(language, doc.labelKey) !== 'string')).toEqual([])
+    }
   })
 
   it.each(['Tuition Fees', 'Other Educational Assistance', ''])(
