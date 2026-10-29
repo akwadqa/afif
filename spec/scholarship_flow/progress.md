@@ -13,8 +13,21 @@
 | [9 — No cooldowns](phase-9-no-cooldowns.md) | done (live site needs `bench restart`) | `c0960f7`, `6935fa2`, `03def4d` |
 | [10 — Link only](phase-10-link-only.md) | done (browser check in Phase 13) | `2f06178` |
 | [11 — Documents on the request, Single only](phase-11-request-documents.md) | done (browser check in Phase 13) | `78d442a`, `85c3a70`, `14a29e4`, `11a5526`, `4c22065`, `9fd1900` |
-| [12 — Account restriction](phase-12-account-restriction.md) | todo | |
+| [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | todo | |
+
+## Phase 12 — log (2026-10-29)
+- **Field.** `is_account_restricted` on `Beneficiaries Registration`: a Check at `permlevel: 1`, shown only for scholarship records, and a standard filter.
+  - Level 1 is read/write for Supervisor and Administrator in the JSON.
+  - **The site's Custom DocPerm rows replace the JSON permissions.** The new patch `allow_supervisors_to_restrict_accounts` therefore adds level-1 rows for Supervisor and System Manager.
+- **Frappe resets level-1 values for users without write access.** A beneficiary's profile save keeps the flag, and a Specialist's attempt is not stored.
+- **Server.** `before_insert_request` raises `AccountRestrictedError(PermissionError)` with «Your account has been restricted because the scholarship has ended.» before any other check.
+- **Frontend.**
+  - `get_account_status` (gen_response) is read through `useAccountStatus`, which uses a custom fetcher because the payload is under `data`.
+  - A red frappe-ui `Alert` «تم تقييد حسابك لإنتهاء المنحة» shows on Home and Scholarship.
+  - "Apply again" is hidden.
+  - `/request` disables the create button with the reason.
+- **Tests.** `test_scholarship` 32, `test_scholarship_accepted` 21, `test_scholarship_decision` 14 OK. Vitest 75 OK. Build OK.
 
 ## Phase 11 — log (2026-10-29)
 - **Request.**
