@@ -78,6 +78,7 @@
                 <th class="p-4">{{ t('myRequests.columns.serial') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.beneficiary') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.type') }}</th>
+                <th class="p-4">{{ t('myRequests.columns.assistanceType') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.date') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.status') }}</th>
               </tr>
@@ -93,6 +94,7 @@
                 <td class="p-4 font-mono text-xs" dir="ltr">{{ req.request_fullserial || req.name }}</td>
                 <td class="p-4">{{ beneficiaryDisplayName }}</td>
                 <td class="p-4">{{ translateCategory(req.request_category) }}</td>
+                <td class="p-4">{{ translateAssistanceType(req) }}</td>
                 <td class="p-4 font-mono text-xs" dir="ltr">{{ formatDate(req.request_date) }}</td>
                 <td class="p-4">
                   <span :class="getReqStatusClass(req.status)" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium">
@@ -153,6 +155,7 @@ import bgImg from '@/assets/images/background.png'
 import BeneficiaryRequest from '@/components/request/BeneficiaryRequest.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
 import { useAccountStatus } from '@/composables/useAccountStatus'
+import { SUBCATEGORY_FIELDS, getAssistanceTypeKey } from '@/components/request/requestCategories'
 import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
@@ -219,7 +222,7 @@ function fetchRequests() {
     filters: { beneficiaries: beneficiaryName.value },
     fields: [
       'name', 'request_fullserial', 'request_category', 'request_date',
-      'status', 'rejected_date', 'approved_for_aid_date',
+      'status', 'rejected_date', 'approved_for_aid_date', 'is_scholarship', ...SUBCATEGORY_FIELDS,
     ],
     order_by: 'creation desc',
     limit_page_length: 50,
@@ -251,6 +254,14 @@ function onBackToList() {
 function translateCategory(category) {
   const key = CATEGORY_KEYS[category]
   return key ? t(key) : category || '—'
+}
+
+function translateAssistanceType(row) {
+  const key = getAssistanceTypeKey(row)
+  if (!key) return '—'
+  const label = t(key)
+  // t() returns the path for an untranslated value; show the stored value instead.
+  return label === key && key.startsWith('request.subtypes.') ? key.split('.').slice(3).join('.') : label
 }
 
 function formatDate(dateStr) {

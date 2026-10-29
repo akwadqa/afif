@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SUBCATEGORY_MAP, getSubcategoryOptions } from './requestCategories'
+import { SUBCATEGORY_FIELDS, SUBCATEGORY_MAP, getAssistanceTypeKey, getSubcategoryOptions } from './requestCategories'
 
 describe('getSubcategoryOptions', () => {
   it('hides Scholarship from the normal request form', () => {
@@ -20,5 +20,29 @@ describe('getSubcategoryOptions', () => {
 
   it('returns nothing for an unknown category', () => {
     expect(getSubcategoryOptions('', { includeScholarship: true })).toEqual([])
+  })
+})
+
+describe('getAssistanceTypeKey', () => {
+  it('labels a scholarship row as the scholarship', () => {
+    expect(getAssistanceTypeKey({ is_scholarship: 1, request_category: 'Education Assistance', educational_assistance: 'Scholarship' }))
+      .toBe('sidebar.scholarship')
+  })
+
+  it('points at the sub-category translation of the row category', () => {
+    expect(getAssistanceTypeKey({ request_category: 'Medical Assistance', medical_assistance: 'Medication' }))
+      .toBe('request.subtypes.medical.Medication')
+  })
+
+  it('returns an empty key when the sub-category is empty', () => {
+    expect(getAssistanceTypeKey({ request_category: 'Medical Assistance', medical_assistance: null })).toBe('')
+  })
+
+  it('returns an empty key for a category without sub-categories', () => {
+    expect(getAssistanceTypeKey({ request_category: 'Akwad test category' })).toBe('')
+  })
+
+  it('exposes every sub-category field name', () => {
+    expect(SUBCATEGORY_FIELDS).toHaveLength(7)
   })
 })

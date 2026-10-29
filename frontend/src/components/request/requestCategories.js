@@ -43,3 +43,11 @@ export function getSubcategoryOptions(category, { includeScholarship }) {
   // Scholarship is applied for on /scholarship; it is listed in the form only to show an existing request.
   return options.filter(option => includeScholarship || !isScholarshipSubcategory(category, option))
 }
+
+export const SUBCATEGORY_FIELDS = Object.values(SUBCATEGORY_MAP).map(({ field }) => field)
+
+export function getAssistanceTypeKey(row) {
+  if (row.is_scholarship) return 'sidebar.scholarship'
+  const { field, key } = SUBCATEGORY_MAP[row.request_category] || {}
+  return field && row[field] ? `request.subtypes.${key}.${row[field]}` : ''
+}
