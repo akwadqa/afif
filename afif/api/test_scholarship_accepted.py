@@ -6,7 +6,8 @@ from frappe.model.workflow import apply_workflow
 from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, add_months, now_datetime
 
-from afif.hooks_call import AccountRestrictedError, beneficiary_update_required_status_for_document, get_missing_required_attachments
+from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import set_account_restriction
+from afif.hooks_call import AccountRestrictedError,beneficiary_update_required_status_for_document, get_missing_required_attachments
 from afif.afif.doctype.beneficiary_request.beneficiary_request import (
     SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
     IncompleteScholarshipRequestError,
@@ -318,6 +319,30 @@ class TestAccountRestriction(AcceptedBeneficiaryTestCase):
         self.save_as(self.make_staff_user("Supervisor"), is_account_restricted=1)
 
         self.assertEqual(self.is_restricted(), 1)
+
+    def test_supervisor_restricts_and_lifts_without_the_update_required_documents(self):
+        # "Update Required" clears the attachments and asks the student for the normal registration documents.
+        beneficiary_update_required_status_for_document(self.registration)
+        frappe.db.set_value(
+            "Beneficiaries Registration",
+            self.registration,
+            {"current_step": 5, "visa_type": "Residence", "housing_type": "Private Ownership"},
+        )
+        frappe.set_user(self.make_staff_user("Supervisor"))
+
+        set_account_restriction(self.registration, is_restricted=1)
+        self.assertEqual(self.is_restricted(), 1)
+
+        set_account_restriction(self.registration, is_restricted=0)
+        self.assertEqual(self.is_restricted(), 0)
+
+    def test_specialist_cannot_set_the_restriction(self):
+        frappe.set_user(self.make_staff_user("Specialist"))
+
+        with self.assertRaises(frappe.PermissionError):
+            set_account_restriction(self.registration, is_restricted=1)
+
+        self.assertEqual(self.is_restricted(), 0)
 
     def test_account_status_reports_the_restriction(self):
         get_account_status()

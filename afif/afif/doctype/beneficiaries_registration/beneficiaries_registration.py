@@ -157,3 +157,19 @@ class BeneficiariesRegistration(Document):
             for file_name in replaced_files:
                 # The save already checked that the user may change this registration.
                 frappe.delete_doc("File", file_name, ignore_permissions=True)
+
+
+@frappe.whitelist()
+def set_account_restriction(registration: str, is_restricted: int) -> None:
+    """Restrict or lift a scholarship student's account (P9-6).
+
+    The desk form's Save checks the registration documents on the client, and after "Update Required"
+    the student still owes them, so the restriction is set here instead of through the form.
+    """
+    doc = frappe.get_doc("Beneficiaries Registration", registration)
+    doc.check_permission("write")
+    if not doc.has_permlevel_access_to("is_account_restricted", permission_type="write"):
+        frappe.throw(_("You are not permitted to change the account restriction."), frappe.PermissionError)
+
+    doc.is_account_restricted = frappe.utils.cint(is_restricted)
+    doc.save()

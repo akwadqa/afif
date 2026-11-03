@@ -247,7 +247,8 @@
    "fieldtype": "Check",
    "in_standard_filter": 1,
    "label": "Account Restricted (Scholarship Ended)",
-   "permlevel": 1
+   "permlevel": 1,
+   "read_only": 1
   },
   {
    "default": "1",
@@ -1559,7 +1560,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-10-29 10:00:00.000000",
+ "modified": "2026-11-01 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
