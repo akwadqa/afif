@@ -50,13 +50,7 @@
       @back="goHome"
     >
       <template #actions>
-        <button
-          v-if="canApplyAgain"
-          @click="view = 'apply'"
-          class="bg-[#34B0EE] text-white hover:opacity-90 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap active:scale-[0.99]"
-        >
-          {{ t('scholarship.applyAgain') }}
-        </button>
+        <ScholarshipApplyButton :status="registration.status" @apply="view = 'apply'" />
       </template>
     </BeneficiaryRegistration>
   </template>
@@ -80,35 +74,26 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Alert, createResource } from 'frappe-ui'
 import { session } from '@/data/session'
 import { useLanguage } from '@/composables/useLanguage'
 import { useAccountStatus } from '@/composables/useAccountStatus'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import ScholarshipApplyButton from '@/components/registration/ScholarshipApplyButton.vue'
 import ScholarshipApplyForm from '@/components/registration/ScholarshipApplyForm.vue'
-import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
+const route = useRoute()
 const router = useRouter()
 const { isRestricted } = useAccountStatus()
 
 const view = ref('loading')
 const registrationName = ref(null)
-// The user's submitted scholarship registration, and all their requests (newest first).
+// The user's submitted scholarship registration.
 const registration = ref(null)
-const requests = ref([])
-// Same rules as the request page, minus the cooldowns; the server enforces them again.
-const canApplyAgain = computed(
-  () =>
-    !getRequestBlockReason(requests.value, {
-      isAccepted: registration.value?.status === 'Accepted',
-      isScholarship: true,
-      isRestricted: isRestricted.value,
-    }),
-)
 
 const myRegistrations = createResource({
   url: 'frappe.client.get_list',
@@ -123,7 +108,8 @@ const myRegistrations = createResource({
       view.value = 'wizard'
     } else if (rows[0].is_scholarship) {
       registration.value = rows[0]
-      fetchRequests()
+      // The profile's apply button links here with ?apply=1; the server refuses a request it shouldn't take.
+      view.value = route.query.apply && rows[0].status === 'Accepted' ? 'apply' : 'application'
     } else {
       view.value = 'blocked'
     }
@@ -132,27 +118,6 @@ const myRegistrations = createResource({
     view.value = 'blocked'
   },
 })
-
-const myRequests = createResource({
-  url: 'frappe.client.get_list',
-  onSuccess(rows) {
-    requests.value = rows
-    view.value = 'application'
-  },
-  onError() {
-    view.value = 'application'
-  },
-})
-
-function fetchRequests() {
-  myRequests.submit({
-    doctype: 'Beneficiary Request',
-    filters: { beneficiaries: registration.value.name },
-    fields: ['name', 'status', 'rejected_date', 'approved_for_aid_date'],
-    order_by: 'creation desc',
-    limit_page_length: 50,
-  })
-}
 
 onMounted(() => {
   myRegistrations.submit({

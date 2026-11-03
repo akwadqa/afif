@@ -22,6 +22,11 @@
           <h1 class="text-2xl font-bold text-sky-900 mb-4">{{ t('beneficiaryList.title') }}</h1>
           <p class="text-sm text-gray-500 mt-1">{{ t('beneficiaryList.subtitle') }}</p>
         </div>
+        <ScholarshipApplyButton
+          v-if="isSubmittedScholarship(registrations[0])"
+          :status="registrations[0].status"
+          @apply="applyForScholarship"
+        />
       </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -76,7 +81,11 @@
     :read-only="true"
     @submitted="onSubmitted"
     @back="onBackToList"
-  />
+  >
+    <template v-if="isSubmittedScholarship(openedRegistration)" #actions>
+      <ScholarshipApplyButton :status="openedRegistration.status" @apply="applyForScholarship" />
+    </template>
+  </BeneficiaryRegistration>
 
   <!-- Success after registration submission -->
   <div
@@ -97,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Alert, createResource } from 'frappe-ui'
 import { session } from '@/data/session'
@@ -105,6 +114,8 @@ import { useLanguage } from '@/composables/useLanguage'
 import { useAccountStatus } from '@/composables/useAccountStatus'
 import BeneficiaryRegistration from '@/components/registration/BeneficiaryRegistration.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import ScholarshipApplyButton from '@/components/registration/ScholarshipApplyButton.vue'
+import { isSubmittedScholarship } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
 const router = useRouter()
@@ -113,6 +124,7 @@ const { isRestricted } = useAccountStatus()
 const view = ref('loading')
 const registrationName = ref(null)
 const registrations = ref([])
+const openedRegistration = computed(() => registrations.value.find(reg => reg.name === registrationName.value))
 
 const EDITABLE_STATUSES = ['Draft', 'New Registration', 'Not Accepted', 'Update Required', 'Updated', 'Updated beneficiary']
 
@@ -160,6 +172,10 @@ function openRegistration(reg) {
   }
   registrationName.value = reg.name
   view.value = 'view'
+}
+
+function applyForScholarship() {
+  router.push({ name: 'Scholarship', query: { apply: 1 } })
 }
 
 function onSubmitted(name) {
