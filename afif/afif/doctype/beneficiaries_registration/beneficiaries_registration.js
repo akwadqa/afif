@@ -44,6 +44,34 @@ frappe.ui.form.on('Beneficiaries Registration', {
 			});
 		}
 
+		if (!frm.is_new() && frm.doc.is_scholarship && frm.perm[1] && frm.perm[1].write) {
+			const is_restricted = cint(frm.doc.is_account_restricted);
+			const label = is_restricted ? __('Lift Account Restriction') : __('Restrict Account');
+			const confirmation = is_restricted
+				? __('Lift the restriction? The student will be able to file new requests again.')
+				: __('Restrict this account because the scholarship has ended? The student will no longer be able to file new requests.');
+
+			// The form's Save would require the registration documents, which a scholarship student
+			// may still owe after "Update Required", so the restriction is set through its own call.
+			frm.add_custom_button(label, function () {
+				frappe.confirm(confirmation, function () {
+					frappe.call({
+						method: 'afif.afif.doctype.beneficiaries_registration.beneficiaries_registration.set_account_restriction',
+						args: {
+							registration: frm.doc.name,
+							is_restricted: is_restricted ? 0 : 1
+						},
+						freeze: true,
+						callback: function (r) {
+							if (!r.exc) {
+								frm.reload_doc();
+							}
+						}
+					});
+				});
+			});
+		}
+
 		if (!frm.is_new() && frappe.user_roles.some(role => ['System Manager', 'Supervisor', 'Specialist'].includes(role))) {
 			frm.add_custom_button(__('Change Linked Account'), function () {
 				frappe.prompt(

@@ -1,0 +1,74 @@
+import { describe, expect, it } from 'vitest'
+import translations from '@/locales/translations'
+import { getRequestBlockReason, isSubmittedScholarship } from './requestEligibility'
+
+const now = new Date('2026-10-20T12:00:00')
+const accepted = { isAccepted: true, now }
+
+describe('getRequestBlockReason', () => {
+  it('allows the first request of an accepted beneficiary', () => {
+    expect(getRequestBlockReason([], accepted)).toBe('')
+  })
+
+  it('blocks a beneficiary who is not accepted, even with no requests', () => {
+    expect(getRequestBlockReason([], { isAccepted: false, now })).toBe('notAccepted')
+  })
+
+  it('blocks a restricted beneficiary first, even with no requests', () => {
+    expect(getRequestBlockReason([], { ...accepted, isRestricted: true })).toBe('restricted')
+    expect(getRequestBlockReason([], { isAccepted: false, isRestricted: true, now })).toBe('restricted')
+  })
+
+  it('blocks while the last request is open', () => {
+    expect(getRequestBlockReason([{ status: 'Pending Supervisor Approval' }], accepted)).toBe('pending')
+  })
+
+  it.each([
+    ['rejected 2 months ago', { status: 'Rejected', rejected_date: '2026-08-20' }, 'cooldownRejected'],
+    ['rejected 4 months ago', { status: 'Rejected', rejected_date: '2026-06-19' }, ''],
+    ['approved for aid 5 months ago', { status: 'Approved For Aid', approved_for_aid_date: '2026-05-21' }, 'cooldownApproved'],
+    ['approved for aid 7 months ago', { status: 'Approved For Aid', approved_for_aid_date: '2026-03-19' }, ''],
+  ])('applies the cooldown when the last request was %s', (_case, last, reason) => {
+    expect(getRequestBlockReason([last, { status: 'Pending Supervisor Approval' }], accepted)).toBe(reason)
+  })
+
+  it.each([
+    ['rejected', { status: 'Rejected', rejected_date: '2026-10-19' }],
+    ['approved for aid', { status: 'Approved For Aid', approved_for_aid_date: '2026-10-19' }],
+  ])('ignores the cooldowns for a scholarship request last %s yesterday', (_case, last) => {
+    expect(getRequestBlockReason([last], { ...accepted, isScholarship: true })).toBe('')
+  })
+
+  it.each(['Pending Supervisor Approval', 'Pending Specialist Approval'])(
+    'lets a scholarship student apply while the last request is %s',
+    status => {
+      expect(getRequestBlockReason([{ status }], { ...accepted, isScholarship: true })).toBe('')
+    },
+  )
+
+  it('still blocks a scholarship student before the first approval', () => {
+    const pending = [{ status: 'Pending Supervisor Approval' }]
+    expect(getRequestBlockReason(pending, { isAccepted: false, isScholarship: true, now })).toBe('notAccepted')
+  })
+
+  it('still blocks a normal request while one is pending', () => {
+    expect(getRequestBlockReason([{ status: 'Pending Specialist Approval' }], accepted)).toBe('pending')
+  })
+
+  it.each(['ar', 'en'])('has a message in %s for every reason', language => {
+    const reasons = ['restricted', 'notAccepted', 'pending', 'cooldownRejected', 'cooldownApproved']
+    expect(reasons.filter(reason => typeof translations[language].myRequests.disabledReasons[reason] !== 'string')).toEqual([])
+  })
+})
+
+describe('isSubmittedScholarship', () => {
+  it.each([
+    ['a submitted scholarship registration', { is_scholarship: 1, status: 'New Registration' }, true],
+    ['an accepted scholarship registration', { is_scholarship: 1, status: 'Accepted' }, true],
+    ['a scholarship draft', { is_scholarship: 1, status: 'Draft' }, false],
+    ['a normal registration', { is_scholarship: 0, status: 'Accepted' }, false],
+    ['no registration', undefined, false],
+  ])('is %s → %s', (_case, registration, expected) => {
+    expect(isSubmittedScholarship(registration)).toBe(expected)
+  })
+})

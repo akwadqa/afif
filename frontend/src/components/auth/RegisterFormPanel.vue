@@ -12,7 +12,7 @@
       </div>
       <p class="text-sm text-gray-600">{{ t('register.successMsg') }}</p>
       <router-link
-        to="/signin"
+        :to="{ path: '/signin', query: redirectQuery }"
         class="inline-block text-sm font-semibold text-[#0570B6] hover:underline"
       >
         {{ t('register.loginLink') }}
@@ -112,7 +112,7 @@
       <!-- Login link -->
       <div class="flex items-center justify-center gap-[7px] text-base text-[#3E4850] mt-6">
         {{ t('register.hasAccount') }}
-        <router-link to="/signin" class="text-sm font-semibold text-[#0570B6] hover:underline">
+        <router-link :to="{ path: '/signin', query: redirectQuery }" class="text-sm font-semibold text-[#0570B6] hover:underline">
           {{ t('register.loginLink') }}
         </router-link>
       </div>
@@ -122,11 +122,15 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { createResource } from 'frappe-ui'
+import { getSafeRedirect } from '@/utils/safeRedirect'
 import { useLanguage } from '@/composables/useLanguage'
 
 const { t, isRTL } = useLanguage()
 
+const route = useRoute()
+const redirectQuery = computed(() => (route.query.redirect ? { redirect: route.query.redirect } : {}))
 const fullName = ref('')
 const email = ref('')
 const success = ref(false)
@@ -167,7 +171,7 @@ function handleSubmit() {
   signUp.submit({
     email: email.value,
     full_name: fullName.value,
-    redirect_to: '/beneficiary-profile',
+    redirect_to: getSafeRedirect(route.query.redirect),
   })
 }
 </script>

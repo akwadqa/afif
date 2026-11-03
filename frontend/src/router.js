@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getSafeRedirect } from '@/utils/safeRedirect'
 
 function getSessionUser() {
   const cookies = new URLSearchParams(document.cookie.split('; ').join('&'))
@@ -98,6 +99,11 @@ const routes = [
         component: () => import('@/pages/Request.vue'),
       },
       {
+        path: 'scholarship',
+        name: 'Scholarship',
+        component: () => import('@/pages/Scholarship.vue'),
+      },
+      {
         path: 'account',
         name: 'Account',
         component: () => import('@/pages/Account.vue'),
@@ -115,9 +121,9 @@ router.beforeEach((to, from, next) => {
   const isLoggedIn = !!getSessionUser()
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    next({ name: 'Login' })
+    next({ name: 'Login', query: { redirect: to.fullPath } })
   } else if ((to.name === 'Login' || to.name === 'Register' || to.name === 'ResetPassword') && isLoggedIn) {
-    next({ name: 'Home' })
+    next(to.query.redirect ? getSafeRedirect(to.query.redirect) : { name: 'Home' })
   } else {
     next()
   }

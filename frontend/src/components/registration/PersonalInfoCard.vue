@@ -215,15 +215,14 @@
           :class="isInvalid('marital_status') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         >
           <option value="">{{ t('registration.personalInfo.maritalStatusPlaceholder') }}</option>
-          <option value="Married">{{ t('registration.personalInfo.married') }}</option>
-          <option value="Divorced">{{ t('registration.personalInfo.divorced') }}</option>
-          <option value="Widowed">{{ t('registration.personalInfo.widowed') }}</option>
-          <option value="Separated">{{ t('registration.personalInfo.separated') }}</option>
+          <option v-for="status in variant.maritalStatuses" :key="status" :value="status">
+            {{ t(`registration.personalInfo.${status.toLowerCase()}`) }}
+          </option>
         </select>
       </div>
 
-      <!-- Partner Phone (always shown) -->
-      <div class="space-y-1.5">
+      <!-- Partner Phone -->
+      <div v-if="variant.isShown('partners_phone_number')" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700">{{ t('registration.personalInfo.partnerPhone') }} <span class="text-red-500">*</span></label>
         <input
           type="tel"
@@ -236,6 +235,24 @@
           :class="isInvalid('partners_phone_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
         />
         <p v-if="modelValue.partners_phone_number && modelValue.partners_phone_number.length !== 8" class="text-xs text-red-500">
+          {{ t('registration.validation.phoneMustBe8') }}
+        </p>
+      </div>
+
+      <!-- Guardian Mobile -->
+      <div v-if="variant.isShown('guardian_mobile_number')" class="space-y-1.5">
+        <label class="text-sm font-medium text-gray-700">{{ t('scholarship.personalInfo.guardianMobile') }} <span class="text-red-500">*</span></label>
+        <input
+          type="tel"
+          :value="modelValue.guardian_mobile_number"
+          @input="onDigitsOnly('guardian_mobile_number', $event, 8)"
+          maxlength="8"
+          placeholder="00000000"
+          dir="ltr"
+          class="w-full px-4 py-3 bg-gray-50/60 border rounded-xl focus:ring-2 focus:ring-[#34B0EE] focus:bg-white outline-none text-sm transition-all"
+          :class="isInvalid('guardian_mobile_number') ? 'border-red-400 bg-red-50' : 'border-gray-100'"
+        />
+        <p v-if="modelValue.guardian_mobile_number && modelValue.guardian_mobile_number.length !== 8" class="text-xs text-red-500">
           {{ t('registration.validation.phoneMustBe8') }}
         </p>
       </div>
@@ -597,6 +614,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { DatePicker, Autocomplete } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { arabicToWestern } from '@/utils/inputHelpers'
+import { getRegistrationVariant } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
 
@@ -605,8 +623,11 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   additionalInfo: { type: Object, default: () => ({}) },
   invalidFields: { type: Array, default: () => [] },
+  flow: { type: String, default: 'registration' },
 })
 const emit = defineEmits(['update:modelValue', 'update:additionalInfo'])
+
+const variant = computed(() => getRegistrationVariant(props.flow))
 
 const countries = ref([])
 const numberWarnings = ref(new Set())

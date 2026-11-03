@@ -273,6 +273,7 @@ website_route_rules = [
     {"from_route": "/forgot-password", "to_route": "frontend"},
     {"from_route": "/beneficiary-profile", "to_route": "frontend"},
     {"from_route": "/request", "to_route": "frontend"},
+    {"from_route": "/scholarship", "to_route": "frontend"},
     {"from_route": "/account", "to_route": "frontend"},
     {"from_route": "/donate", "to_route": "frontend"},
     {"from_route": "/donate/<path:app_path>", "to_route": "frontend"},

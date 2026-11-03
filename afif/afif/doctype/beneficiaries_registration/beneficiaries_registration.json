@@ -14,6 +14,8 @@
   "beneficiary_information_tab",
   "beneficiary_section",
   "status",
+  "is_scholarship",
+  "is_account_restricted",
   "current_step",
   "ben_id",
   "registration_acceptance_date",
@@ -32,6 +34,7 @@
   "passport_number",
   "marital_status",
   "phone_number",
+  "guardian_mobile_number",
   "partners_phone_number",
   "ben_nationality",
   "cb1",
@@ -191,6 +194,17 @@
   "cancellation_right",
   "custom_notes",
   "metrash_adress",
+  "scholarship_attachments_tab",
+  "scholarship_university_invoice",
+  "scholarship_grade_transcript",
+  "scholarship_guardian_id",
+  "scholarship_guardian_passport",
+  "scholarship_student_id",
+  "scholarship_student_passport",
+  "scholarship_family_ids",
+  "scholarship_guardian_bank_statement",
+  "scholarship_mother_bank_statement",
+  "scholarship_student_bank_statement",
   "last_tab",
   "card_expiry_date",
   "passport_expiry_date"
@@ -215,6 +229,25 @@
    "in_standard_filter": 1,
    "label": "Status",
    "options": "Draft\nNew Registration\nNot Accepted\nAccepted\nUpdated\nUpdate Required\nUpdated beneficiary",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_scholarship",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Scholarship",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "is_account_restricted",
+   "fieldtype": "Check",
+   "in_standard_filter": 1,
+   "label": "Account Restricted (Scholarship Ended)",
+   "permlevel": 1,
    "read_only": 1
   },
   {
@@ -294,7 +327,7 @@
    "fieldname": "marital_status",
    "fieldtype": "Select",
    "label": "Marital Status",
-   "options": "\nMarried\nDivorced\nWidowed\nSeparated"
+   "options": "\nSingle\nMarried\nDivorced\nWidowed\nSeparated"
   },
   {
    "fieldname": "phone_number",
@@ -302,6 +335,12 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Phone Number"
+  },
+  {
+   "depends_on": "eval:doc.is_scholarship",
+   "fieldname": "guardian_mobile_number",
+   "fieldtype": "Data",
+   "label": "Guardian Mobile Number"
   },
   {
    "fieldname": "ben_nationality",
@@ -621,56 +660,56 @@
    "fieldname": "ben_income",
    "fieldtype": "Check",
    "label": "Beneficiary Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "family_income",
    "fieldtype": "Check",
    "label": "Family Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "family_extra",
    "fieldtype": "Check",
    "label": "Family Extra Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "children_income",
    "fieldtype": "Check",
    "label": "Children Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "private_income",
    "fieldtype": "Check",
    "label": "Private Business Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "stock_income",
    "fieldtype": "Check",
    "label": "Stock Market Profits",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "rent_income",
    "fieldtype": "Check",
    "label": "Rent Income",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 2"
+   "mandatory_depends_on": "eval:doc.current_step >= 2",
+   "reqd": 0
   },
   {
    "depends_on": "eval:doc.family_income==1",
@@ -846,40 +885,40 @@
    "fieldname": "family_obligation",
    "fieldtype": "Check",
    "label": "Family Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "rent_obligation",
    "fieldtype": "Check",
    "label": "Rent Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "treatment_obligation",
    "fieldtype": "Check",
    "label": "Treatment Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "debt_obligation",
    "fieldtype": "Check",
    "label": "Debt Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "tuition_obligation",
    "fieldtype": "Check",
    "label": "Tuition Obligations",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 3"
+   "mandatory_depends_on": "eval:doc.current_step >= 3",
+   "reqd": 0
   },
   {
    "depends_on": "eval:doc.family_obligation==1",
@@ -1102,7 +1141,7 @@
    "fieldname": "copy_of_court_judgment",
    "fieldtype": "Attach",
    "label": "Copy of Court Judgment",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.court_tried))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.court_tried))",
    "print_hide": 1
   },
   {
@@ -1159,7 +1198,7 @@
    "fieldname": "wife_id",
    "fieldtype": "Attach",
    "label": "Wife QID",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1167,7 +1206,7 @@
    "fieldname": "wife_passport",
    "fieldtype": "Attach",
    "label": "Wife Passport ",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1175,7 +1214,7 @@
    "fieldname": "children_identification",
    "fieldtype": "Attach",
    "label": "Children IDs or Passport",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.have_children))",
    "print_hide": 1
   },
   {
@@ -1183,7 +1222,7 @@
    "fieldname": "rent_contract",
    "fieldtype": "Attach",
    "label": "Rent Contract",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Rental\", \"Akwad\"], doc.housing_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Rental\", \"Akwad\"], doc.housing_type))",
    "print_hide": 1
   },
   {
@@ -1191,7 +1230,7 @@
    "fieldname": "property_deed",
    "fieldtype": "Attach",
    "label": "Property Deed",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Private Ownership\", \"Akwad\"], doc.housing_type))",
    "print_hide": 1
   },
   {
@@ -1199,7 +1238,7 @@
    "fieldname": "bank_statement",
    "fieldtype": "Attach",
    "label": "Bank Statement Form Past 6 Months",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1207,7 +1246,7 @@
    "fieldname": "wife_bank_statement",
    "fieldtype": "Attach",
    "label": "Wife Bank Statement From The Past 6 Months",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
    "print_hide": 1
   },
   {
@@ -1215,7 +1254,7 @@
    "fieldname": "wife_credit_certificate",
    "fieldtype": "Attach",
    "label": "Wife's Qatar Credit Information",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Married\", \"Akwad\"], doc.marital_status) && in_list([\"Residence\", \"Akwad\"], doc.family_visa_type))",
    "print_hide": 1
   },
   {
@@ -1223,7 +1262,7 @@
    "fieldname": "beneficiary_credit_certificate",
    "fieldtype": "Attach",
    "label": "Beneficiary Qatar Credit Certificate",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1231,7 +1270,7 @@
    "fieldname": "children_bank_statement",
    "fieldtype": "Attach",
    "label": "Children Bank Statement from the Past 6 Months",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
    "print_hide": 1
   },
   {
@@ -1239,7 +1278,7 @@
    "fieldname": "children_credit_information",
    "fieldtype": "Attach",
    "label": "Credit Information for Children Above 18",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.family_visa_type) && in_list([\"Yes\", \"Akwad\"], doc.children_above_eighteen))",
    "print_hide": 1
   },
   {
@@ -1247,7 +1286,7 @@
    "fieldname": "social_security_certificate",
    "fieldtype": "Attach",
    "label": "Social Security Certificate",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Qatar\", \"Akwad\"], doc.ben_nationality) && in_list([\"No\", \"Akwad\"], doc.currently_working))",
    "print_hide": 1
   },
   {
@@ -1255,7 +1294,7 @@
    "fieldname": "partner_work_certificate",
    "fieldtype": "Attach",
    "label": "Partner Recent Work Certificate",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.partner_working))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.partner_working))",
    "print_hide": 1
   },
   {
@@ -1263,7 +1302,7 @@
    "fieldname": "employment_certificate",
    "fieldtype": "Attach",
    "label": "Employment Certificate",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.currently_working))",
    "print_hide": 1
   },
   {
@@ -1271,7 +1310,7 @@
    "fieldname": "vehicle_certificate",
    "fieldtype": "Attach",
    "label": "Vehicle Ownership Certificate  ",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1279,7 +1318,7 @@
    "fieldname": "iban_picture",
    "fieldtype": "Attach",
    "label": "IBAN Picture",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Residence\", \"Akwad\"], doc.visa_type))",
    "print_hide": 1
   },
   {
@@ -1287,7 +1326,7 @@
    "fieldname": "children_schooling_proof",
    "fieldtype": "Attach",
    "label": "Children Schooling Proof",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_in_school))",
    "print_hide": 1
   },
   {
@@ -1295,7 +1334,7 @@
    "fieldname": "special_needs_certificate",
    "fieldtype": "Attach",
    "label": "Certified medical report for children with special needs",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_special_needs))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.children_special_needs))",
    "print_hide": 1
   },
   {
@@ -1304,7 +1343,7 @@
    "fieldname": "removal_memorandum",
    "fieldtype": "Attach",
    "label": "Removal memorandum ",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Social Assistance\", \"Akwad\"], doc.request_category))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Social Assistance\", \"Akwad\"], doc.request_category))",
    "print_hide": 1
   },
   {
@@ -1312,7 +1351,7 @@
    "fieldname": "termination_letter",
    "fieldtype": "Attach",
    "label": "Termination_letter",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"No\", \"Akwad\"], doc.currently_working) && in_list([\"Yes\", \"Akwad\"], doc.worked_before))",
    "print_hide": 1
   },
   {
@@ -1320,7 +1359,7 @@
    "fieldname": "nonmarriage_proof",
    "fieldtype": "Attach",
    "label": "Proof of NonMarriage",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status) && in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1328,7 +1367,7 @@
    "fieldname": "divorce_paper",
    "fieldtype": "Attach",
    "label": "Divorce Paper",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Divorced\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1336,7 +1375,7 @@
    "fieldname": "partner_death_certificate",
    "fieldtype": "Attach",
    "label": "Partner Death Certificate",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Widowed\", \"Akwad\"], doc.marital_status))",
    "print_hide": 1
   },
   {
@@ -1344,7 +1383,7 @@
    "fieldname": "id_coresidents",
    "fieldtype": "Attach",
    "label": "IDs or Visa of Coresidents ",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.coresidence))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.coresidence))",
    "print_hide": 1
   },
   {
@@ -1352,7 +1391,7 @@
    "fieldname": "id_sponsored",
    "fieldtype": "Attach",
    "label": "IDs or Visas of Sponsored ",
-   "mandatory_depends_on": "eval: doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))",
+   "mandatory_depends_on": "eval:(!doc.is_scholarship || doc.last_required_update_date) && doc.current_step == 5 && (in_list([\"Yes\", \"Akwad\"], doc.visa_dependent))",
    "print_hide": 1
   },
   {
@@ -1370,8 +1409,8 @@
   {
    "fieldname": "additional_attachments",
    "fieldtype": "Table",
-   "options": "Beneficiary Additional Document",
    "label": "Additional Attachments",
+   "options": "Beneficiary Additional Document",
    "print_hide": 1
   },
   {
@@ -1379,24 +1418,24 @@
    "fieldname": "documents_confirmation",
    "fieldtype": "Check",
    "label": "Documents Confirmation",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "verification_consent",
    "fieldtype": "Check",
    "label": "Eligibility Verification Consent",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "default": "0",
    "fieldname": "cancellation_right",
    "fieldtype": "Check",
    "label": "Afif Cancellation Right",
-   "reqd": 0,
-   "mandatory_depends_on": "eval:doc.current_step >= 5"
+   "mandatory_depends_on": "eval:doc.current_step >= 5",
+   "reqd": 0
   },
   {
    "fieldname": "custom_notes",
@@ -1408,6 +1447,62 @@
    "fieldtype": "Attach",
    "label": "Metrash Address",
    "print_hide": 1
+  },
+  {
+   "depends_on": "eval:doc.is_scholarship && doc.scholarship_university_invoice",
+   "fieldname": "scholarship_attachments_tab",
+   "fieldtype": "Tab Break",
+   "label": "Scholarship Attachments"
+  },
+  {
+   "fieldname": "scholarship_university_invoice",
+   "fieldtype": "Attach",
+   "label": "University Invoice"
+  },
+  {
+   "fieldname": "scholarship_grade_transcript",
+   "fieldtype": "Attach",
+   "label": "Student Grade Transcript"
+  },
+  {
+   "fieldname": "scholarship_guardian_id",
+   "fieldtype": "Attach",
+   "label": "Guardian / Applicant ID"
+  },
+  {
+   "fieldname": "scholarship_guardian_passport",
+   "fieldtype": "Attach",
+   "label": "Guardian / Applicant Passport"
+  },
+  {
+   "fieldname": "scholarship_student_id",
+   "fieldtype": "Attach",
+   "label": "Student ID"
+  },
+  {
+   "fieldname": "scholarship_student_passport",
+   "fieldtype": "Attach",
+   "label": "Student Passport"
+  },
+  {
+   "fieldname": "scholarship_family_ids",
+   "fieldtype": "Attach",
+   "label": "Family Members IDs"
+  },
+  {
+   "fieldname": "scholarship_guardian_bank_statement",
+   "fieldtype": "Attach",
+   "label": "Guardian Bank Statement"
+  },
+  {
+   "fieldname": "scholarship_mother_bank_statement",
+   "fieldtype": "Attach",
+   "label": "Mother Bank Statement"
+  },
+  {
+   "fieldname": "scholarship_student_bank_statement",
+   "fieldtype": "Attach",
+   "label": "Student Bank Statement"
   },
   {
    "fieldname": "last_tab",
@@ -1450,7 +1545,7 @@
    "fieldname": "partners_phone_number",
    "fieldtype": "Data",
    "label": "Partner's phone number",
-   "mandatory_depends_on": "eval: doc.current_step == 1"
+   "mandatory_depends_on": "eval: doc.current_step == 1 && doc.marital_status != \"Single\""
   }
  ],
  "index_web_pages_for_search": 1,
@@ -1465,7 +1560,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-06-18 11:33:03.827654",
+ "modified": "2026-11-01 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",
@@ -1495,6 +1590,18 @@
    "print": 1,
    "read": 1,
    "role": "Specialist",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Supervisor",
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Administrator",
    "write": 1
   }
  ],

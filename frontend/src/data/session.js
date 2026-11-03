@@ -2,6 +2,8 @@ import router from "@/router"
 import { createResource } from "frappe-ui"
 import { computed, reactive } from "vue"
 
+import { getSafeRedirect } from "@/utils/safeRedirect"
+
 import { userResource } from "./user"
 
 // Frappe's template renderer replaces <!-- csrf_token --> in frontend.html with
@@ -44,8 +46,8 @@ export const session = reactive({
 			} else {
 				// Frappe's `home_page` from the login response can be hijacked by unrelated
 				// installed apps (get_default_path() picks up their add_to_apps_screen route),
-				// so Website Users always go straight to the registration flow.
-				router.replace('/beneficiary-profile')
+				// so Website Users go to the requested page or the registration flow.
+				router.replace(getSafeRedirect(router.currentRoute.value.query.redirect))
 			}
 		},
 	}),

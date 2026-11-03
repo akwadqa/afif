@@ -103,7 +103,7 @@
    "fieldname": "educational_assistance",
    "fieldtype": "Select",
    "label": "Education Assistance",
-   "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance",
+   "options": "\nTuition Fees\nTransportation Fees\nBooks And Resources\nEducational Equipment\nOther Educational Assistance\nScholarship",
    "read_only": 1
   },
   {
@@ -289,7 +289,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-08-06 10:40:12.928423",
+ "modified": "2026-10-18 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiary Aid",

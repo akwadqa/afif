@@ -4,12 +4,14 @@
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div class="min-w-0">
-          <h1 class="text-xl sm:text-2xl font-bold text-[#0570B6]">{{ t('registration.title') }}</h1>
-          <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t('registration.subtitle') }}</p>
+          <h1 class="text-xl sm:text-2xl font-bold text-[#0570B6]">{{ t(isScholarshipFlow ? 'scholarship.title' : 'registration.title') }}</h1>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t(isScholarshipFlow ? 'scholarship.subtitle' : 'registration.subtitle') }}</p>
         </div>
         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <slot name="actions" />
+          <!-- A submitted scholarship application is edited from the profile page, without its request step. -->
           <button
-            v-if="canEdit && !editing"
+            v-if="canEdit && !editing && !isScholarshipFlow"
             @click="editing = true"
             class="border-2 border-sky-500 bg-white text-sky-600 hover:bg-sky-50 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.99]"
           >
@@ -28,7 +30,7 @@
 
       <div :class="{ 'read-only-form': isReadOnly }">
         <div v-if="currentStep === 1" class="space-y-6">
-          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :invalid-fields="invalidFields" />
+          <PersonalInfoCard v-model="formData.personalInfo" v-model:additional-info="formData.additionalInfo" :flow="fieldsFlow" :invalid-fields="invalidFields" />
           <FamilyDetailsCard v-model="formData.familyDetails" :personal-info="formData.personalInfo" :invalid-fields="invalidFields" />
         </div>
 
@@ -49,7 +51,18 @@
             :invalid-fields="invalidFields"
             :uploading="attachmentUploading"
             :upload-errors="attachmentUploadErrors"
+            :show-documents="variant.hasRegistrationDocuments"
             @select-file="handleAttachmentFileSelected"
+          />
+        </div>
+
+        <div v-else-if="currentStep === 5 && hasRequestStep">
+          <ScholarshipRequestCard
+            v-model="formData.scholarshipRequest"
+            :status="scholarshipRequestStatus"
+            :request-read-only="isSubmittedApplication"
+            :documents-read-only="isSubmittedApplication"
+            :invalid-fields="invalidFields"
           />
         </div>
       </div>
@@ -83,7 +96,7 @@
 
         <button
           @click="readOnlyNext"
-          :disabled="logicalCurrentStep === 5"
+          :disabled="logicalCurrentStep === totalLogicalSteps"
           class="text-white font-medium text-xs md:text-sm py-2.5 px-4 md:px-8 rounded-xl shadow-md transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-40 flex items-center gap-2 shrink-0"
           style="background-color: #34B0EE;"
         >
@@ -95,7 +108,7 @@
       <FormActionsBar
         v-else
         :current-step="logicalCurrentStep"
-        :total-steps="5"
+        :total-steps="totalLogicalSteps"
         :loading="submitting"
         @next="handleNext"
         @prev="prevStep"
@@ -124,11 +137,22 @@ import IncomeDetailsCard from './IncomeDetailsCard.vue'
 import FinancialObligationsCard from './FinancialObligationsCard.vue'
 import AdditionalDataCard from './AdditionalDataCard.vue'
 import AttachmentsCard from './AttachmentsCard.vue'
+import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
+import {
+  LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
+  SCHOLARSHIP_DECLARATION_FIELDS,
+  SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+  getRegistrationVariant,
+} from './registrationVariant'
+import { validateRegistrationStep } from './registrationValidation'
+import { createScholarshipRequestFiles, uploadScholarshipRequestFiles } from './scholarshipRequestFiles'
+import { uploadFile } from '@/utils/fileUpload'
 
 const props = defineProps({
   registrationName: { type: String, default: null },
   readOnly: { type: Boolean, default: false },
+  flow: { type: String, default: 'registration', validator: value => ['registration', 'scholarship'].includes(value) },
 })
 
 const emit = defineEmits(['submitted', 'back'])
@@ -150,13 +174,30 @@ const showValidationPopup = ref(false)
 const validationErrors = ref([])
 const invalidFields = ref([])
 const editing = ref(false)
+const scholarshipRequestStatus = ref('')
 
 const canEdit = computed(() => EDITABLE_STATUSES.includes(docMeta.value.status))
 const isReadOnly = computed(() => props.readOnly && !editing.value)
+const isScholarshipFlow = computed(() => props.flow === 'scholarship')
+// A scholarship registration has the request step wherever it is opened, the profile page included;
+// a normal registration never has it.
+const hasRequestStep = computed(() => isScholarshipFlow.value || Boolean(docMeta.value.is_scholarship))
+// Its request is already submitted, so the request step is shown read only.
+const isSubmittedApplication = computed(() => Boolean(docMeta.value.is_scholarship) && docMeta.value.status !== 'Draft')
+// A scholarship registration keeps its fields when it is edited from the normal profile page.
+const fieldsFlow = computed(() => (docMeta.value.is_scholarship ? 'scholarship' : props.flow))
+// Set by "Update Required"; from then on a scholarship registration needs the normal documents too.
+const hasBeenUpdateRequired = computed(() => Boolean(docMeta.value.last_required_update_date))
+const variant = computed(() => getRegistrationVariant(fieldsFlow.value, { hasBeenUpdateRequired: hasBeenUpdateRequired.value }))
 
-const logicalCurrentStep = computed(() =>
-  currentStep.value === 4 && subStep4.value === 2 ? 5 : currentStep.value
-)
+// Logical steps: 1-3 as numbered, 4 = additional data, 5 = registration attachments,
+// 6 = scholarship request data (scholarship flow only).
+const totalLogicalSteps = computed(() => (hasRequestStep.value ? 6 : 5))
+const logicalCurrentStep = computed(() => {
+  if (currentStep.value === 4 && subStep4.value === 2) return 5
+  if (currentStep.value === 5) return 6
+  return currentStep.value
+})
 
 const STATUS_MAP = {
   'Draft':                { key: 'statusDraft',       cls: 'border-gray-200 text-gray-600 bg-gray-50' },
@@ -188,6 +229,7 @@ const stepsList = computed(() => [
   { number: 2, label: t('registration.steps.incomeDetails') },
   { number: 3, label: t('registration.steps.financialObligations') },
   { number: 4, label: t('registration.steps.additionalData') },
+  ...(hasRequestStep.value ? [{ number: 5, label: t('scholarship.steps.request') }] : []),
 ])
 
 const formData = ref({
@@ -219,6 +261,14 @@ const formData = ref({
       statusAwareness: false,
     },
   },
+  // Kept in memory only, with its documents: it becomes the Beneficiary Request when the
+  // application is submitted.
+  scholarshipRequest: {
+    requested_amount: '',
+    request_summary: '',
+    declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false])),
+    files: createScholarshipRequestFiles(),
+  },
 })
 
 const ATTACHMENT_FIELDS = [
@@ -230,6 +280,8 @@ const ATTACHMENT_FIELDS = [
   'special_needs_certificate', 'termination_letter', 'nonmarriage_proof', 'divorce_paper',
   'partner_death_certificate', 'copy_of_court_judgment', 'id_coresidents', 'id_sponsored',
   'metrash_adress', 'additional_documents',
+  // Always sent: frappe.client.save clears every field missing from the payload, even on a normal page.
+  ...LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
 ]
 
 function onStepError(err) {
@@ -256,6 +308,25 @@ const workflowAction = createResource({
   onError: onStepError,
 })
 
+const submitScholarship = createResource({
+  url: 'afif.api.scholarship.submit_scholarship_application',
+  onError: onStepError,
+})
+
+function toDocMeta(doc) {
+  return {
+    owner: doc.owner,
+    modified: doc.modified,
+    creation: doc.creation,
+    docstatus: doc.docstatus,
+    workflow_state: doc.workflow_state,
+    status: doc.status,
+    custom_notes: doc.custom_notes,
+    is_scholarship: doc.is_scholarship,
+    last_required_update_date: doc.last_required_update_date,
+  }
+}
+
 const getDoc = createResource({
   url: 'frappe.client.get',
   onSuccess(data) {
@@ -268,15 +339,7 @@ const getDoc = createResource({
 
 function populateFromDoc(doc) {
   docName.value = doc.name
-  docMeta.value = {
-    owner: doc.owner,
-    modified: doc.modified,
-    creation: doc.creation,
-    docstatus: doc.docstatus,
-    workflow_state: doc.workflow_state,
-    status: doc.status,
-    custom_notes: doc.custom_notes,
-  }
+  docMeta.value = toDocMeta(doc)
 
   const step = doc.current_step || 0
   const nextStep = step + 1
@@ -298,6 +361,7 @@ function populateFromDoc(doc) {
     gender: doc.gender,
     date_of_birth: doc.date_of_birth,
     phone_number: doc.phone_number,
+    guardian_mobile_number: doc.guardian_mobile_number,
     partners_phone_number: doc.partners_phone_number,
     marital_status: doc.marital_status,
     partner_name: doc.partner_name,
@@ -434,7 +498,63 @@ function populateFromDoc(doc) {
   formData.value.attachments.files = existingFiles
 
   snapshot.value = cloneFormData(formData.value)
+
+  if (isSubmittedApplication.value) {
+    latestScholarshipRequest.submit({
+      doctype: 'Beneficiary Request',
+      filters: { beneficiaries: doc.name, is_scholarship: 1 },
+      fields: [
+        'name', 'status', 'requested_amount', 'request_summary',
+        ...SCHOLARSHIP_DECLARATION_FIELDS, ...SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+      ],
+      order_by: 'creation desc',
+      limit_page_length: 1,
+    })
+  }
 }
+
+const latestScholarshipRequest = createResource({
+  url: 'frappe.client.get_list',
+  onSuccess([request]) {
+    if (!request) return
+    scholarshipRequestStatus.value = request.status
+    formData.value.scholarshipRequest = {
+      isSubmitted: true,
+      requested_amount: request.requested_amount,
+      request_summary: request.request_summary,
+      declarations: Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!request[field]])),
+      files: {
+        ...Object.fromEntries(SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS.map(field => [field, request[field] || null])),
+        other_attachments: [],
+      },
+    }
+    // The other attachments have no field: they are the request's Files attached to no field.
+    otherRequestAttachments.submit({
+      doctype: 'File',
+      filters: {
+        attached_to_doctype: 'Beneficiary Request',
+        attached_to_name: request.name,
+        attached_to_field: ['is', 'not set'],
+      },
+      fields: ['file_url'],
+      order_by: 'creation asc',
+      limit_page_length: 0,
+    })
+  },
+  onError(err) {
+    error.value = err.message || t('registration.submitError')
+  },
+})
+
+const otherRequestAttachments = createResource({
+  url: 'frappe.client.get_list',
+  onSuccess(files) {
+    formData.value.scholarshipRequest.files.other_attachments = files.map(file => file.file_url)
+  },
+  onError(err) {
+    error.value = err.message || t('registration.submitError')
+  },
+})
 
 onMounted(() => {
   if (props.registrationName) {
@@ -474,12 +594,14 @@ function buildAttachmentsPayload(source) {
 
 function buildStepPayload(logicalStep, source = formData.value) {
   if (logicalStep === 1) {
-    return {
+    const payload = {
       ...source.personalInfo,
       ...source.additionalInfo,
       ...source.familyDetails,
       ben_sec_idnumber: source.personalInfo.passport_number,
     }
+    // Defaults the cards set on hidden fields (e.g. ben_sec_idtype = Passport) must not be saved.
+    return Object.fromEntries(Object.entries(payload).filter(([field]) => variant.value.isShown(field)))
   }
   if (logicalStep === 2) {
     return { ...source.incomeDetails }
@@ -570,15 +692,7 @@ async function applyAction(action) {
     doc: JSON.stringify({ doctype: 'Beneficiaries Registration', name: docName.value }),
     action,
   })
-  docMeta.value = {
-    owner: result.owner,
-    modified: result.modified,
-    creation: result.creation,
-    docstatus: result.docstatus,
-    workflow_state: result.workflow_state,
-    status: result.status,
-    custom_notes: result.custom_notes,
-  }
+  docMeta.value = toDocMeta(result)
   return result
 }
 
@@ -592,6 +706,8 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
     doctype: 'Beneficiaries Registration',
     current_step: logicalStep,
     email: session.user,
+    // frappe.client.save rebuilds the doc from this payload, so the flag must be resent every time.
+    is_scholarship: docName.value ? docMeta.value.is_scholarship : Number(isScholarshipFlow.value),
     ...(isLiveRecord ? buildMergedPayload(logicalStep) : buildFullPayload()),
   }
 
@@ -624,7 +740,8 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
 
   const result = await saveDoc.submit({ doc })
 
-  if (applyWorkflow && logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
+  // A scholarship registration is submitted together with its request by submitScholarshipApplication.
+  if (applyWorkflow && !doc.is_scholarship && logicalStep >= 5 && (!currentState || currentState === 'Draft')) {
     return applyAction('Submit')
   }
 
@@ -632,305 +749,25 @@ async function saveStep(logicalStep, { applyWorkflow = true } = {}) {
 }
 
 function validateStep(targetStep, targetSubStep4) {
-  const pi = formData.value.personalInfo
-  const ai = formData.value.additionalInfo
-  const fd = formData.value.familyDetails
-  const id = formData.value.incomeDetails
-  const fo = formData.value.financialObligations
-  const ad = formData.value.additionalData
-  const at = formData.value.attachments
-
-  const errors = []
-  const fields = []
-
-  function req(value, field, label) {
-    if (value === undefined || value === null || value === '') {
-      errors.push(label)
-      fields.push(field)
-    }
-  }
-
-  if (targetStep === 1) {
-    const isResidence = Boolean(pi.ben_nationality && pi.ben_nationality !== 'Qatar')
-    req(pi.ar_name, 'ar_name', t('registration.personalInfo.arName'))
-    if (pi.ar_name && /[a-zA-Z]/.test(pi.ar_name)) {
-      errors.push(t('registration.validation.arabicOnly'))
-      fields.push('ar_name')
-    }
-    req(pi.en_name, 'en_name', t('registration.personalInfo.enName'))
-    if (pi.en_name && /[؀-ۿ]/.test(pi.en_name)) {
-      errors.push(t('registration.validation.englishOnly'))
-      fields.push('en_name')
-    }
-    req(pi.ben_primary_idtype, 'ben_primary_idtype', t('registration.personalInfo.primaryIdType'))
-    req(pi.ben_primary_idnumber, 'ben_primary_idnumber', t('registration.personalInfo.primaryIdNumber'))
-    if (pi.ben_primary_idnumber && pi.ben_primary_idnumber.length !== 11) {
-      errors.push(t('registration.validation.idMustBe11'))
-      fields.push('ben_primary_idnumber')
-    }
-    req(pi.id_expiry_date, 'id_expiry_date', t('registration.personalInfo.idExpiryDate'))
-    req(pi.passport_number, 'passport_number', t('registration.personalInfo.passportNumber'))
-    if (pi.passport_number && !/^[A-Z0-9]{1,12}$/.test(pi.passport_number)) {
-      errors.push(t('registration.validation.passportFormat'))
-      fields.push('passport_number')
-    }
-    req(pi.ben_nationality, 'ben_nationality', t('registration.personalInfo.nationality'))
-    req(pi.gender, 'gender', t('registration.personalInfo.gender'))
-    req(pi.date_of_birth, 'date_of_birth', t('registration.personalInfo.dob'))
-    if (pi.date_of_birth) {
-      const today = new Date()
-      const birthDate = new Date(pi.date_of_birth)
-      let age = today.getFullYear() - birthDate.getFullYear()
-      const monthDiff = today.getMonth() - birthDate.getMonth()
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--
-      }
-      if (age < 21) {
-        errors.push(t('registration.validation.minimumAge'))
-        fields.push('date_of_birth')
-      }
-    }
-    req(pi.phone_number, 'phone_number', t('registration.personalInfo.phone'))
-    if (pi.phone_number && pi.phone_number.length !== 8) {
-      errors.push(t('registration.validation.phoneMustBe8'))
-      fields.push('phone_number')
-    }
-    req(pi.partners_phone_number, 'partners_phone_number', t('registration.personalInfo.partnerPhone'))
-    if (pi.partners_phone_number && pi.partners_phone_number.length !== 8) {
-      errors.push(t('registration.validation.phoneMustBe8'))
-      fields.push('partners_phone_number')
-    }
-    req(pi.marital_status, 'marital_status', t('registration.personalInfo.maritalStatus'))
-    if (pi.marital_status === 'Married') req(pi.partner_name, 'partner_name', t('registration.personalInfo.partnerName'))
-    if (pi.marital_status === 'Divorced' || pi.marital_status === 'Widowed') req(pi.expartner_name, 'expartner_name', t('registration.personalInfo.exPartnerName'))
-    if (isResidence) req(pi.visa_type, 'visa_type', t('registration.personalInfo.visaType'))
-    req(pi.residence_years, 'residence_years', t('registration.personalInfo.residenceYears'))
-
-    req(ai.ben_requestor_relationtype, 'ben_requestor_relationtype', t('registration.additionalInfo.requestorRelation'))
-    // Requestor sub-fields validation kept for reference, disabled now that
-    // ben_requestor_relationtype only allows "The same subvention requestor".
-    // if (ai.ben_requestor_relationtype === 'Relative to the subvention requestor') {
-    //   req(ai.requestor_name, 'requestor_name', t('registration.additionalInfo.requestorName'))
-    //   req(ai.requestor_idtype, 'requestor_idtype', t('registration.additionalInfo.requestorIdType'))
-    //   req(ai.requestor_idnumber, 'requestor_idnumber', t('registration.additionalInfo.requestorIdNumber'))
-    //   if (ai.requestor_idnumber && ai.requestor_idnumber.length !== 11) {
-    //     errors.push(t('registration.validation.idMustBe11'))
-    //     fields.push('requestor_idnumber')
-    //   }
-    //   req(ai.requestor_nationality, 'requestor_nationality', t('registration.additionalInfo.requestorNationality'))
-    //   req(ai.requestor_number, 'requestor_number', t('registration.additionalInfo.requestorPhone'))
-    //   if (ai.requestor_number && ai.requestor_number.length !== 8) {
-    //     errors.push(t('registration.validation.phoneMustBe8'))
-    //     fields.push('requestor_number')
-    //   }
-    // }
-    req(ai.ben_sec_idtype, 'ben_sec_idtype', t('registration.additionalInfo.secIdType'))
-    if (ai.ben_sec_idtype === 'Passport') req(ai.ben_sec_nationality, 'ben_sec_nationality', t('registration.additionalInfo.secNationality'))
-    if (ai.ben_sec_idtype === 'GCC Id') req(ai.ben_sec_gulf_country, 'ben_sec_gulf_country', t('registration.additionalInfo.gulfCountry'))
-    req(ai.currently_working, 'currently_working', t('registration.additionalInfo.currentlyWorking'))
-    if (ai.currently_working === 'Yes') {
-      req(ai.employer_name, 'employer_name', t('registration.additionalInfo.employerName'))
-      req(ai.employer_address, 'employer_address', t('registration.additionalInfo.employerAddress'))
-      req(ai.occupation, 'occupation', t('registration.additionalInfo.occupation'))
-    }
-    if (isResidence && ai.currently_working === 'No') req(ai.worked_before, 'worked_before', t('registration.additionalInfo.workedBefore'))
-    req(ai.education_level, 'education_level', t('registration.additionalInfo.educationLevel'))
-    if (pi.ben_nationality !== 'Qatar') req(ai.sponsor_name, 'sponsor_name', t('registration.additionalInfo.sponsorName'))
-
-    req(fd.family_size, 'family_size', t('registration.familyDetails.familySize'))
-    if (fd.ben_dependent_count === undefined || fd.ben_dependent_count === null || fd.ben_dependent_count === '') {
-      errors.push(t('registration.familyDetails.dependentCount'))
-      fields.push('ben_dependent_count')
-    }
-    req(fd.family_visa_type, 'family_visa_type', t('registration.familyDetails.familyVisa'))
-    if (isResidence) {
-      req(fd.visa_dependent, 'visa_dependent', t('registration.familyDetails.otherDependents'))
-      if (fd.visa_dependent === 'Yes') req(fd.names_and_relation_to_sponsored, 'names_and_relation_to_sponsored', t('registration.familyDetails.namesRelation'))
-    }
-    req(fd.have_children, 'have_children', t('registration.familyDetails.haveChildren'))
-    if (pi.marital_status === 'Married') req(fd.partner_working, 'partner_working', t('registration.familyDetails.partnerWorking'))
-    if (fd.have_children === 'Yes') {
-      req(fd.children_above_eighteen, 'children_above_eighteen', t('registration.familyDetails.childrenAbove18'))
-      req(fd.children_in_school, 'children_in_school', t('registration.familyDetails.childrenInSchool'))
-      if (fd.children_in_school === 'Yes') {
-        req(fd.children_school, 'children_school', t('registration.familyDetails.childrenSchoolType'))
-        req(fd.children_school_information, 'children_school_information', t('registration.familyDetails.childrenSchoolInfo'))
-      }
-      req(fd.children_special_needs, 'children_special_needs', t('registration.familyDetails.childrenSpecialNeeds'))
-    }
-    req(fd.afif_charity_assistance, 'afif_charity_assistance', t('registration.familyDetails.afifAssistance'))
-    if (fd.afif_charity_assistance === 'Yes') req(fd.affif_assistance, 'affif_assistance', t('registration.familyDetails.afifAssistanceAmount'))
-  }
-
-  if (targetStep === 2) {
-    const incomeFields = ['ben_income', 'family_income', 'family_extra', 'children_income', 'private_income', 'stock_income', 'rent_income']
-    if (!incomeFields.some(f => id[f] == 1)) {
-      errors.push(t('registration.validation.atLeastOneIncome'))
-    }
-    const incomeSources = [
-      { field: 'ben_income',      periodicField: 'ben_periodic_type',           periodicLabel: t('registration.incomeDetails.benPeriodicLabel'),      amountField: 'salary_amount',           amountLabel: t('registration.incomeDetails.salaryAmount'),    noteField: 'benficiary_note',     noteLabel: t('registration.incomeDetails.benNoteLabel') },
-      { field: 'family_income',   periodicField: 'family_periodic_type',        periodicLabel: t('registration.incomeDetails.familyPeriodicLabel'),   amountField: 'family_income_amount',    amountLabel: t('registration.incomeDetails.familyAmount'),    noteField: 'family_note',         noteLabel: t('registration.incomeDetails.familyNoteLabel') },
-      { field: 'family_extra',    periodicField: 'extra_periodic_type',         periodicLabel: t('registration.incomeDetails.extraPeriodicLabel'),    amountField: 'family_extra_salary',     amountLabel: t('registration.incomeDetails.extraAmount'),     noteField: 'family_extra_note',   noteLabel: t('registration.incomeDetails.extraNoteLabel') },
-      { field: 'children_income', periodicField: 'children_periodic_type',      periodicLabel: t('registration.incomeDetails.childrenPeriodicLabel'), amountField: 'family_children_salary',  amountLabel: t('registration.incomeDetails.childrenAmount'),  noteField: 'children_note',       noteLabel: t('registration.incomeDetails.childrenNoteLabel') },
-      { field: 'private_income',  periodicField: 'private_business_periodicity',periodicLabel: t('registration.incomeDetails.privatePeriodicLabel'),  amountField: 'private_business_amount', amountLabel: t('registration.incomeDetails.privateAmount'),   noteField: 'private_note',        noteLabel: t('registration.incomeDetails.privateNoteLabel') },
-      { field: 'stock_income',    periodicField: 'stock_market_periodicity',    periodicLabel: t('registration.incomeDetails.stockPeriodicLabel'),    amountField: 'stock_market_income',     amountLabel: t('registration.incomeDetails.stockAmount'),     noteField: 'stock_market_note',   noteLabel: t('registration.incomeDetails.stockNoteLabel') },
-      { field: 'rent_income',     periodicField: 'rent_periodic_type',          periodicLabel: t('registration.incomeDetails.rentPeriodicLabel'),     amountField: 'rent_income_amount',      amountLabel: t('registration.incomeDetails.rentAmount'),      noteField: 'rent_note',           noteLabel: t('registration.incomeDetails.rentNoteLabel') },
-    ]
-    for (const src of incomeSources) {
-      if (id[src.field] == 1) {
-        req(id[src.periodicField], src.periodicField, src.periodicLabel)
-        req(id[src.amountField], src.amountField, src.amountLabel)
-        req(id[src.noteField], src.noteField, src.noteLabel)
-      }
-    }
-  }
-
-  if (targetStep === 3) {
-    const obligationFields = ['family_obligation', 'rent_obligation', 'treatment_obligation', 'debt_obligation', 'tuition_obligation']
-    if (!obligationFields.some(f => fo[f] == 1)) {
-      errors.push(t('registration.validation.atLeastOneObligation'))
-    }
-    const obligationSources = [
-      { field: 'family_obligation',   subFields: [
-        { name: 'family_obligations_installments_count', label: t('registration.financialObligations.familyInstallmentsLabel'), positive: true },
-        { name: 'family_obligation_periodicity',         label: t('registration.financialObligations.familyPeriodicLabel') },
-        { name: 'family_expenses',                       label: t('registration.financialObligations.familyAmountLabel') },
-        { name: 'family_obligations_note',               label: t('registration.financialObligations.familyNoteLabel') },
-      ]},
-      { field: 'rent_obligation',     subFields: [
-        { name: 'rent_obligation_periodicity',           label: t('registration.financialObligations.rentPeriodicLabel') },
-        { name: 'rent_obligations_installments_count',   label: t('registration.financialObligations.rentInstallmentsLabel'), positive: true },
-        { name: 'rent_amount',                           label: t('registration.financialObligations.rentAmountLabel') },
-        { name: 'rent_obligations_note',                 label: t('registration.financialObligations.rentNoteLabel') },
-      ]},
-      { field: 'treatment_obligation',subFields: [
-        { name: 'treatment_obligation_periodicity',          label: t('registration.financialObligations.treatmentPeriodicLabel') },
-        { name: 'treatment_obligation_installments_count',   label: t('registration.financialObligations.treatmentInstallmentsLabel'), positive: true },
-        { name: 'treatment_amount',                          label: t('registration.financialObligations.treatmentAmountLabel') },
-        { name: 'treatment_obligations_note',                label: t('registration.financialObligations.treatmentNoteLabel') },
-      ]},
-      { field: 'debt_obligation',     subFields: [
-        { name: 'debt_obligation_periodicity',           label: t('registration.financialObligations.debtPeriodicLabel') },
-        { name: 'debt_obligations_installments_count',   label: t('registration.financialObligations.debtInstallmentsLabel'), positive: true },
-        { name: 'bank_payments_amount',                  label: t('registration.financialObligations.debtAmountLabel') },
-        { name: 'debt_obligations_note',                 label: t('registration.financialObligations.debtNoteLabel') },
-      ]},
-      { field: 'tuition_obligation',  subFields: [
-        { name: 'tuition_obligation_periodicity',          label: t('registration.financialObligations.tuitionPeriodicLabel') },
-        { name: 'tuition_obligation_installments_count',   label: t('registration.financialObligations.tuitionInstallmentsLabel'), positive: true },
-        { name: 'tuition_obligations_note',                label: t('registration.financialObligations.tuitionNoteLabel') },
-        { name: 'tuition_amount',                          label: t('registration.financialObligations.tuitionAmountLabel') },
-      ]},
-    ]
-    for (const src of obligationSources) {
-      if (fo[src.field] == 1) {
-        for (const f of src.subFields) {
-          req(fo[f.name], f.name, f.label)
-          if (f.positive && fo[f.name] !== undefined && fo[f.name] !== null && fo[f.name] !== '' && Number(fo[f.name]) <= 0) {
-            errors.push(t('registration.validation.mustBeGreaterThanZero'))
-            fields.push(f.name)
-          }
-        }
-      }
-    }
-  }
-
-  if (targetStep === 4 && targetSubStep4 === 1) {
-    req(ad.housing_type, 'housing_type', t('registration.additionalData.housingType'))
-    req(ad.housing_city, 'housing_city', t('registration.additionalData.city'))
-    req(ad.zone_number, 'zone_number', t('registration.additionalData.zoneNumber'))
-    req(ad.street_number, 'street_number', t('registration.additionalData.streetNumber'))
-    req(ad.unit_number, 'unit_number', t('registration.additionalData.unitNumber'))
-    req(ad.building_number, 'building_number', t('registration.additionalData.buildingNumber'))
-    req(ad.housing_description, 'housing_description', t('registration.additionalData.housingDescription'))
-    req(ad.has_afif_employee_relation, 'has_afif_employee_relation', t('registration.additionalData.afifRelation'))
-    req(ad.has_housemates, 'has_housemates', t('registration.additionalData.housemates'))
-    req(ad.has_bank_loans, 'has_bank_loans', t('registration.additionalData.bankLoans'))
-    if (ad.has_bank_loans === 'Yes') req(ad.court_tried, 'court_tried', t('registration.additionalData.courtTried'))
-    req(ad.has_other_info, 'has_other_info', t('registration.additionalData.otherInfo'))
-    if (ad.has_other_info === 'Yes') {
-      req(ad.additional_notes, 'additional_notes', t('registration.additionalData.additionalNotes'))
-      if (ad.additional_notes && ad.additional_notes.length > 120) {
-        errors.push(t('registration.validation.additionalInfoTooLong'))
-        fields.push('additional_notes')
-      }
-    }
-  }
-
-  if (targetStep === 4 && targetSubStep4 === 2) {
-    const files = at.files
-    const lc = at.legalClaims
-    const isMarried       = pi.marital_status === 'Married'
-    const isDivorced      = pi.marital_status === 'Divorced'
-    const isWidowed       = pi.marital_status === 'Widowed'
-    const isResidence     = pi.visa_type === 'Residence'
-    const isQatari        = pi.ben_nationality === 'Qatar'
-    const hasChildren     = fd.have_children === 'Yes'
-    const childrenAbove18 = fd.children_above_eighteen === 'Yes'
-    const childrenSchool  = fd.children_in_school === 'Yes'
-    const childSpecial    = fd.children_special_needs === 'Yes'
-    const familyResidence = fd.family_visa_type === 'Residence'
-    const partnerWorking  = fd.partner_working === 'Yes'
-    const visaDependent   = fd.visa_dependent === 'Yes'
-    const working         = ai.currently_working === 'Yes'
-    const notWorking      = ai.currently_working === 'No'
-    const workedBefore    = ai.worked_before === 'Yes'
-    const hasHousemates   = ad.has_housemates === 'Yes'
-    const hasBankLoans    = ad.has_bank_loans === 'Yes'
-    const courtTried      = ad.court_tried === 'Yes'
-    const isRental        = ad.housing_type === 'Rental'
-    const isOwned         = ad.housing_type === 'Private Ownership'
-
-    const requiredDocs = [
-      { id: 'qid',                            labelKey: 'registration.attachments.docs.qid',                  show: true },
-      { id: 'passport',                       labelKey: 'registration.attachments.docs.passport',             show: true },
-      { id: 'wife_id',                        labelKey: 'registration.attachments.docs.wifeId',               show: isMarried },
-      { id: 'wife_passport',                  labelKey: 'registration.attachments.docs.wifePassport',         show: isMarried },
-      { id: 'children_identification',        labelKey: 'registration.attachments.docs.childrenId',          show: hasChildren },
-      { id: 'rent_contract',                  labelKey: 'registration.attachments.docs.rentContract',        show: isRental },
-      { id: 'property_deed',                  labelKey: 'registration.attachments.docs.property',            show: isOwned },
-      { id: 'bank_statement',                 labelKey: 'registration.attachments.docs.bankStatement',       show: isResidence },
-      { id: 'wife_bank_statement',            labelKey: 'registration.attachments.docs.wifeBankStatement',   show: isMarried && familyResidence },
-      { id: 'wife_credit_certificate',        labelKey: 'registration.attachments.docs.wifeCredit',          show: isMarried && familyResidence },
-      { id: 'beneficiary_credit_certificate', labelKey: 'registration.attachments.docs.creditBureau',        show: isResidence },
-      { id: 'children_bank_statement',        labelKey: 'registration.attachments.docs.childrenBankStatement',show: familyResidence && childrenAbove18 },
-      { id: 'children_credit_information',    labelKey: 'registration.attachments.docs.childrenCredit',      show: familyResidence && childrenAbove18 },
-      { id: 'social_security_certificate',    labelKey: 'registration.attachments.docs.socialSecurityCert',  show: isQatari && notWorking },
-      { id: 'partner_work_certificate',       labelKey: 'registration.attachments.docs.partnerWorkCert',     show: partnerWorking },
-      { id: 'employment_certificate',         labelKey: 'registration.attachments.docs.employmentCert',      show: working },
-      { id: 'vehicle_certificate',            labelKey: 'registration.attachments.docs.trafficCar',          show: isResidence },
-      { id: 'iban_picture',                   labelKey: 'registration.attachments.docs.ibanPhoto',           show: isResidence },
-      { id: 'children_schooling_proof',       labelKey: 'registration.attachments.docs.childrenSchoolProof', show: childrenSchool },
-      { id: 'special_needs_certificate',      labelKey: 'registration.attachments.docs.specialNeedsCert',    show: childSpecial },
-      { id: 'termination_letter',             labelKey: 'registration.attachments.docs.terminationLetter',   show: notWorking && workedBefore },
-      { id: 'nonmarriage_proof',              labelKey: 'registration.attachments.docs.nonmarriageProof',    show: isDivorced || isWidowed },
-      { id: 'divorce_paper',                  labelKey: 'registration.attachments.docs.divorcePaper',        show: isDivorced },
-      { id: 'partner_death_certificate',      labelKey: 'registration.attachments.docs.partnerDeathCert',    show: isWidowed },
-      { id: 'copy_of_court_judgment',         labelKey: 'registration.attachments.docs.courtJudgment',       show: hasBankLoans && courtTried },
-      { id: 'id_coresidents',                 labelKey: 'registration.attachments.docs.coresidentsId',       show: hasHousemates },
-      { id: 'id_sponsored',                   labelKey: 'registration.attachments.docs.sponsoredId',         show: visaDependent },
-      { id: 'metrash_adress',                 labelKey: 'registration.attachments.docs.metrashAddress',      show: true },
-    ]
-    for (const doc of requiredDocs.filter(d => d.show)) {
-      if (!files[doc.id]) { errors.push(t(doc.labelKey)); fields.push(`attach_${doc.id}`) }
-    }
-    if (!lc.correctData)      { errors.push('الإقرار بصحة البيانات');           fields.push('claim_correctData') }
-    if (!lc.verificationRight) { errors.push('الإقرار بحق التحقق من الأهلية'); fields.push('claim_verificationRight') }
-    if (!lc.statusAwareness)   { errors.push('الإقرار بطبيعة التسجيل');         fields.push('claim_statusAwareness') }
-  }
-
-  return { errors, fields }
+  return validateRegistrationStep({
+    formData: formData.value,
+    step: targetStep,
+    subStep4: targetSubStep4,
+    flow: fieldsFlow.value,
+    hasBeenUpdateRequired: hasBeenUpdateRequired.value,
+    t,
+  })
 }
 
 function logicalStepArgs(logicalStep) {
   if (logicalStep === 4) return [4, 1]
   if (logicalStep === 5) return [4, 2]
+  if (logicalStep === 6) return [5, undefined]
   return [logicalStep, undefined]
 }
 
 function validateUpToCurrentStep() {
-  const targetLogical = Math.max(maxStepReached.value, logicalCurrentStep.value)
-  for (let logicalStep = 1; logicalStep <= targetLogical; logicalStep++) {
+  for (let logicalStep = 1; logicalStep <= logicalCurrentStep.value; logicalStep++) {
     const [step, subStep4Arg] = logicalStepArgs(logicalStep)
     const result = validateStep(step, subStep4Arg)
     if (result.errors.length > 0) {
@@ -948,15 +785,15 @@ function validateCurrentStepOnly() {
 async function handleNext() {
   error.value = ''
 
-  const isFinalStep = currentStep.value === 4 && subStep4.value === 2
-  if (isFinalStep && pendingAttachmentOps.size) {
-    
+  const isAttachmentsStep = currentStep.value === 4 && subStep4.value === 2
+  const isScholarshipRequestStep = currentStep.value === 5
+  if (isAttachmentsStep && pendingAttachmentOps.size) {
     submitting.value = true
     await waitForPendingAttachmentOps()
     submitting.value = false
   }
   
-  const validation = isFinalStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
+  const validation = isAttachmentsStep || isScholarshipRequestStep ? validateUpToCurrentStep() : validateCurrentStepOnly()
 
   const { errors, fields, step: invalidStep, subStep4: invalidSubStep4 } = validation
   if (errors.length > 0) {
@@ -973,6 +810,12 @@ async function handleNext() {
   invalidFields.value = []
   submitting.value = true
 
+  if (isScholarshipRequestStep) {
+    await (isSubmittedApplication.value ? finishScholarshipRegistrationEdit() : submitScholarshipApplication())
+    submitting.value = false
+    return
+  }
+
   const wasLiveRecord = Boolean(docName.value) && docMeta.value.status !== 'Draft' && snapshot.value
   function syncSnapshot() {
     if (wasLiveRecord) {
@@ -984,38 +827,29 @@ async function handleNext() {
 
   let data
   try {
-    data = await saveStep(logicalCurrentStep.value, { applyWorkflow: !isFinalStep })
+    data = await saveStep(logicalCurrentStep.value, { applyWorkflow: !isAttachmentsStep })
   } catch (e) {
     return
   }
   docName.value = data.name
-  docMeta.value = {
-    owner: data.owner,
-    modified: data.modified,
-    creation: data.creation,
-    docstatus: data.docstatus,
-    workflow_state: data.workflow_state,
-    status: data.status,
-    custom_notes: data.custom_notes,
-  }
+  docMeta.value = toDocMeta(data)
   syncSnapshot()
 
-  if (isFinalStep) {
+  if (isAttachmentsStep) {
     try {
       const failedUploads = await uploadAllFiles()
-      const finalData = await saveStep(logicalCurrentStep.value, { applyWorkflow: failedUploads.length === 0 })
-      docMeta.value = {
-        owner: finalData.owner,
-        modified: finalData.modified,
-        creation: finalData.creation,
-        docstatus: finalData.docstatus,
-        workflow_state: finalData.workflow_state,
-        status: finalData.status,
-        custom_notes: finalData.custom_notes,
-      }
+      // With a request step, the workflow action (e.g. Review) waits for that last step. The
+      // updated_status hook still moves a complete registration on save, as in the normal flow.
+      const finalData = await saveStep(logicalCurrentStep.value, {
+        applyWorkflow: failedUploads.length === 0 && !hasRequestStep.value,
+      })
+      docMeta.value = toDocMeta(finalData)
       syncSnapshot()
       if (failedUploads.length > 0) {
         error.value = `${t('registration.submitError')}: ${failedUploads.join(', ')}`
+      } else if (hasRequestStep.value) {
+        currentStep.value = 5
+        maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
       } else {
         emit('submitted', finalData.name)
       }
@@ -1035,8 +869,46 @@ async function handleNext() {
   maxStepReached.value = Math.max(maxStepReached.value, logicalCurrentStep.value)
 }
 
+// Saves the edited registration, and applies the same workflow action the attachments step applies
+// for a normal registration (e.g. Review for a Not Accepted one).
+async function finishScholarshipRegistrationEdit() {
+  try {
+    const data = await saveStep(5)
+    docMeta.value = toDocMeta(data)
+    updateSnapshotForStep(5)
+    emit('submitted', data.name)
+  } catch (e) {
+    error.value ||= e.message || t('registration.submitError')
+  }
+}
+
+async function submitScholarshipApplication() {
+  const sr = formData.value.scholarshipRequest
+  try {
+    const uploadedFiles = await uploadScholarshipRequestFiles(sr.files)
+    await submitScholarship.submit({
+      registration: docName.value,
+      request: {
+        requested_amount: sr.requested_amount,
+        request_summary: sr.request_summary,
+        ...Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, sr.declarations[field] ? 1 : 0])),
+        ...uploadedFiles,
+      },
+    })
+  } catch (e) {
+    error.value ||= e.message || t('registration.submitError')
+    return
+  }
+  emit('submitted', docName.value)
+}
+
 function prevStep() {
   error.value = ''
+  if (currentStep.value === 5) {
+    currentStep.value = 4
+    subStep4.value = 2
+    return
+  }
   if (currentStep.value === 4 && subStep4.value === 2) {
     subStep4.value = 1
     return
@@ -1047,13 +919,16 @@ function prevStep() {
 function readOnlyNext() {
   if (currentStep.value === 4 && subStep4.value === 1) {
     subStep4.value = 2
-  } else if (currentStep.value < 4) {
+  } else if (currentStep.value < 4 || hasRequestStep.value) {
     currentStep.value++
   }
 }
 
 function readOnlyPrev() {
-  if (currentStep.value === 4 && subStep4.value === 2) {
+  if (currentStep.value === 5) {
+    currentStep.value = 4
+    subStep4.value = 2
+  } else if (currentStep.value === 4 && subStep4.value === 2) {
     subStep4.value = 1
   } else if (currentStep.value > 1) {
     currentStep.value--
@@ -1067,7 +942,7 @@ async function uploadAllFiles() {
     if (fieldname === 'additional_attachments') continue
     if (file instanceof File) {
       try {
-        const fileUrl = await uploadFile(file, docName.value, fieldname)
+        const fileUrl = await uploadRegistrationFile(file, docName.value, fieldname)
         formData.value.attachments.files[fieldname] = fileUrl
       } catch (e) {
         failures.push(e.message || file.name)
@@ -1079,7 +954,7 @@ async function uploadAllFiles() {
   for (let i = 0; i < extras.length; i++) {
     if (extras[i] instanceof File) {
       try {
-        extras[i] = await uploadFile(extras[i], docName.value, 'additional_attachments')
+        extras[i] = await uploadRegistrationFile(extras[i], docName.value, 'additional_attachments')
       } catch (e) {
         failures.push(e.message || extras[i].name)
       }
@@ -1089,27 +964,14 @@ async function uploadAllFiles() {
   return failures
 }
 
-async function uploadFile(file, docName, fieldname) {
-  const fd = new FormData()
-  fd.append('file', file, file.name)
-  fd.append('is_private', '0')
-  fd.append('folder', 'Home/Attachments')
-  fd.append('doctype', 'Beneficiaries Registration')
-  fd.append('docname', docName)
-  fd.append('fieldname', fieldname)
-
-  const headers = { 'X-Frappe-Site-Name': window.location.hostname }
-  if (window.csrf_token && window.csrf_token !== '{{ csrf_token }}') {
-    headers['X-Frappe-CSRF-Token'] = window.csrf_token
-  }
-
-  const res = await fetch('/api/method/upload_file', { method: 'POST', headers, body: fd })
-  if (!res.ok) {
-    if (res.status === 413) throw new Error(`${t('registration.attachments.fileTooLarge')}: ${file.name}`)
-    throw new Error(`${t('registration.submitError')}: ${file.name}`)
-  }
-  const data = await res.json()
-  return data.message.file_url
+function uploadRegistrationFile(file, docName, fieldname) {
+  return uploadFile(file, {
+    // The registration documents stay public (mentor's decision).
+    is_private: '0',
+    doctype: 'Beneficiaries Registration',
+    docname: docName,
+    fieldname,
+  })
 }
 
 
@@ -1120,15 +982,7 @@ function queueAttachmentSave() {
   
   const run = attachmentSaveChain.then(async () => {
     const data = await saveStep(5, { applyWorkflow: false })
-    docMeta.value = {
-      owner: data.owner,
-      modified: data.modified,
-      creation: data.creation,
-      docstatus: data.docstatus,
-      workflow_state: data.workflow_state,
-      status: data.status,
-      custom_notes: data.custom_notes,
-    }
+    docMeta.value = toDocMeta(data)
     if (docMeta.value.status !== 'Draft' && snapshot.value) {
       updateSnapshotForStep(5)
     } else {
@@ -1163,7 +1017,7 @@ async function uploadAndSaveAttachment(id, file) {
 
   attachmentUploading.value = { ...attachmentUploading.value, [id]: true }
   try {
-    const fileUrl = await uploadFile(file, docName.value, id)
+    const fileUrl = await uploadRegistrationFile(file, docName.value, id)
     formData.value.attachments.files = { ...formData.value.attachments.files, [id]: fileUrl }
 
     await queueAttachmentSave()
@@ -1190,5 +1044,10 @@ async function uploadAndSaveAttachment(id, file) {
 
 .read-only-form :deep(button) {
   opacity: 0.5;
+}
+
+/* The submitted scholarship documents stay downloadable while the form is read only. */
+.read-only-form :deep(.document-link) {
+  pointer-events: auto;
 }
 </style>

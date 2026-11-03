@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 import re
 import requests
 import json
@@ -110,6 +111,10 @@ def link_user(doc, method):
 
 
 def get_missing_required_attachments(doc):
+    # A scholarship applicant uploads their documents with each scholarship request instead, until
+    # "Update Required" asks them for the normal registration documents.
+    if doc.is_scholarship and not doc.last_required_update_date:
+        return []
 
     is_married = doc.marital_status == "Married"
     is_divorced = doc.marital_status == "Divorced"
@@ -419,10 +424,9 @@ def create_new_beneficiary(doc, method):
 
                     if not doc.ben_id and response_ben.json().get('rs').get('first') == 'SAVED':
                         ben_id = response_ben.json().get('rs').get('second').get('id')
-                        query = f"""update `tabBeneficiaries Registration` set `ben_id`={ben_id}
-                            where name="{doc.name}" """
-                        frappe.db.sql(query)
-                        frappe.db.commit()
+                        # No commit here: a scholarship approval accepts the registration and approves its
+                        # request in one transaction, so a later failure must roll both back.
+                        frappe.db.set_value("Beneficiaries Registration", doc.name, "ben_id", ben_id)
 
                 else:
                     msg = f"Beneficiary response fail: {response_ben.json()}"
@@ -708,7 +712,7 @@ def get_beneficiary_income_set(doc):
                 "notes": doc.family_extra_note
             }
         )
-    
+
     if doc.private_income == 1:
         beneficiary_income_set.append(
             {
@@ -745,43 +749,50 @@ def get_beneficiary_income_set(doc):
 
 
 
+def check_request_cooldowns(last_created_request) -> None:
+    if last_created_request.rejected_date:
+        if now_datetime() < last_created_request.rejected_date + relativedelta(months=3):
+            frappe.throw(_("Three months must pass since the last rejected request before a new one can be created."))
+
+    elif last_created_request.approved_for_aid_date:
+        if now_datetime() < last_created_request.approved_for_aid_date + relativedelta(months=6):
+            frappe.throw(_("Six months must pass since the last approved request before a new one can be created."))
+
+
+class AccountRestrictedError(frappe.PermissionError):
+    pass
+
+
 def before_insert_request(doc, method):
     frappe.log_error("before_insert_request")
     user = frappe.session.user
+
+    # submit_scholarship_application links the request to the registration it submits in the same
+    # transaction, so that registration is not Accepted yet. Clients cannot set doc.flags.
+    if doc.flags.is_new_scholarship_applicant:
+        doc.request_date = now_datetime()
+        return
+
     if frappe.get_value("Beneficiaries Registration", {"user": user}, "workflow_state") == "Accepted":
         beneficiary = frappe.get_value("Beneficiaries Registration", {"user": user}, "name")
+
+        registration = frappe.db.get_value(
+            "Beneficiaries Registration", beneficiary, ["is_account_restricted", "is_scholarship"], as_dict=True
+        )
+        if registration.is_account_restricted:
+            raise AccountRestrictedError(_("Your account has been restricted because the scholarship has ended."))
 
         try:
             last_created_request = frappe.get_last_doc("Beneficiary Request", filters={"beneficiaries": beneficiary})
         except frappe.DoesNotExistError:
             last_created_request = None
 
-        # if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-        #     frappe.throw("A previous request is pending review.")
-        # else:
-        #     # set request ben id
-        #     doc.beneficiaries = beneficiary
-        #     doc.request_date = now_datetime()
-
-        if last_created_request:
+        # A scholarship student may file several requests while earlier ones are still in review (P15-1).
+        if last_created_request and not registration.is_scholarship:
             if last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-                frappe.throw("A previous request is pending review.")
+                frappe.throw(_("A previous request is pending review."))
 
-            elif last_created_request.rejected_date:
-                # Calculate the exact date 3 months after the rejected_date
-                three_months_later = last_created_request.rejected_date + relativedelta(months=3)
-                
-                # Compare with the current datetime
-                if now_datetime() < three_months_later:
-                    frappe.throw("Three months must pass since the last rejected request before a new one can be created.")
-
-            elif last_created_request.approved_for_aid_date:
-                # Calculate the exact date 6 months after the approved_for_aid_date
-                six_months_later = last_created_request.approved_for_aid_date + relativedelta(months=6)
-
-                # Compare with the current datetime
-                if now_datetime() < six_months_later:
-                    frappe.throw("Six months must pass since the last approved request before a new one can be created.")
+            check_request_cooldowns(last_created_request)
 
         # set request ben id
         doc.beneficiaries = beneficiary
@@ -949,7 +960,12 @@ def new_subvention_request(doc, method):
 
 
 
+class UnmappedAidLookupError(frappe.ValidationError):
+    pass
+
+
 def get_aid_lookup_parent_id(doc):
+    aid_lookup_parent_id = aid_lookup_id = None
     if doc.request_category == "Medical Assistance":
         aid_lookup_parent_id = 10020
         if doc.medical_assistance == "Medication":
@@ -1004,7 +1020,8 @@ def get_aid_lookup_parent_id(doc):
              aid_lookup_id = 1001030
         elif doc.educational_assistance == "Educational Equipment":
              aid_lookup_id = 1001040
-        elif doc.educational_assistance == "Other Educational Assistance":
+        # Temporarily sent as Other Educational Assistance until Sanadi has a Scholarship code (plan OQ6).
+        elif doc.educational_assistance in ("Other Educational Assistance", "Scholarship"):
              aid_lookup_id = 1001050
 
     elif doc.request_category == "Family Assistance":
@@ -1082,6 +1099,14 @@ def get_aid_lookup_parent_id(doc):
              aid_lookup_id = 3002070
         elif doc.awareness_assistance == "Other Awareness Assistance":
              aid_lookup_id = 3002080
+
+    if not (aid_lookup_parent_id and aid_lookup_id):
+        frappe.throw(
+            frappe._("No Sanadi aid lookup id is mapped for this {0} subcategory.").format(
+                frappe._(doc.request_category or "")
+            ),
+            UnmappedAidLookupError,
+        )
 
     return aid_lookup_parent_id, aid_lookup_id
 

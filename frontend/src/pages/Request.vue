@@ -78,6 +78,7 @@
                 <th class="p-4">{{ t('myRequests.columns.serial') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.beneficiary') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.type') }}</th>
+                <th class="p-4">{{ t('myRequests.columns.assistanceType') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.date') }}</th>
                 <th class="p-4">{{ t('myRequests.columns.status') }}</th>
               </tr>
@@ -93,6 +94,7 @@
                 <td class="p-4 font-mono text-xs" dir="ltr">{{ req.request_fullserial || req.name }}</td>
                 <td class="p-4">{{ beneficiaryDisplayName }}</td>
                 <td class="p-4">{{ translateCategory(req.request_category) }}</td>
+                <td class="p-4">{{ translateAssistanceType(req) }}</td>
                 <td class="p-4 font-mono text-xs" dir="ltr">{{ formatDate(req.request_date) }}</td>
                 <td class="p-4">
                   <span :class="getReqStatusClass(req.status)" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium">
@@ -152,6 +154,9 @@ import { useLanguage } from '@/composables/useLanguage'
 import bgImg from '@/assets/images/background.png'
 import BeneficiaryRequest from '@/components/request/BeneficiaryRequest.vue'
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess.vue'
+import { useAccountStatus } from '@/composables/useAccountStatus'
+import { SUBCATEGORY_FIELDS, getAssistanceTypeKey } from '@/components/request/requestCategories'
+import { getRequestBlockReason } from '@/components/request/requestEligibility'
 
 const { t, isRTL } = useLanguage()
 
@@ -160,9 +165,10 @@ const beneficiaryName = ref('')
 const beneficiaryDisplayName = ref('')
 const requests = ref([])
 const selectedRequestName = ref('')
+const isAccepted = ref(false)
+const isScholarship = ref(false)
 
 const PENDING_STATUSES = ['Pending Supervisor Approval', 'Pending Specialist Approval', 'Saved']
-const FINAL_STATUSES = ['Rejected by Supervisor', 'Rejected', 'Approved', 'Approved For Aid']
 
 const CATEGORY_KEYS = {
   'Medical Assistance': 'request.categories.medical',
@@ -174,68 +180,29 @@ const CATEGORY_KEYS = {
   'Awareness Assistance': 'request.categories.awareness',
 }
 
-const canCreateRequest = computed(() => {
-  if (!requests.value.length) return true
+const { isRestricted } = useAccountStatus()
 
-  const last = requests.value[0]
-
-  if (!FINAL_STATUSES.includes(last.status)) return false
-
-  if (last.rejected_date) {
-    const rejectedDate = new Date(last.rejected_date)
-    const threeMonthsLater = new Date(rejectedDate)
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
-    if (new Date() < threeMonthsLater) return false
-  }
-
-  if (last.approved_for_aid_date) {
-    const approvedDate = new Date(last.approved_for_aid_date)
-    const sixMonthsLater = new Date(approvedDate)
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
-    if (new Date() < sixMonthsLater) return false
-  }
-
-  return true
-})
-
-const disabledReason = computed(() => {
-  if (!requests.value.length) return ''
-
-  const last = requests.value[0]
-
-  if (!FINAL_STATUSES.includes(last.status)) {
-    return t('myRequests.disabledReasons.pending')
-  }
-
-  if (last.rejected_date) {
-    const rejectedDate = new Date(last.rejected_date)
-    const threeMonthsLater = new Date(rejectedDate)
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
-    if (new Date() < threeMonthsLater) {
-      return t('myRequests.disabledReasons.cooldownRejected')
-    }
-  }
-
-  if (last.approved_for_aid_date) {
-    const approvedDate = new Date(last.approved_for_aid_date)
-    const sixMonthsLater = new Date(approvedDate)
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
-    if (new Date() < sixMonthsLater) {
-      return t('myRequests.disabledReasons.cooldownApproved')
-    }
-  }
-
-  return ''
-})
+const blockReason = computed(() =>
+  getRequestBlockReason(requests.value, {
+    isAccepted: isAccepted.value,
+    isScholarship: isScholarship.value,
+    isRestricted: isRestricted.value,
+  }),
+)
+const canCreateRequest = computed(() => !blockReason.value)
+const disabledReason = computed(() => (blockReason.value ? t(`myRequests.disabledReasons.${blockReason.value}`) : ''))
 
 const myRegistration = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
-    if (!rows.length || rows[0].status !== 'Accepted') {
+    if (!rows.length) {
       view.value = 'blocked'
       return
     }
 
+    // A scholarship applicant has a request before being accepted, so the list is shown, read only.
+    isAccepted.value = rows[0].status === 'Accepted'
+    isScholarship.value = Boolean(rows[0].is_scholarship)
     beneficiaryName.value = rows[0].name
     beneficiaryDisplayName.value = rows[0].ar_name || rows[0].en_name || ''
     fetchRequests()
@@ -249,11 +216,11 @@ const myRequests = createResource({
   url: 'frappe.client.get_list',
   onSuccess(rows) {
     requests.value = rows
-    view.value = 'list'
+    view.value = isAccepted.value || rows.length ? 'list' : 'blocked'
   },
   onError() {
     requests.value = []
-    view.value = 'list'
+    view.value = isAccepted.value ? 'list' : 'blocked'
   },
 })
 
@@ -263,7 +230,7 @@ function fetchRequests() {
     filters: { beneficiaries: beneficiaryName.value },
     fields: [
       'name', 'request_fullserial', 'request_category', 'request_date',
-      'status', 'rejected_date', 'approved_for_aid_date',
+      'status', 'rejected_date', 'approved_for_aid_date', 'is_scholarship', ...SUBCATEGORY_FIELDS,
     ],
     order_by: 'creation desc',
     limit_page_length: 50,
@@ -274,7 +241,7 @@ onMounted(() => {
   myRegistration.submit({
     doctype: 'Beneficiaries Registration',
     filters: { user: session.user },
-    fields: ['name', 'status', 'ar_name', 'en_name'],
+    fields: ['name', 'status', 'ar_name', 'en_name', 'is_scholarship'],
     limit_page_length: 1,
   })
 })
@@ -295,6 +262,14 @@ function onBackToList() {
 function translateCategory(category) {
   const key = CATEGORY_KEYS[category]
   return key ? t(key) : category || '—'
+}
+
+function translateAssistanceType(row) {
+  const key = getAssistanceTypeKey(row)
+  if (!key) return '—'
+  const label = t(key)
+  // t() returns the path for an untranslated value; show the stored value instead.
+  return label === key && key.startsWith('request.subtypes.') ? key.split('.').slice(3).join('.') : label
 }
 
 function formatDate(dateStr) {

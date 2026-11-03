@@ -3,6 +3,8 @@
 [post_model_sync]
 afif.patches.migrate_additional_documents_to_child_table
 afif.patches.add_beneficiary_visit_sms_message_setting
+afif.patches.allow_applicants_to_read_their_requests
 afif.patches.recompute_donation_project_status
 afif.patches.set_donation_program_slugs
 afif.patches.set_donation_project_slugs
+afif.patches.allow_supervisors_to_restrict_accounts

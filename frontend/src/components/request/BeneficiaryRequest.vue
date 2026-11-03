@@ -166,6 +166,29 @@
               </div>
             </Transition>
 
+            <!-- 6) Scholarship declarations -->
+            <Transition name="fade-slide">
+              <div v-if="isScholarship" class="space-y-3">
+                <label
+                  v-for="field in SCHOLARSHIP_DECLARATION_FIELDS"
+                  :key="field"
+                  class="flex items-start gap-3 select-none rounded-xl p-2 -mx-2 transition-colors"
+                  :class="[isInvalid('claim_' + field) ? 'bg-red-50 ring-1 ring-red-300' : '', readOnly ? '' : 'cursor-pointer']"
+                >
+                  <input
+                    type="checkbox"
+                    v-model="declarations[field]"
+                    class="custom-checkbox mt-0.5 shrink-0"
+                    :disabled="readOnly"
+                  />
+                  <span class="text-xs font-semibold text-gray-700 leading-relaxed">
+                    {{ t(`scholarship.declarations.${field}`) }}
+                    <span v-if="!readOnly" class="text-red-500">*</span>
+                  </span>
+                </label>
+              </div>
+            </Transition>
+
           </div>
         </div>
 
@@ -233,6 +256,9 @@ import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
+import { SCHOLARSHIP_DECLARATION_FIELDS } from '@/components/registration/registrationVariant'
+import { SUBCATEGORY_MAP, getSubcategoryOptions } from './requestCategories'
+import { REQUEST_ATTACHMENT_FIELDS, getRequiredRequestDocs, isScholarshipSubcategory } from './requestAttachments'
 
 const props = defineProps({
   beneficiaryName: { type: String, required: true },
@@ -269,11 +295,11 @@ const form = ref({
 })
 
 const files = ref({})
+const declarations = ref(makeEmptyDeclarations())
 
-const REQUEST_ATTACHMENT_FIELDS = [
-  'medical_bill', 'education_invoice', 'grade_transcript', 'garmeen_proof', 'garmeen_disclosure',
-  'travel_ticket_doc', 'rent_contract', 'onwer_qid', 'late_letter', 'estate_pruchase',
-]
+function makeEmptyDeclarations() {
+  return Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, false]))
+}
 
 const requestStatusLabel = computed(() => {
   if (loadedStatus.value) {
@@ -323,6 +349,7 @@ function populateFromDoc(doc) {
     if (doc[field]) existingFiles[field] = doc[field]
   }
   files.value = existingFiles
+  declarations.value = Object.fromEntries(SCHOLARSHIP_DECLARATION_FIELDS.map(field => [field, !!doc[field]]))
 }
 
 onMounted(() => {
@@ -343,44 +370,6 @@ const categories = computed(() => [
   { value: 'Awareness Assistance', label: t('request.categories.awareness') },
 ])
 
-const SUBCATEGORY_MAP = {
-  'Medical Assistance': {
-    field: 'medical_assistance',
-    key: 'medical',
-    options: ['Medical Procedures', 'Medical Equipment', 'Medication', 'Medical Supplies', 'Natural Treatment', 'Other Medical Assistance'],
-  },
-  'Education Assistance': {
-    field: 'educational_assistance',
-    key: 'education',
-    options: ['Tuition Fees', 'Transportation Fees', 'Books And Resources', 'Educational Equipment', 'Other Educational Assistance'],
-  },
-  'Social Assistance': {
-    field: 'social_assistance',
-    key: 'social',
-    options: ['Garmeen', 'Orphan sponsorship', 'Marriage assistance', 'Economic empowerment assistance', 'Travel ticket assistance', 'Widow assistance', 'Divorced women assistance', 'Elderly assistance', 'Unemployed assistance', 'Visitor assistance', 'Emergency assistance', 'Psychological support assistance', 'Other social assistance'],
-  },
-  'Family Assistance': {
-    field: 'family_assistance',
-    key: 'family',
-    options: ['Emergency lump-sum financial assistance', 'Monthly financial assistance', 'In-kind assistance', 'Family nursery sponsorship', 'Seasonal financial assistance', 'Food basket (food aid)', 'In-kind assistance with a monthly shopping card', 'In-kind assistance with a Ramadan shopping card', 'Utility bills', 'Fines support', 'Other family assistance'],
-  },
-  'Housing Assistance': {
-    field: 'housing_assistance',
-    key: 'housing',
-    options: ['Rent support', 'Land purchase', 'Real estate purchase', 'Land purchase and construction', 'Demolition and construction', 'Maintenance and restoration', 'Furnishing support', 'Other social housing assistance'],
-  },
-  'Training Assistance': {
-    field: 'training_assistance',
-    key: 'training',
-    options: ['Secretarial training', 'Entrepreneurship training', 'Student training', 'Prisoner training', 'Other training and rehabilitation'],
-  },
-  'Awareness Assistance': {
-    field: 'awareness_assistance',
-    key: 'awareness',
-    options: ['National Awareness', 'Cultural Awareness', 'Social Awareness', 'Health Awareness', 'Environmental Awareness', 'Charitable Awareness', 'Consumer Awareness', 'Other Awareness Assistance'],
-  },
-}
-
 const subcategoryConfig = computed(() => SUBCATEGORY_MAP[form.value.request_category] || null)
 const subcategoryField = computed(() => subcategoryConfig.value?.field || '')
 
@@ -393,7 +382,7 @@ const subcategoryLabel = computed(() => {
 const subcategoryOptions = computed(() => {
   if (!subcategoryConfig.value) return []
   const k = subcategoryConfig.value.key
-  return subcategoryConfig.value.options.map(val => ({
+  return getSubcategoryOptions(form.value.request_category, { includeScholarship: props.readOnly }).map(val => ({
     value: val,
     label: t(`request.subtypes.${k}.${val}`),
   }))
@@ -402,6 +391,8 @@ const subcategoryOptions = computed(() => {
 const currentSubcategory = computed(() => {
   return subcategoryField.value ? form.value[subcategoryField.value] : ''
 })
+
+const isScholarship = computed(() => isScholarshipSubcategory(form.value.request_category, currentSubcategory.value))
 
 function onAmountInput(event) {
   const raw = event.target.value
@@ -425,36 +416,7 @@ function onCategoryChange() {
 
 // ── Conditional attachments ──
 
-const requiredDocs = computed(() => {
-  const docs = []
-  const cat = form.value.request_category
-  const sub = currentSubcategory.value
-
-  if (cat === 'Medical Assistance') {
-    docs.push({ id: 'medical_bill', labelKey: 'request.attachments.docs.medicalBill' })
-  }
-  if (cat === 'Education Assistance') {
-    docs.push({ id: 'education_invoice', labelKey: 'request.attachments.docs.educationInvoice' })
-    docs.push({ id: 'grade_transcript', labelKey: 'request.attachments.docs.gradeTranscript' })
-  }
-  if (cat === 'Social Assistance' && sub === 'Garmeen') {
-    docs.push({ id: 'garmeen_proof', labelKey: 'request.attachments.docs.garmeenProof' })
-    docs.push({ id: 'garmeen_disclosure', labelKey: 'request.attachments.docs.garmeenDisclosure' })
-  }
-  if (cat === 'Social Assistance' && sub === 'Travel ticket assistance') {
-    docs.push({ id: 'travel_ticket_doc', labelKey: 'request.attachments.docs.travelTicketDoc' })
-  }
-  if (cat === 'Housing Assistance') {
-    docs.push({ id: 'rent_contract', labelKey: 'request.attachments.docs.rentContract' })
-    docs.push({ id: 'onwer_qid', labelKey: 'request.attachments.docs.ownerQid' })
-    docs.push({ id: 'late_letter', labelKey: 'request.attachments.docs.lateLetter' })
-    if (sub === 'Real estate purchase') {
-      docs.push({ id: 'estate_pruchase', labelKey: 'request.attachments.docs.estatePurchase' })
-    }
-  }
-
-  return docs
-})
+const requiredDocs = computed(() => getRequiredRequestDocs(form.value.request_category, currentSubcategory.value))
 
 function isInvalid(field) {
   return invalidFields.value.includes(field)
@@ -578,7 +540,8 @@ async function handleSubmit() {
   try {
     // Upload before inserting so a failed upload never leaves a request without its attachments.
     // Frappe links the uploaded files to the request when it is saved.
-    for (const [fieldname, file] of Object.entries(files.value)) {
+    for (const { id: fieldname } of requiredDocs.value) {
+      const file = files.value[fieldname]
       if (file instanceof File) {
         doc[fieldname] = await uploadFile(file)
       }
@@ -601,7 +564,6 @@ async function handleSubmit() {
 async function uploadFile(file) {
   const fd = new FormData()
   fd.append('file', file, file.name)
-  fd.append('is_private', '0')
   fd.append('folder', 'Home/Attachments')
 
   const headers = { 'X-Frappe-Site-Name': window.location.hostname }
@@ -634,6 +596,7 @@ function resetForm() {
     request_summary: '',
   }
   files.value = {}
+  declarations.value = makeEmptyDeclarations()
   submitted.value = false
   error.value = ''
   invalidFields.value = []
@@ -672,6 +635,10 @@ function resetForm() {
 .custom-select:disabled {
   @apply opacity-75 cursor-default;
   background-color: #f9fafb;
+}
+
+.custom-checkbox {
+  @apply w-4 h-4 rounded border-gray-300 text-[#34B0EE] focus:ring-[#34B0EE] transition-all;
 }
 
 .read-only-form select,
