@@ -787,19 +787,12 @@ def before_insert_request(doc, method):
         except frappe.DoesNotExistError:
             last_created_request = None
 
-        # if last_created_request and last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
-        #     frappe.throw("A previous request is pending review.")
-        # else:
-        #     # set request ben id
-        #     doc.beneficiaries = beneficiary
-        #     doc.request_date = now_datetime()
-
-        if last_created_request:
+        # A scholarship student may file several requests while earlier ones are still in review (P15-1).
+        if last_created_request and not registration.is_scholarship:
             if last_created_request.workflow_state not in ["Rejected by Supervisor", "Rejected", "Approved", "Approved For Aid"]:
                 frappe.throw(_("A previous request is pending review."))
 
-            if not registration.is_scholarship:
-                check_request_cooldowns(last_created_request)
+            check_request_cooldowns(last_created_request)
 
         # set request ben id
         doc.beneficiaries = beneficiary

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import translations from '@/locales/translations'
-import { getRequestBlockReason } from './requestEligibility'
+import { getRequestBlockReason, isSubmittedScholarship } from './requestEligibility'
 
 const now = new Date('2026-10-20T12:00:00')
 const accepted = { isAccepted: true, now }
@@ -39,13 +39,36 @@ describe('getRequestBlockReason', () => {
     expect(getRequestBlockReason([last], { ...accepted, isScholarship: true })).toBe('')
   })
 
-  it('still blocks a scholarship request while one is pending', () => {
+  it.each(['Pending Supervisor Approval', 'Pending Specialist Approval'])(
+    'lets a scholarship student apply while the last request is %s',
+    status => {
+      expect(getRequestBlockReason([{ status }], { ...accepted, isScholarship: true })).toBe('')
+    },
+  )
+
+  it('still blocks a scholarship student before the first approval', () => {
     const pending = [{ status: 'Pending Supervisor Approval' }]
-    expect(getRequestBlockReason(pending, { ...accepted, isScholarship: true })).toBe('pending')
+    expect(getRequestBlockReason(pending, { isAccepted: false, isScholarship: true, now })).toBe('notAccepted')
+  })
+
+  it('still blocks a normal request while one is pending', () => {
+    expect(getRequestBlockReason([{ status: 'Pending Specialist Approval' }], accepted)).toBe('pending')
   })
 
   it.each(['ar', 'en'])('has a message in %s for every reason', language => {
     const reasons = ['restricted', 'notAccepted', 'pending', 'cooldownRejected', 'cooldownApproved']
     expect(reasons.filter(reason => typeof translations[language].myRequests.disabledReasons[reason] !== 'string')).toEqual([])
+  })
+})
+
+describe('isSubmittedScholarship', () => {
+  it.each([
+    ['a submitted scholarship registration', { is_scholarship: 1, status: 'New Registration' }, true],
+    ['an accepted scholarship registration', { is_scholarship: 1, status: 'Accepted' }, true],
+    ['a scholarship draft', { is_scholarship: 1, status: 'Draft' }, false],
+    ['a normal registration', { is_scholarship: 0, status: 'Accepted' }, false],
+    ['no registration', undefined, false],
+  ])('is %s → %s', (_case, registration, expected) => {
+    expect(isSubmittedScholarship(registration)).toBe(expected)
   })
 })

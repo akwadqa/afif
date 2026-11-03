@@ -135,15 +135,24 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
 
 
 class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
-    """A scholarship student has no rejection or approval waits, for any request; a pending request still blocks."""
+    """A scholarship student has no rejection or approval waits and no pending block, for any request."""
 
-    def test_pending_request_blocks_a_scholarship_request(self):
+    def test_pending_request_does_not_block_a_scholarship_request(self):
         self.make_previous_request()
 
-        with self.assertRaisesRegex(frappe.ValidationError, "pending review"):
-            self.create_request()
+        self.assertTrue(self.create_request())
+        self.assertEqual(self.get_request_count(), 2)
 
-        self.assertEqual(self.get_request_count(), 1)
+    def test_pending_request_still_blocks_a_normal_beneficiary(self):
+        frappe.set_user("Administrator")
+        user = make_beneficiary_user()
+        frappe.set_user(user)
+        registration = make_registration(is_scholarship=0)
+        accept_registration(registration, user)
+        make_normal_education_request()
+
+        with self.assertRaisesRegex(frappe.ValidationError, "pending review"):
+            make_normal_education_request()
 
     def test_recent_rejection_does_not_block_a_scholarship_request(self):
         self.close_request(self.make_previous_request(), "Rejected", rejected_date=add_days(now_datetime(), -1))
@@ -205,11 +214,12 @@ class TestScholarshipRequestCooldowns(AcceptedBeneficiaryTestCase):
 
         self.assertTrue(make_normal_education_request())
 
-    def test_pending_scholarship_request_blocks_the_next_request(self):
+    def test_pending_scholarship_request_does_not_block_the_next_request(self):
         self.create_request()
 
-        with self.assertRaisesRegex(frappe.ValidationError, "pending review"):
-            self.make_previous_request()
+        self.assertTrue(self.create_request())
+        self.assertTrue(self.make_previous_request())
+        self.assertEqual(self.get_request_count(), 3)
 
     def make_previous_request(self) -> str:
         return make_normal_education_request()

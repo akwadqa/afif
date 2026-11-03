@@ -9,17 +9,22 @@ function addMonths(date, months) {
 
 /**
  * Why the beneficiary cannot create a request now, or '' when they can.
- * `requests` is newest first; a scholarship student has no cooldowns, for any request, like before_insert_request; the reason is a key under myRequests.disabledReasons.
+ * `requests` is newest first; a scholarship student has no cooldowns and no pending block, for any request, like before_insert_request; the reason is a key under myRequests.disabledReasons.
  */
 export function getRequestBlockReason(requests, { isAccepted, isScholarship = false, isRestricted = false, now = new Date() }) {
   if (isRestricted) return 'restricted'
   if (!isAccepted) return 'notAccepted'
+  if (isScholarship) return ''
 
   const last = requests[0]
   if (!last) return ''
   if (!FINAL_STATUSES.includes(last.status)) return 'pending'
-  if (isScholarship) return ''
   if (last.rejected_date && now < addMonths(last.rejected_date, 3)) return 'cooldownRejected'
   if (last.approved_for_aid_date && now < addMonths(last.approved_for_aid_date, 6)) return 'cooldownApproved'
   return ''
+}
+
+// A scholarship draft is still the first application, filed through the wizard rather than the apply button.
+export function isSubmittedScholarship(registration) {
+  return Boolean(registration?.is_scholarship) && registration.status !== 'Draft'
 }
