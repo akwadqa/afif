@@ -16,6 +16,7 @@
 | [12 — Account restriction](phase-12-account-restriction.md) | done (browser check in Phase 13) | `5baa7f1`, `3d0f42c` |
 | [13 — My Requests column + browser QA](phase-13-my-requests-and-qa.md) | done (live site needs `bench restart`) | `4f576f6`, `cb0df73`, `dcf369f`, final-review fixes `853dd8f`, `fcd5f2d`, `ffde84a`, `cba8ca0`, `1ddd317` |
 | [14 — Registration documents after "Update Required"](phase-14-update-required-documents.md) | done (live site needs `bench restart`) | `5f2d20c`, `b38c0d1`, `6f2599d` |
+| [15 — More than one open request](phase-15-multiple-requests.md) | done (live site needs `bench restart`; browser check pending) | `574d8a5`, `600cc2e` |
 
 ## Phase 14 — log (2026-10-29)
 - **Server (`5f2d20c`).** `get_missing_required_attachments` returns `[]` for a scholarship registration only while `last_required_update_date` is empty; after "Update Required" the normal rules apply. The 26 desk `mandatory_depends_on` expressions follow the same rule: `(!doc.is_scholarship || doc.last_required_update_date) && …`.
@@ -76,6 +77,28 @@
   - The step-4 consent wording ("registration only, not an aid request") reads oddly in the scholarship flow; ask the client for wording.
   - Orphan private files stay behind when a file is removed before submit.
   - The menu item lists are duplicated in 3 components.
+
+## Phase 15 — log (2026-11-02)
+- **Why.** The Supervisor's approval accepts the registration but moves the request to `Pending Specialist Approval`, so the pending block hid «تقديم طلب منحة جديد» until the Specialist decided.
+- **Server.** `before_insert_request` runs the pending check and the cooldowns only when `not registration.is_scholarship` (P15-1). The Accepted and restriction checks are unchanged. The dead commented-out block is removed.
+- **Client.** `getRequestBlockReason` returns `''` for an accepted, unrestricted scholarship student. The `/scholarship` button is always shown: disabled, with the `myRequests.disabledReasons` tooltip, when the student is not accepted or is restricted. My Requests follows the same rule through `isScholarship`.
+- **Tests.**
+  - Backend `test_scholarship_accepted` **31 OK**. Flipped: the pending request no longer blocks a scholarship request, the next one, or a third. New: a pending request still blocks a normal beneficiary. The two flipped tests failed with "pending review" before the fix.
+  - `test_scholarship` **33 OK**, `test_scholarship_decision` **19 OK**, `test_beneficiary_request` **6 OK**.
+  - Vitest **86 passed**; the 2 new scholarship cases failed before the fix.
+  - Biome reports only the formatting and import-order errors that the files already had at HEAD.
+  - `yarn build` done.
+- **Follow-up: the button on the profile (P15-2).**
+  - The client found that the button was only on `/scholarship`, so it was lost after visiting طلباتي.
+  - `ScholarshipApplyButton.vue` is now shared. `Home.vue` shows it for a submitted scholarship registration, in the list header and the read-only view, and it links to `/scholarship?apply=1`, which opens the form directly.
+  - Requests are no longer fetched for the button, since they cannot block a scholarship student.
+  - Vitest **91 passed**; the 5 new `isSubmittedScholarship` cases failed before the fix. `yarn build` done.
+- **Not done yet.** A browser check (setting QA passwords was not allowed in this session). The server part needs `bench restart`.
+
+## Phase 12 follow-up — restrict buttons (2026-11-01)
+- **Bug.** After "Update Required", ticking the restriction and saving showed "Missing Fields" (e.g. `SA-6640-2026`). The registration documents' `mandatory_depends_on` is checked by the desk form on the client only, and the student still owed them.
+- **Fix (`22b0428`).** The checkbox is now read only. "Restrict Account" / "Lift Account Restriction" buttons call `set_account_restriction`, which checks write and level-1 access and saves only the flag. The buttons show only to users with level-1 write.
+- **Tests.** `test_scholarship_accepted` 30 and `test_beneficiaries_registration` 6 — OK. The client-side Missing Fields dialog is not covered by a server test; check it in the browser after `bench restart`.
 
 ## Phase 12 — log (2026-10-29)
 - **Field.** `is_account_restricted` on `Beneficiaries Registration`: a Check at `permlevel: 1`, shown only for scholarship records, and a standard filter.
