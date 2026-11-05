@@ -100,3 +100,27 @@ class TestAccountRestrictionScope(IntegrationTestCase):
         self.restrict(registration)
 
         self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_account_restricted"), 1)
+
+
+class TestAttachmentsTabLayout(IntegrationTestCase):
+    def test_site_field_order_keeps_the_documents_on_the_attachments_tab(self):
+        # The site's Customize Form field_order wins over the JSON, so a tab added after a field
+        # it moved can pull the remaining documents into that tab.
+        standard_fields = frappe.get_doc("DocType", "Beneficiaries Registration").fields
+        effective_fields = frappe.get_meta("Beneficiaries Registration").fields
+
+        documents = get_tab_fields(standard_fields, "attachment_tab")
+
+        self.assertIn("additional_documents", documents)
+        self.assertEqual(get_tab_fields(effective_fields, "attachment_tab"), documents)
+
+
+def get_tab_fields(fields, tab_fieldname: str) -> set[str]:
+    tab = None
+    tab_fields = set()
+    for df in fields:
+        if df.fieldtype == "Tab Break":
+            tab = df.fieldname
+        elif tab == tab_fieldname:
+            tab_fields.add(df.fieldname)
+    return tab_fields
