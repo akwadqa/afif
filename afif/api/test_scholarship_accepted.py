@@ -19,7 +19,6 @@ from afif.api.test_scholarship import (
     accept_registration,
     assert_documents_attached_to_request,
     assert_files_unattached,
-    assert_no_registration_scholarship_documents,
     attach_file_to,
     make_beneficiary_user,
     make_normal_education_request,
@@ -68,7 +67,6 @@ class TestAcceptedBeneficiaryScholarshipRequest(AcceptedBeneficiaryTestCase):
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
         self.assertEqual(registration.workflow_state, "Accepted")
         assert_documents_attached_to_request(self, request.name, request_data)
-        assert_no_registration_scholarship_documents(self, self.registration)
 
     def test_incomplete_request_creates_nothing(self):
         request_data = make_request_data()

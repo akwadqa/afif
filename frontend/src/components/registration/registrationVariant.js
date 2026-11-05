@@ -3,20 +3,6 @@
 
 // Mirrors SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS in beneficiary_request.py; all of them are required.
 export const SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS = ['education_invoice', 'grade_transcript', 'student_id_copy', 'student_passport_copy']
-// The scholarship documents the registration used to hold. Old records keep them, and the wizard
-// must send them back unchanged because frappe.client.save clears every field missing from the payload.
-export const LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS = [
-  'scholarship_university_invoice',
-  'scholarship_grade_transcript',
-  'scholarship_guardian_id',
-  'scholarship_guardian_passport',
-  'scholarship_student_id',
-  'scholarship_student_passport',
-  'scholarship_family_ids',
-  'scholarship_guardian_bank_statement',
-  'scholarship_mother_bank_statement',
-  'scholarship_student_bank_statement',
-]
 // Stored on the Beneficiary Request.
 export const SCHOLARSHIP_DECLARATION_FIELDS = ['is_data_accuracy_declared', 'is_eligibility_check_accepted']
 

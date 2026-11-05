@@ -194,17 +194,6 @@
   "cancellation_right",
   "custom_notes",
   "metrash_adress",
-  "scholarship_attachments_tab",
-  "scholarship_university_invoice",
-  "scholarship_grade_transcript",
-  "scholarship_guardian_id",
-  "scholarship_guardian_passport",
-  "scholarship_student_id",
-  "scholarship_student_passport",
-  "scholarship_family_ids",
-  "scholarship_guardian_bank_statement",
-  "scholarship_mother_bank_statement",
-  "scholarship_student_bank_statement",
   "last_tab",
   "card_expiry_date",
   "passport_expiry_date"
@@ -1449,62 +1438,6 @@
    "print_hide": 1
   },
   {
-   "depends_on": "eval:doc.is_scholarship && doc.scholarship_university_invoice",
-   "fieldname": "scholarship_attachments_tab",
-   "fieldtype": "Tab Break",
-   "label": "Scholarship Attachments"
-  },
-  {
-   "fieldname": "scholarship_university_invoice",
-   "fieldtype": "Attach",
-   "label": "University Invoice"
-  },
-  {
-   "fieldname": "scholarship_grade_transcript",
-   "fieldtype": "Attach",
-   "label": "Student Grade Transcript"
-  },
-  {
-   "fieldname": "scholarship_guardian_id",
-   "fieldtype": "Attach",
-   "label": "Guardian / Applicant ID"
-  },
-  {
-   "fieldname": "scholarship_guardian_passport",
-   "fieldtype": "Attach",
-   "label": "Guardian / Applicant Passport"
-  },
-  {
-   "fieldname": "scholarship_student_id",
-   "fieldtype": "Attach",
-   "label": "Student ID"
-  },
-  {
-   "fieldname": "scholarship_student_passport",
-   "fieldtype": "Attach",
-   "label": "Student Passport"
-  },
-  {
-   "fieldname": "scholarship_family_ids",
-   "fieldtype": "Attach",
-   "label": "Family Members IDs"
-  },
-  {
-   "fieldname": "scholarship_guardian_bank_statement",
-   "fieldtype": "Attach",
-   "label": "Guardian Bank Statement"
-  },
-  {
-   "fieldname": "scholarship_mother_bank_statement",
-   "fieldtype": "Attach",
-   "label": "Mother Bank Statement"
-  },
-  {
-   "fieldname": "scholarship_student_bank_statement",
-   "fieldtype": "Attach",
-   "label": "Student Bank Statement"
-  },
-  {
    "fieldname": "last_tab",
    "fieldtype": "Tab Break",
    "label": "Last Tab"
@@ -1560,7 +1493,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2026-11-01 12:00:00.000000",
+ "modified": "2026-11-05 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Beneficiaries Registration",

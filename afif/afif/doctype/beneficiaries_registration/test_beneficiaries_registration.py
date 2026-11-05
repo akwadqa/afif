@@ -15,9 +15,9 @@ class TestReplacedAttachmentCleanup(IntegrationTestCase):
         self.registration = make_registration(is_scholarship=1)
 
     def test_replacing_an_attachment_deletes_the_old_file(self):
-        old_file = self.attach("scholarship_student_id")
+        old_file = self.attach("qid")
 
-        new_file = self.attach("scholarship_student_id")
+        new_file = self.attach("qid")
 
         self.assertFalse(frappe.db.exists("File", old_file.name))
         self.assertFalse(old_file.exists_on_disk())
@@ -25,27 +25,27 @@ class TestReplacedAttachmentCleanup(IntegrationTestCase):
         self.assertTrue(new_file.exists_on_disk())
 
     def test_clearing_an_attachment_deletes_its_file(self):
-        file = self.attach("scholarship_family_ids")
+        file = self.attach("passport")
 
-        self.set_field("scholarship_family_ids", None)
+        self.set_field("passport", None)
 
         self.assertFalse(frappe.db.exists("File", file.name))
 
     def test_same_upload_on_another_field_is_kept(self):
         content = make_pdf()
-        first = self.attach("scholarship_guardian_id", content)
-        second = self.attach("scholarship_guardian_passport", content)
+        first = self.attach("wife_id", content)
+        second = self.attach("wife_passport", content)
         # Frappe stores identical uploads once and shares the file_url.
         self.assertEqual(first.file_url, second.file_url)
 
-        self.set_field("scholarship_guardian_id", None)
+        self.set_field("wife_id", None)
 
         self.assertFalse(frappe.db.exists("File", first.name))
         self.assertTrue(frappe.db.exists("File", second.name))
         self.assertTrue(second.exists_on_disk())
 
     def test_saving_without_changes_keeps_the_files(self):
-        file = self.attach("scholarship_grade_transcript")
+        file = self.attach("iban_picture")
 
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
         registration.en_name = "Unchanged Attachments"
@@ -100,3 +100,27 @@ class TestAccountRestrictionScope(IntegrationTestCase):
         self.restrict(registration)
 
         self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_account_restricted"), 1)
+
+
+class TestAttachmentsTabLayout(IntegrationTestCase):
+    def test_site_field_order_keeps_the_documents_on_the_attachments_tab(self):
+        # The site's Customize Form field_order wins over the JSON, so a tab added after a field
+        # it moved can pull the remaining documents into that tab.
+        standard_fields = frappe.get_doc("DocType", "Beneficiaries Registration").fields
+        effective_fields = frappe.get_meta("Beneficiaries Registration").fields
+
+        documents = get_tab_fields(standard_fields, "attachment_tab")
+
+        self.assertIn("additional_documents", documents)
+        self.assertEqual(get_tab_fields(effective_fields, "attachment_tab"), documents)
+
+
+def get_tab_fields(fields, tab_fieldname: str) -> set[str]:
+    tab = None
+    tab_fields = set()
+    for df in fields:
+        if df.fieldtype == "Tab Break":
+            tab = df.fieldname
+        elif tab == tab_fieldname:
+            tab_fields.add(df.fieldname)
+    return tab_fields

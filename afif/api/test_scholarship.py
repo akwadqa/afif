@@ -38,19 +38,6 @@ REGISTRATION_ATTACHMENTS = {
     "vehicle_certificate": "/files/test-vehicle.pdf",
     "iban_picture": "/files/test-iban.pdf",
 }
-# Older scholarship registrations hold their documents here; new applications leave them empty.
-REGISTRATION_SCHOLARSHIP_FIELDS = (
-    "scholarship_university_invoice",
-    "scholarship_grade_transcript",
-    "scholarship_guardian_id",
-    "scholarship_guardian_passport",
-    "scholarship_student_id",
-    "scholarship_student_passport",
-    "scholarship_family_ids",
-    "scholarship_guardian_bank_statement",
-    "scholarship_mother_bank_statement",
-    "scholarship_student_bank_statement",
-)
 REQUEST_FILE_TARGETS = ("student_id_copy", "other_attachments")
 
 
@@ -85,7 +72,6 @@ class TestSubmitScholarshipApplication(IntegrationTestCase):
         submit_scholarship_application(self.registration, self.request_data)
 
         assert_documents_attached_to_request(self, frappe.response["data"]["request"], self.request_data)
-        assert_no_registration_scholarship_documents(self, self.registration)
 
     def test_submit_without_registration_documents_succeeds(self):
         registration = frappe.get_doc("Beneficiaries Registration", self.registration)
@@ -511,11 +497,6 @@ def assert_files_unattached(testcase: IntegrationTestCase, request_data: dict) -
         "File", filters={"file_url": ("in", file_urls), "attached_to_name": ("is", "set")}, pluck="file_url"
     )
     testcase.assertEqual(attached, [])
-
-
-def assert_no_registration_scholarship_documents(testcase: IntegrationTestCase, registration: str) -> None:
-    values = frappe.db.get_value("Beneficiaries Registration", registration, REGISTRATION_SCHOLARSHIP_FIELDS, as_dict=True)
-    testcase.assertFalse(any(values.values()))
 
 
 def make_normal_education_request() -> str:
