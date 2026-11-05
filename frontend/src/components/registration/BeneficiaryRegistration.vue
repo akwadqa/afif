@@ -140,7 +140,6 @@ import AttachmentsCard from './AttachmentsCard.vue'
 import ScholarshipRequestCard from './ScholarshipRequestCard.vue'
 import ValidationErrorPopup from './ValidationErrorPopup.vue'
 import {
-  LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
   SCHOLARSHIP_DECLARATION_FIELDS,
   SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
   getRegistrationVariant,
@@ -280,8 +279,6 @@ const ATTACHMENT_FIELDS = [
   'special_needs_certificate', 'termination_letter', 'nonmarriage_proof', 'divorce_paper',
   'partner_death_certificate', 'copy_of_court_judgment', 'id_coresidents', 'id_sponsored',
   'metrash_adress', 'additional_documents',
-  // Always sent: frappe.client.save clears every field missing from the payload, even on a normal page.
-  ...LEGACY_SCHOLARSHIP_ATTACHMENT_FIELDS,
 ]
 
 function onStepError(err) {
