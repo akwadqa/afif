@@ -72,8 +72,8 @@
                 :class="{ 'border-red-300 bg-red-50/30': isInvalid('requested_amount') }"
                 :disabled="readOnly"
               />
-              <p v-if="amountLetterWarning" class="text-xs text-red-500">
-                {{ t('registration.validation.noLetters') }}
+              <p v-if="amountWarning" class="text-xs text-red-500">
+                {{ t('registration.validation.wholeNumberOnly') }}
               </p>
             </div>
 
@@ -255,6 +255,7 @@ import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
 import { isFileTooLarge } from '@/utils/fileValidation'
+import { arabicToWestern } from '@/utils/inputHelpers'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
 import { SCHOLARSHIP_DECLARATION_FIELDS } from '@/components/registration/registrationVariant'
 import { SUBCATEGORY_MAP, getSubcategoryOptions } from './requestCategories'
@@ -272,7 +273,7 @@ const { t, isRTL } = useLanguage()
 
 const submitting = ref(false)
 const submitted = ref(false)
-const amountLetterWarning = ref(false)
+const amountWarning = ref(false)
 const error = ref('')
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
@@ -395,11 +396,12 @@ const currentSubcategory = computed(() => {
 const isScholarship = computed(() => isScholarshipSubcategory(form.value.request_category, currentSubcategory.value))
 
 function onAmountInput(event) {
-  const raw = event.target.value
-  const val = raw.replace(/[a-zA-Z؀-ۿ]/g, '')
+  const digits = arabicToWestern(event.target.value)
+  const val = digits.replace(/[^0-9]/g, '')
   event.target.value = val
   form.value.requested_amount = val
-  amountLetterWarning.value = raw !== val
+  // Stays until the field is emptied, or the next digit would hide it before it is read.
+  amountWarning.value = digits !== val || (amountWarning.value && val !== '')
 }
 
 function onCategoryChange() {
