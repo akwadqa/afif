@@ -14,5 +14,9 @@ export function useWholeNumberInput() {
     return value
   }
 
-  return { isWarningShown, filterInput }
+  function reset() {
+    isWarningShown.value = false
+  }
+
+  return { isWarningShown, filterInput, reset }
 }

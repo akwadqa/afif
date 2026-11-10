@@ -597,6 +597,7 @@ function resetForm() {
   submitted.value = false
   error.value = ''
   invalidFields.value = []
+  amountInput.reset()
 }
 </script>
 

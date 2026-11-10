@@ -26,4 +26,13 @@ describe('useWholeNumberInput', () => {
     type(input, '')
     expect(input.isWarningShown.value).toBe(false)
   })
+
+  it('does not carry the warning into a reset form', () => {
+    const input = useWholeNumberInput()
+    type(input, '12.5')
+
+    input.reset()
+    type(input, '7')
+    expect(input.isWarningShown.value).toBe(false)
+  })
 })
