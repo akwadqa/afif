@@ -2,6 +2,7 @@
 # See license.txt
 
 import frappe
+import frappe.client
 from frappe.tests import IntegrationTestCase
 
 from afif.afif.doctype.beneficiaries_registration.beneficiaries_registration import AccountRestrictionScopeError
@@ -100,6 +101,34 @@ class TestAccountRestrictionScope(IntegrationTestCase):
         self.restrict(registration)
 
         self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_account_restricted"), 1)
+
+
+class TestScholarshipFlagOmittedOnSave(IntegrationTestCase):
+    """A portal opened before the scholarship release saves the whole registration without the flag."""
+
+    def setUp(self):
+        self.addCleanup(frappe.set_user, "Administrator")
+        frappe.set_user(make_beneficiary_user())
+
+    def test_normal_registration_saves_without_the_flag(self):
+        registration = make_registration(is_scholarship=0)
+
+        save_without_scholarship_flag(registration)
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_scholarship"), 0)
+
+    def test_scholarship_registration_keeps_the_flag(self):
+        registration = make_registration(is_scholarship=1)
+
+        save_without_scholarship_flag(registration)
+
+        self.assertEqual(frappe.db.get_value("Beneficiaries Registration", registration, "is_scholarship"), 1)
+
+
+def save_without_scholarship_flag(registration: str) -> None:
+    payload = frappe.get_doc("Beneficiaries Registration", registration).as_dict()
+    del payload["is_scholarship"]
+    frappe.client.save(frappe.as_json(payload))
 
 
 class TestAttachmentsTabLayout(IntegrationTestCase):
