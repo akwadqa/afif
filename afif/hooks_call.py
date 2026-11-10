@@ -20,6 +20,11 @@ def get_home_page(user):
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def update_password(new_password, logout_all_sessions=0, key=None, old_password=None):
     from frappe.core.doctype.user.user import update_password as _update_password
+    from frappe.utils.data import sha256_hash
+
+    # The native call consumes the page cached by sign_up (e.g. /scholarship), so read it first.
+    user = key and frappe.db.get_value("User", {"reset_password_key": sha256_hash(key)})
+    signup_redirect = user and frappe.cache.hget("redirect_after_login", user)
 
     redirect_url = _update_password(
         new_password=new_password,
@@ -34,7 +39,7 @@ def update_password(new_password, logout_all_sessions=0, key=None, old_password=
         return redirect_url
 
     if frappe.session.data.user_type == "Website User":
-        return get_home_page(frappe.session.user)
+        return signup_redirect or get_home_page(frappe.session.user)
 
     return redirect_url
 

@@ -75,14 +75,14 @@ spec/
 
 * When we fix a bug, add at least a unit test. Verify it before and after by temporarily reverting the fix, to make sure the test checks what is intended.
 * Bigger features/workflows (checkout, delivery trip flow, sales order status workflow) must have integration tests that cover the full flow, and e2e Playwright tests when there is UI behaviour.
-* Put tests in `widam_delivery/tests/` or next to the DocType (`doctype/<name>/test_<name>.py`).
+* Put tests in `afif/tests/` or next to the DocType (`doctype/<name>/test_<name>.py`).
 
 ## Commits, Pushing & Pull Requests
 
-* The canonical repo is `akwadqa/widam_delivery` (git remote `upstream`).
+* The canonical repo is `akwadqa/afif` (git remote `upstream`).
 * During development, commit directly to the feature branch and push it: `git push upstream feature/walima`. Don't open a PR per phase or per change.
 * Changes stay on the feature branch only. Never merge, cherry-pick or push them into `release/*` or `main` unless explicitly asked.
-* Open a PR only when the whole feature is done and the user asks for it: one PR from the feature branch to the target branch the user names, e.g. `gh pr create --repo akwadqa/widam_delivery --base main --head feature/walima`.
+* Open a PR only when the whole feature is done and the user asks for it: one PR from the feature branch to the target branch the user names, e.g. `gh pr create --repo akwadqa/afif --base main --head feature/walima`.
     * Before raising, sanity-check that the diff contains only the feature's files: `git diff --stat upstream/<base>..feature/walima`. A huge diff means the base is wrong. Fix it before opening the PR.
 * Keep pull request descriptions stupid simple, and link the spec folder.
 * Some formats:
