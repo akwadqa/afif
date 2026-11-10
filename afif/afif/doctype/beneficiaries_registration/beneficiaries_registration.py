@@ -54,7 +54,14 @@ class BeneficiariesRegistration(Document):
             self.last_required_update_date = previous.last_required_update_date
 
     def validate_scholarship_flag_unchanged(self):
-        if not self.is_new() and self.has_value_changed("is_scholarship"):
+        if self.is_new():
+            return
+
+        # The flag is server-owned; a save that leaves it out (e.g. a portal opened before the
+        # scholarship release) keeps it rather than clearing it.
+        if self.get("is_scholarship") is None:
+            self.is_scholarship = self.get_value_before_save("is_scholarship")
+        elif self.has_value_changed("is_scholarship"):
             frappe.throw(
                 _("Is Scholarship cannot be changed after the registration is created."),
                 ScholarshipFlagChangeError,
