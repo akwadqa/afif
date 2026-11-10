@@ -222,6 +222,15 @@ describe('step 5 (scholarship request data)', () => {
     expect(validate(formData, 5, 'registration')).toEqual({ errors: [], fields: [] })
   })
 
+  it('rejects a requested amount that is not a positive whole number', () => {
+    for (const amount of ['', '0', '1000.5', '1 000', '1,000', '-1000']) {
+      const formData = completeRequest()
+      formData.scholarshipRequest.requested_amount = amount
+
+      expect(validate(formData, 5, 'scholarship').fields).toEqual(['requested_amount'])
+    }
+  })
+
   it('requires the request summary', () => {
     for (const summary of ['', '   ']) {
       const formData = completeRequest()

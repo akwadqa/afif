@@ -72,8 +72,8 @@
                 :class="{ 'border-red-300 bg-red-50/30': isInvalid('requested_amount') }"
                 :disabled="readOnly"
               />
-              <p v-if="amountLetterWarning" class="text-xs text-red-500">
-                {{ t('registration.validation.noLetters') }}
+              <p v-if="amountInput.isWarningShown.value" class="text-xs text-red-500">
+                {{ t('registration.validation.wholeNumberOnly') }}
               </p>
             </div>
 
@@ -254,6 +254,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createResource } from 'frappe-ui'
 import { useLanguage } from '@/composables/useLanguage'
+import { useWholeNumberInput } from '@/composables/useWholeNumberInput'
 import { isFileTooLarge } from '@/utils/fileValidation'
 import ValidationErrorPopup from '@/components/registration/ValidationErrorPopup.vue'
 import { SCHOLARSHIP_DECLARATION_FIELDS } from '@/components/registration/registrationVariant'
@@ -272,7 +273,7 @@ const { t, isRTL } = useLanguage()
 
 const submitting = ref(false)
 const submitted = ref(false)
-const amountLetterWarning = ref(false)
+const amountInput = useWholeNumberInput()
 const error = ref('')
 const showValidationPopup = ref(false)
 const validationErrors = ref([])
@@ -395,11 +396,7 @@ const currentSubcategory = computed(() => {
 const isScholarship = computed(() => isScholarshipSubcategory(form.value.request_category, currentSubcategory.value))
 
 function onAmountInput(event) {
-  const raw = event.target.value
-  const val = raw.replace(/[a-zA-Z؀-ۿ]/g, '')
-  event.target.value = val
-  form.value.requested_amount = val
-  amountLetterWarning.value = raw !== val
+  form.value.requested_amount = amountInput.filterInput(event)
 }
 
 function onCategoryChange() {
@@ -600,6 +597,7 @@ function resetForm() {
   submitted.value = false
   error.value = ''
   invalidFields.value = []
+  amountInput.reset()
 }
 </script>
 

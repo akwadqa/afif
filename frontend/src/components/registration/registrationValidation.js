@@ -281,7 +281,7 @@ function validateScholarshipRequestStep(check, { scholarshipRequest: sr }, t) {
   for (const id of SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS) {
     if (!sr.files[id]) check.add(`attach_${id}`, t(`scholarship.attachments.${id}`))
   }
-  if (!(Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
+  if (!(/^[0-9]+$/.test(sr.requested_amount) && Number(sr.requested_amount) > 0)) check.add('requested_amount', t('scholarship.request.requestedAmount'))
   if (!sr.request_summary?.trim()) check.add('request_summary', t('scholarship.request.summary'))
   for (const field of SCHOLARSHIP_DECLARATION_FIELDS) {
     if (!sr.declarations[field]) check.add(`claim_${field}`, t(`scholarship.declarations.${field}`))

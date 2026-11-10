@@ -6,7 +6,10 @@ from unittest.mock import patch
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from afif.afif.doctype.beneficiary_request.beneficiary_request import SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS
+from afif.afif.doctype.beneficiary_request.beneficiary_request import (
+	SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS,
+	InvalidRequestedAmountError,
+)
 
 HOUSING_ATTACHMENTS = {
 	"rent_contract": "/files/test-rent-contract.pdf",
@@ -86,6 +89,28 @@ class TestBeneficiaryRequest(FrappeTestCase):
 
 	def test_existing_incomplete_request_can_still_be_saved(self):
 		request = make_request(request_category="Housing Assistance", housing_assistance="Rent support")
+		request.flags.ignore_validate = True
+		request.insert()
+
+		request.reload()
+		request.request_summary = "Updated by staff"
+		request.save()
+
+	def test_requested_amount_must_be_a_whole_number(self):
+		for amount in ("1000.5", "1 000", "1,000", "-1000", "١٠٠٠", "1e3"):
+			with self.subTest(amount=amount):
+				request = make_request(
+					request_category="Housing Assistance",
+					housing_assistance="Rent support",
+					requested_amount=amount,
+					**HOUSING_ATTACHMENTS,
+				)
+				self.assertRaises(InvalidRequestedAmountError, request.insert)
+
+	def test_existing_decimal_amount_does_not_block_other_edits(self):
+		request = make_request(
+			request_category="Housing Assistance", housing_assistance="Rent support", requested_amount="1000.5"
+		)
 		request.flags.ignore_validate = True
 		request.insert()
 
