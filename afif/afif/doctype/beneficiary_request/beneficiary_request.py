@@ -1,6 +1,8 @@
 # Copyright (c) 2025, Akwad and contributors
 # For license information, please see license.txt
 
+import re
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -34,6 +36,10 @@ class ScholarshipCascadeError(frappe.ValidationError):
     pass
 
 
+class InvalidRequestedAmountError(frappe.ValidationError):
+    pass
+
+
 class BeneficiaryRequest(Document):
     @frappe.whitelist()
     def check_beneficiary_id(self):
@@ -58,6 +64,7 @@ class BeneficiaryRequest(Document):
 
     def validate(self):
         self.validate_request_summary()
+        self.validate_requested_amount()
         self.validate_scholarship_flag()
         self.validate_scholarship_subcategory()
         self.validate_scholarship_request()
@@ -77,6 +84,17 @@ class BeneficiaryRequest(Document):
         if self.request_summary and len(self.request_summary) > 1000:
             frappe.throw(
                 _("Request Summary cannot be more than 1000 characters")
+            )
+
+    def validate_requested_amount(self):
+        # A Data field, so its type keeps neither decimals nor separators out. Only a changed amount is
+        # checked, so older requests holding a decimal stay editable by staff.
+        if not self.requested_amount or not self.has_value_changed("requested_amount"):
+            return
+        if not re.fullmatch(r"[0-9]+", str(self.requested_amount)):
+            frappe.throw(
+                _("Requested Amount must be a whole number written in digits only."),
+                InvalidRequestedAmountError,
             )
 
     @property
