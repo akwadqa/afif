@@ -26,7 +26,7 @@
             class="custom-input font-sans"
             :class="{ 'border-red-300 bg-red-50/30': isInvalid('requested_amount') }"
           />
-          <p v-if="amountWarning" class="text-xs text-red-500">
+          <p v-if="amountInput.isWarningShown.value" class="text-xs text-red-500">
             {{ t('registration.validation.wholeNumberOnly') }}
           </p>
         </div>
@@ -220,10 +220,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useLanguage } from '@/composables/useLanguage'
+import { useWholeNumberInput } from '@/composables/useWholeNumberInput'
 import { isFileTooLarge } from '@/utils/fileValidation'
-import { arabicToWestern } from '@/utils/inputHelpers'
 import { SCHOLARSHIP_DECLARATION_FIELDS, SCHOLARSHIP_REQUEST_ATTACHMENT_FIELDS } from './registrationVariant'
 
 const { t, isRTL } = useLanguage()
@@ -244,7 +244,7 @@ const emit = defineEmits(['update:modelValue'])
 const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png']
 const ACCEPTED_FILE_TYPES = ALLOWED_EXTENSIONS.map(ext => `.${ext}`).join(',')
 const DELETE_ICON_PATH = 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'
-const amountWarning = ref(false)
+const amountInput = useWholeNumberInput()
 const files = computed(() => props.modelValue.files)
 
 function isInvalid(field) {
@@ -264,12 +264,7 @@ function removeOtherAttachment(index) {
 }
 
 function onAmountInput(event) {
-  const digits = arabicToWestern(event.target.value)
-  const value = digits.replace(/[^0-9]/g, '')
-  event.target.value = value
-  // Stays until the field is emptied, or the next digit would hide it before it is read.
-  amountWarning.value = digits !== value || (amountWarning.value && value !== '')
-  update({ requested_amount: value })
+  update({ requested_amount: amountInput.filterInput(event) })
 }
 
 function fileLabel(value) {
