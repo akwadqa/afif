@@ -3,11 +3,12 @@
 | Phase | Status | Commits |
 |---|---|---|
 | 1. Arabic fields and backfill | done | b92053c, 813e6b1 |
-| 2. API language resolution | todo | |
+| 2. API language resolution | done | 50291f6, f2fb6ae |
 | 3. Migration and verification | todo | |
 
 ## Deviations
 
+- Phase 2: `get_english_title()` was kept in `afif/donation_slug.py` instead of being deleted. Two shipped patches (`set_donation_program_slugs`, `set_donation_project_slugs`) import it, and this app never modifies an existing patch; deleting it would break a fresh-site migration. It is unused by live code.
 - Phase 1: the backfill tests create projects with an `image`, which is mandatory on Donation Project. The phase plan did not mention it.
 - `afif.afif.doctype.donation.test_donation` contains a `TestDonation` class with no test methods, so it runs 0 tests. Pre-existing, untouched by this feature.
 
@@ -17,6 +18,15 @@
 - `run-tests --module afif.tests.test_donation_arabic_backfill` — 5 tests, OK.
 - `run-tests --module afif.afif.doctype.donation_program.test_donation_program` — 7 tests, OK.
 - `run-tests --module afif.afif.doctype.donation_project.test_donation_project` — 12 tests, OK.
+
+## Phase 2 results
+
+- `run-tests --module afif.tests.test_donation_api_language` — 8 tests, OK.
+- `run-tests --module afif.afif.doctype.donation_program.test_donation_program` — 8 tests, OK.
+- `run-tests --module afif.afif.doctype.donation_project.test_donation_project` — 12 tests, OK.
+- `run-tests --module afif.tests.test_donation_arabic_backfill` — 5 tests, OK.
+- `run-tests --module afif.tests.test_hooks_call` — 2 tests, OK.
+- No endpoint reads the `Translation` doctype any more.
 
 ## Open issues
 
