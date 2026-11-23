@@ -7,12 +7,12 @@ from frappe.tests.utils import FrappeTestCase
 from afif.patches.backfill_donation_arabic_content import execute, preview
 
 
-def make_translation(source_text, translated_text):
+def make_translation(source_text, translated_text, language="ar"):
 	frappe.get_doc({
 		"doctype": "Translation",
 		"source_text": source_text,
 		"translated_text": translated_text,
-		"language": "ar",
+		"language": language,
 	}).insert()
 
 
@@ -29,6 +29,10 @@ def make_project(program, title, **kwargs):
 		"published": 1,
 		**kwargs,
 	}).insert()
+
+
+def count_source(field, source, doctype="Donation Program"):
+	return preview()[doctype][field].get(source, 0)
 
 
 class TestDonationArabicBackfill(FrappeTestCase):
@@ -108,23 +112,61 @@ class TestDonationArabicBackfill(FrappeTestCase):
 		self.assertEqual(program.intro_ar, "<p>مقدمة مترجمة</p>")
 
 	def test_preview_counts_each_source_without_writing_anything(self):
+		translated_before = count_source("title", "translation")
+		arabic_before = count_source("intro", "arabic_source")
 		program = make_program("Preview Program", intro="<p>مقدمة عربية بلا ترجمة</p>")
 		make_translation("Preview Program", "برنامج المعاينة")
 
-		report = preview()
-
-		self.assertEqual(report["Donation Program"]["title"]["translation"], 1)
-		self.assertEqual(report["Donation Program"]["intro"]["arabic_source"], 1)
+		self.assertEqual(count_source("title", "translation"), translated_before + 1)
+		self.assertEqual(count_source("intro", "arabic_source"), arabic_before + 1)
 		program.reload()
 		self.assertFalse(program.title_ar)
 		self.assertFalse(program.intro_ar)
 
 	def test_preview_counts_fields_it_cannot_fill(self):
+		before = count_source("intro", "no_arabic_available")
 		make_program("Preview Untranslatable", intro="<p>English intro with no translation</p>")
 
-		report = preview()
+		self.assertEqual(count_source("intro", "no_arabic_available"), before + 1)
 
-		self.assertGreaterEqual(report["Donation Program"]["intro"]["no_arabic_available"], 1)
+	def test_rich_text_written_only_in_arabic_is_copied_into_the_arabic_field(self):
+		# The markup carries more Latin letters than the sentence carries Arabic ones
+		arabic_rich_text = '<p style="text-align: right;"><strong>ساعدنا</strong></p>'
+		program = make_program("Arabic Rich Text", intro=arabic_rich_text)
+		stored = program.intro
+
+		execute()
+
+		program.reload()
+		self.assertEqual(program.intro_ar, stored)
+		self.assertEqual(program.intro, stored)
+
+	def test_english_translation_is_restored_into_the_english_field(self):
+		arabic_intro = "<p>مقدمة عربية في حقل الإنجليزية</p>"
+		program = make_program("Arabic Base Program", intro=arabic_intro)
+		make_translation(arabic_intro, "<p>An English intro</p>", language="en")
+
+		execute()
+
+		program.reload()
+		self.assertEqual(program.intro, "<p>An English intro</p>")
+		self.assertEqual(program.intro_ar, arabic_intro)
+
+	def test_preview_counts_a_restored_english_field_separately(self):
+		before = count_source("intro", "english_restored")
+		arabic_intro = "<p>مقدمة عربية</p>"
+		make_program("Preview Restore", intro=arabic_intro)
+		make_translation(arabic_intro, "<p>An English intro</p>", language="en")
+
+		self.assertEqual(count_source("intro", "english_restored"), before + 1)
+
+	def test_preview_does_not_report_an_empty_field_as_missing_arabic(self):
+		missing_before = count_source("intro", "no_arabic_available")
+		empty_before = count_source("intro", "empty")
+		make_program("Preview Empty Intro")
+
+		self.assertEqual(count_source("intro", "no_arabic_available"), missing_before)
+		self.assertEqual(count_source("intro", "empty"), empty_before + 1)
 
 	def test_existing_arabic_text_is_not_overwritten(self):
 		program = make_program("Backfill Existing Arabic", title_ar="عنوان محرر يدويا")

@@ -43,6 +43,38 @@
 - Desk/DB: `title_ar`, `intro_ar`, `quote_ar`, `body_ar`, `label_ar` columns exist and the Arabic fields sit in the second column of the Content section.
 - `get_donation_landing` through fresh code returns no `*_ar` keys in either language.
 
+## Code review (before taking the PR out of draft)
+
+Three defects in the backfill patch, all fixed with a regression test each:
+
+- The Arabic detector counted letters in the raw HTML, so a Text Editor field whose tags and
+  attributes carry more Latin letters than its sentence carries Arabic ones (`<p style="text-align: right;">…`)
+  read as "not Arabic" and its Arabic was never copied into the Arabic column — the exact loss
+  the copy rule exists to prevent. Markup is now stripped before the letters are counted.
+- The patch only read `language: ar` rows. A record holding Arabic in the English column with an
+  English `Translation` row — the shape the dev site had — kept Arabic in the English column, so
+  `lang=en` visitors lost the English the old `_localize` used to serve. The patch now splits those
+  records: the Arabic moves to the Arabic column, the English translation goes into the English one.
+- `preview()` reported a field that is empty in both languages as `no_arabic_available`, which the
+  phase 4 runbook reads as "English text with no Arabic anywhere" and uses as the go-live gate.
+  Empty fields now count as `empty`; on dev that moved 34 rows out of the gate's number.
+
+Still outstanding: an uncommitted desk round-trip on `donation_project.json` moved the required
+`location` select into the Arabic column between `quote_ar` and `body_ar`, and added `row_format`.
+Revert it with `git checkout -- afif/afif/doctype/donation_project/donation_project.json`, or keep the
+move deliberately — but it breaks the English/Arabic column pairing as it stands.
+
+## Dev data repair
+
+Dev stored Arabic in the English columns with the English in `Translation` rows — the mirror image of
+production. With the patch fixed, re-running it split 60 field values across 9 programs and 26 projects:
+English in the English column, Arabic in the Arabic one. `preview()` now reports no
+`no_arabic_available` at all on dev.
+
+Five fields have no English anywhere and were left as they are, because there is nothing to restore:
+the `intro` of the Health, Social and Education programs, the `title` of `ce2gaggtbf` and the `body`
+of `pli4l8t3hh`. An editor writes the English into the English field; the Arabic is already safe.
+
 ## Open issues
 
 - Editors who enter Arabic through the desk's in-form translate dialog will find it gone for these fields: `translatable` was removed, which is the point of the change, but the content team has to be told to use the new Arabic fields instead.
