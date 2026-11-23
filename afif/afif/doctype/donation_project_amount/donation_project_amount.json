@@ -6,7 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "amount",
-  "label"
+  "label",
+  "label_ar"
  ],
  "fields": [
   {
@@ -23,13 +24,18 @@
    "fieldname": "label",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Label",
-   "translatable": 1
+   "label": "Label"
+  },
+  {
+   "fieldname": "label_ar",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label (Arabic)"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-10-11 16:00:00.000000",
+ "modified": "2026-11-23 11:47:37.187329",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project Amount",

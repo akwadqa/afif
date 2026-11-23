@@ -9,6 +9,7 @@
  "field_order": [
   "program",
   "title",
+  "title_ar",
   "slug",
   "published",
   "status",
@@ -17,6 +18,9 @@
   "location",
   "quote",
   "body",
+  "column_break_content",
+  "quote_ar",
+  "body_ar",
   "funding_section",
   "show_progress",
   "required_amount",
@@ -41,8 +45,12 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Title",
-   "reqd": 1,
-   "translatable": 1
+   "reqd": 1
+  },
+  {
+   "fieldname": "title_ar",
+   "fieldtype": "Data",
+   "label": "Title (Arabic)"
   },
   {
    "description": "Used in the project URL, e.g. /donate?project=wheelchairs. Generated from the English title when left empty. Changing it breaks project links already shared.",
@@ -94,14 +102,26 @@
    "description": "The verse/hadith highlighted for this project.",
    "fieldname": "quote",
    "fieldtype": "Small Text",
-   "label": "Quote",
-   "translatable": 1
+   "label": "Quote"
   },
   {
    "fieldname": "body",
    "fieldtype": "Text Editor",
-   "label": "Body",
-   "translatable": 1
+   "label": "Body"
+  },
+  {
+   "fieldname": "column_break_content",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quote_ar",
+   "fieldtype": "Small Text",
+   "label": "Quote (Arabic)"
+  },
+  {
+   "fieldname": "body_ar",
+   "fieldtype": "Text Editor",
+   "label": "Body (Arabic)"
   },
   {
    "fieldname": "funding_section",
@@ -155,7 +175,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-28 12:00:00.000000",
+ "modified": "2026-11-23 11:47:37.187329",
  "modified_by": "Administrator",
  "module": "Afif",
  "name": "Donation Project",
