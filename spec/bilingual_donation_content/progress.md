@@ -45,6 +45,8 @@
 
 ## Open issues
 
+- Editors who enter Arabic through the desk's in-form translate dialog will find it gone for these fields: `translatable` was removed, which is the point of the change, but the content team has to be told to use the new Arabic fields instead.
+
 - `bench restart` still has to be run by someone with sudo before the dev site serves the new code.
 - English text is still missing for the fields that only ever had Arabic (e.g. most project bodies). The patch preserved the Arabic; an editor now writes the English into the English field, and the Arabic stays put.
 - ~~The dev site's data runs the other way round.~~ Resolved: production stores English titles with `ar` translations, which the patch handles, and Arabic-only fields are now copied into their Arabic column. Dev data is Arabic-only, so English output there is unchanged until editors add English text.

@@ -48,6 +48,19 @@ New fields, all alongside their English counterpart in the Content section (Engl
 - **Frontend: no change.** The API keeps returning the same keys (`title`, `intro`, `quote`, `body`, `label`) resolved for the requested `lang`.
 - Tests: `afif/afif/doctype/donation_program/test_donation_program.py`, `.../donation_project/test_donation_project.py`, and a new API test module.
 
+### Every other consumer of these fields (audited)
+
+| Consumer | Reads | Effect of this change |
+|---|---|---|
+| `afif/dibsy.py` (payment description and Dibsy category/project labels) | program + project `title` | None — it never localised, and still sends the English title. An Arabic donor sees an English description on the payment page; pre-existing, out of scope. |
+| `afif/afif/report/donation_report/donation_report.py` | program + project `title` via query builder | None — the desk report keeps showing the English title. |
+| `afif/donation_order.py` (`program_title` / `project_title` in the order grids) | `title` | None — desk-only, English by decision. |
+| `Donation.donation_program` (`fetch_from: donation_project.program`) | a Link, not text | None. |
+| `frontend/src/pages/Donate.vue`, `DonationProjectDetail.vue`, `components/donation/DonationForm.vue`, `DonationDialog.vue` | `title`, `intro`, `body`, `program_title`, `amounts[].label` | None — the API returns the same keys, already resolved. No rebuild of `afif/public/frontend` needed. |
+| `hooks.py` doc_events / overrides, print formats, notifications, dashboard charts, web forms, `akwad_frappe_fixes` | — | Nothing references these DocTypes. |
+
+The `status` and `location` Select options keep Frappe's native translation and are untouched.
+
 ## 5. Go-live prerequisites
 
 - `bench --site afif.akwad.qa migrate` (creates the columns and runs the backfill patch).
