@@ -52,6 +52,7 @@ New fields, all alongside their English counterpart in the Content section (Engl
 
 - `bench --site afif.akwad.qa migrate` (creates the columns and runs the backfill patch).
 - `bench --site afif.akwad.qa clear-cache` and `bench restart` (gunicorn runs with `--preload`, so Python changes are not live before a restart).
+- Run the `preview` dry run against production first (see phase 4) — it is read-only and needs no migration.
 - After the backfill, content editors review the Arabic fields: anything the patch could not match stays empty and falls back to English.
 
 ## 6. Phases
@@ -59,6 +60,7 @@ New fields, all alongside their English counterpart in the Content section (Engl
 1. [Phase 1 — Arabic fields and backfill](phase-1-fields-and-backfill.md)
 2. [Phase 2 — API language resolution](phase-2-api-language-resolution.md)
 3. [Phase 3 — Migration and end-to-end verification](phase-3-verification.md)
+4. [Phase 4 — Production dry run](phase-4-production-dry-run.md)
 
 ## 7. Open items
 

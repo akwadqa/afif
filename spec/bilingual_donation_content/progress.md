@@ -5,6 +5,7 @@
 | 1. Arabic fields and backfill | done | b92053c, 813e6b1 |
 | 2. API language resolution | done | 50291f6, f2fb6ae |
 | 3. Migration and verification | done (restart pending) | 0168f41, c405aa4 |
+| 4. Production dry run | todo (needs a production backup) | |
 
 ## Deviations
 
