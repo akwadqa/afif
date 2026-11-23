@@ -4,7 +4,7 @@
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from afif.patches.backfill_donation_arabic_content import execute
+from afif.patches.backfill_donation_arabic_content import execute, preview
 
 
 def make_translation(source_text, translated_text):
@@ -106,6 +106,25 @@ class TestDonationArabicBackfill(FrappeTestCase):
 
 		program.reload()
 		self.assertEqual(program.intro_ar, "<p>مقدمة مترجمة</p>")
+
+	def test_preview_counts_each_source_without_writing_anything(self):
+		program = make_program("Preview Program", intro="<p>مقدمة عربية بلا ترجمة</p>")
+		make_translation("Preview Program", "برنامج المعاينة")
+
+		report = preview()
+
+		self.assertEqual(report["Donation Program"]["title"]["translation"], 1)
+		self.assertEqual(report["Donation Program"]["intro"]["arabic_source"], 1)
+		program.reload()
+		self.assertFalse(program.title_ar)
+		self.assertFalse(program.intro_ar)
+
+	def test_preview_counts_fields_it_cannot_fill(self):
+		make_program("Preview Untranslatable", intro="<p>English intro with no translation</p>")
+
+		report = preview()
+
+		self.assertGreaterEqual(report["Donation Program"]["intro"]["no_arabic_available"], 1)
 
 	def test_existing_arabic_text_is_not_overwritten(self):
 		program = make_program("Backfill Existing Arabic", title_ar="عنوان محرر يدويا")
