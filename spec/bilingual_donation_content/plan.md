@@ -23,6 +23,7 @@ Both displayed languages must be editable fields on the record.
 | Arabic falls back to English when empty | A half-translated record must never render blank. |
 | Arabic fields are not mandatory | Existing records would become unsaveable; the fallback already covers the gap. |
 | Existing `Translation` rows are copied, not deleted | Non-destructive and reversible. |
+| A field written in Arabic with no English version is copied into its `*_ar` field | Some records (e.g. project `body`) hold Arabic with no translation at all. Left alone, the Arabic would be lost the day an editor writes English into that field. Copying, not moving, keeps today's output identical. |
 | `status` and `location` Select options keep Frappe's native translation | Fixed option lists, not editorial content. |
 | The order tables (`program_title`, `project_title`) stay English | Desk-only, admin-facing. |
 

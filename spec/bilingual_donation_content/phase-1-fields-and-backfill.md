@@ -23,7 +23,8 @@
 - Lookup: `Translation` where `source_text` is the English value and `language = "ar"`.
 - One query per doctype collects the records; translations are fetched in one `frappe.get_all` keyed by `source_text`, not one query per field.
 - Writes with `frappe.db.set_value(..., update_modified=False)` so the backfill does not touch modification timestamps or fire controller hooks.
-- A record with no matching translation is left empty — the API fallback covers it.
+- A field with no matching translation whose own text is written in Arabic (more Arabic letters than latin ones) is copied into the Arabic field; the English field keeps its value, so today's output is unchanged and the Arabic survives a later English edit.
+- A field with no translation and no Arabic text is left empty — the API fallback covers it.
 - Re-running the patch is safe: it only fills fields that are empty.
 
 ## Tests
