@@ -1,4 +1,9 @@
+import re
+
 import frappe
+
+ARABIC_LETTERS = re.compile(r"[\u0600-\u06ff]")
+LATIN_LETTERS = re.compile(r"[A-Za-z]")
 
 # Arabic used to live in the Translation doctype, keyed by the English source text
 TRANSLATED_FIELDS = {
@@ -22,13 +27,26 @@ def execute():
 
 def backfill_record(doctype, record, fields, translations):
 	# Only empty fields are filled, so the patch can be re-run and never overwrites an edit
-	values = {
-		f"{field}_ar": translations[record.get(field)]
-		for field in fields
-		if not record.get(f"{field}_ar") and translations.get(record.get(field))
-	}
+	values = {}
+	for field in fields:
+		if record.get(f"{field}_ar"):
+			continue
+		arabic = translations.get(record.get(field)) or get_arabic_source(record.get(field))
+		if arabic:
+			values[f"{field}_ar"] = arabic
 	if values:
 		frappe.db.set_value(doctype, record.name, values, update_modified=False)
+
+
+def get_arabic_source(text):
+	"""A field written in Arabic with no English version belongs in the Arabic column.
+
+	It is copied, not moved: the English column keeps showing it until someone writes the
+	English text, and the Arabic version survives that edit.
+	"""
+	if not text or len(ARABIC_LETTERS.findall(text)) <= len(LATIN_LETTERS.findall(text)):
+		return None
+	return text
 
 
 def get_arabic_translations(records, fields):

@@ -82,6 +82,31 @@ class TestDonationArabicBackfill(FrappeTestCase):
 		self.assertFalse(program.title_ar)
 		self.assertFalse(program.intro_ar)
 
+	def test_arabic_only_text_is_copied_into_the_arabic_field(self):
+		program = make_program("Arabic Only Program")
+		project = make_project(
+			program,
+			"Arabic Only Project",
+			body="<p>نص عربي بلا ترجمة إنجليزية</p>",
+			quote="Every drop counts",
+		)
+
+		execute()
+
+		project.reload()
+		self.assertEqual(project.body_ar, "<p>نص عربي بلا ترجمة إنجليزية</p>")
+		self.assertEqual(project.body, "<p>نص عربي بلا ترجمة إنجليزية</p>")
+		self.assertFalse(project.quote_ar)
+
+	def test_translation_wins_over_arabic_source_text(self):
+		program = make_program("Arabic Source With Translation", intro="<p>مقدمة عربية</p>")
+		make_translation("<p>مقدمة عربية</p>", "<p>مقدمة مترجمة</p>")
+
+		execute()
+
+		program.reload()
+		self.assertEqual(program.intro_ar, "<p>مقدمة مترجمة</p>")
+
 	def test_existing_arabic_text_is_not_overwritten(self):
 		program = make_program("Backfill Existing Arabic", title_ar="عنوان محرر يدويا")
 		make_translation("Backfill Existing Arabic", "ترجمة قديمة")
