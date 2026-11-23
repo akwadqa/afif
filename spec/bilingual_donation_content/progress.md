@@ -4,7 +4,7 @@
 |---|---|---|
 | 1. Arabic fields and backfill | done | b92053c, 813e6b1 |
 | 2. API language resolution | done | 50291f6, f2fb6ae |
-| 3. Migration and verification | todo | |
+| 3. Migration and verification | in progress | |
 
 ## Deviations
 
@@ -28,7 +28,18 @@
 - `run-tests --module afif.tests.test_hooks_call` — 2 tests, OK.
 - No endpoint reads the `Translation` doctype any more.
 
+## Phase 3 results
+
+- `bench --site afif.akwad.qa migrate` — clean, backfill patch applied.
+- `bench --site afif.akwad.qa clear-cache` — clean.
+- `bench restart` — **blocked**: `sudo supervisorctl status` is not available in this session. The dev site keeps serving the previous Python code until someone restarts it.
+- Full suite: backfill 5 OK, api-language 8 OK, program 8 OK, project 12 OK, hooks 2 OK. `afif.afif.doctype.donation.test_donation` runs 0 tests (empty class, pre-existing).
+- Desk/DB: `title_ar`, `intro_ar`, `quote_ar`, `body_ar`, `label_ar` columns exist and the Arabic fields sit in the second column of the Content section.
+- `get_donation_landing` through fresh code returns no `*_ar` keys in either language.
+
 ## Open issues
+
+- **The dev site's data runs the other way round.** 7 of 9 Donation Programs and all 26 Donation Projects hold **Arabic** text in the base `title` field, and the content translations stored are `language: en` (67 rows). Production was reported as English-in-base. The backfill patch, which reads `language: ar` rows, therefore fills almost nothing here and the dev site cannot demonstrate the feature until the direction is settled. Needs a decision before go-live.
 
 - The existing `Translation` rows for donation content are left in place after the backfill. A later cleanup can remove them once the Arabic fields have been reviewed.
 - Content editors must review records the backfill could not match; those fall back to English until an Arabic value is entered.
