@@ -61,6 +61,8 @@ New fields, all alongside their English counterpart in the Content section (Engl
 
 The `status` and `location` Select options keep Frappe's native translation and are untouched.
 
+**Out of scope by decision:** localising the Dibsy payment description and labels. It would need the donor's language passed into `create_donation`, stored on the Donation, and read back in `dibsy.py` — a change to the payment flow for no donor-facing gain here, since that text is already a single untranslated field today. This branch sends Dibsy exactly what it sends now.
+
 ## 5. Go-live prerequisites
 
 - `bench --site afif.akwad.qa migrate` (creates the columns and runs the backfill patch).
