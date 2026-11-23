@@ -8,3 +8,4 @@ afif.patches.recompute_donation_project_status
 afif.patches.set_donation_program_slugs
 afif.patches.set_donation_project_slugs
 afif.patches.allow_supervisors_to_restrict_accounts
+afif.patches.backfill_donation_arabic_content

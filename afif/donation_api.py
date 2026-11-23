@@ -14,12 +14,24 @@ from afif.afif.doctype.donation_project.donation_project import (
 from afif.donation_order import get_program_positions, get_project_positions, sort_by_position
 
 
-def _localize(text, lang):
+PROGRAM_TEXT_FIELDS = ("title", "intro")
+PROJECT_TEXT_FIELDS = ("title", "quote", "body")
+AMOUNT_TEXT_FIELDS = ("label",)
 
-	if not text:
-		return text
-	translated = frappe.db.get_value("Translation", {"source_text": text, "language": lang}, "translated_text")
-	return translated or text
+
+def localize(record, fields, lang):
+	"""Resolve each text to the requested language and drop the Arabic columns from the payload.
+
+	An empty Arabic value falls back to English, so a half-translated record never renders blank.
+	"""
+	for field in fields:
+		arabic = record.pop(f"{field}_ar", None)
+		if lang == "ar" and arabic:
+			record[field] = arabic
+
+
+def with_arabic(*fields):
+	return [name for field in fields for name in (field, f"{field}_ar")]
 
 
 def _normalize_lang(lang):
@@ -44,13 +56,15 @@ def _attach_amounts(projects, lang):
 	rows = frappe.get_all(
 		"Donation Project Amount",
 		filters={"parenttype": "Donation Project", "parentfield": "donation_amounts", "parent": ["in", names]},
-		fields=["parent", "amount", "label"],
+		fields=["parent", "amount", *with_arabic("label")],
 		order_by="idx asc",
 		ignore_permissions=True,
 	)
 	amounts = {}
 	for row in rows:
-		amounts.setdefault(row.parent, []).append({"amount": row.amount, "label": _localize(row.label, lang)})
+		amount = {"amount": row.amount, "label": row.label, "label_ar": row.label_ar}
+		localize(amount, AMOUNT_TEXT_FIELDS, lang)
+		amounts.setdefault(row.parent, []).append(amount)
 	for project in projects:
 		project["amounts"] = amounts.get(project["name"], [])
 
@@ -62,13 +76,12 @@ def get_programs(lang=None):
 	programs = frappe.get_all(
 		"Donation Program",
 		filters={"published": 1},
-		fields=["name", "title", "intro"],
+		fields=["name", *with_arabic("title", "intro")],
 		order_by="creation desc",
 		ignore_permissions=True,
 	)
 	for program in programs:
-		program["title"] = _localize(program["title"], lang)
-		program["intro"] = _localize(program["intro"], lang)
+		localize(program, PROGRAM_TEXT_FIELDS, lang)
 	positions = get_program_positions()
 	return sort_by_position(programs, lambda p: positions.get(p["name"]))
 
@@ -85,9 +98,7 @@ def get_projects(program, lang=None):
 		filters={"program": program, "published": 1},
 		fields=[
 			"name",
-			"title",
-			"quote",
-			"body",
+			*with_arabic("title", "quote", "body"),
 			"status",
 			"show_progress",
 			"required_amount",
@@ -98,9 +109,7 @@ def get_projects(program, lang=None):
 		ignore_permissions=True,
 	)
 	for project in projects:
-		project["title"] = _localize(project["title"], lang)
-		project["quote"] = _localize(project["quote"], lang)
-		project["body"] = _localize(project["body"], lang)
+		localize(project, PROJECT_TEXT_FIELDS, lang)
 		_apply_progress_visibility(project)
 	_attach_amounts(projects, lang)
 	positions = get_project_positions([program])
@@ -114,7 +123,7 @@ def get_donation_landing(lang=None):
 	programs = frappe.get_all(
 		"Donation Program",
 		filters={"published": 1},
-		fields=["name", "title", "slug", "intro", "icon"],
+		fields=["name", "slug", "icon", *with_arabic("title", "intro")],
 		order_by="creation desc",
 		ignore_permissions=True,
 	)
@@ -129,7 +138,7 @@ def get_donation_landing(lang=None):
 			fields=[
 				"name",
 				"slug",
-				"title",
+				*with_arabic("title"),
 				"image",
 				"location",
 				"status",
@@ -142,12 +151,11 @@ def get_donation_landing(lang=None):
 			ignore_permissions=True,
 		)
 		for project in projects:
-			project["title"] = _localize(project["title"], lang)
+			localize(project, ("title",), lang)
 			_apply_progress_visibility(project)
 		sort_by_position(projects, lambda p, program=program: project_positions.get((program["name"], p["name"])))
 
-		program["title"] = _localize(program["title"], lang)
-		program["intro"] = _localize(program["intro"], lang)
+		localize(program, PROGRAM_TEXT_FIELDS, lang)
 		program["projects"] = projects
 
 	_attach_amounts([p for program in programs for p in program["projects"]], lang)
@@ -166,9 +174,7 @@ def get_project_detail(project_name=None, lang=None, slug=None):
 		[
 			"name",
 			"slug",
-			"title",
-			"quote",
-			"body",
+			*with_arabic("title", "quote", "body"),
 			"image",
 			"location",
 			"status",
@@ -186,15 +192,14 @@ def get_project_detail(project_name=None, lang=None, slug=None):
 	program = frappe.db.get_value(
 		"Donation Program",
 		project.program,
-		["title", "slug", "intro", "icon"],
+		["slug", "icon", *with_arabic("title", "intro")],
 		as_dict=True,
 	)
 
-	project["title"] = _localize(project["title"], lang)
-	project["quote"] = _localize(project["quote"], lang)
-	project["body"] = _localize(project["body"], lang)
-	project["program_title"] = _localize(program.title, lang)
-	project["program_intro"] = _localize(program.intro, lang)
+	localize(project, PROJECT_TEXT_FIELDS, lang)
+	localize(program, PROGRAM_TEXT_FIELDS, lang)
+	project["program_title"] = program.title
+	project["program_intro"] = program.intro
 	project["program_icon"] = program.icon
 	project["program_slug"] = program.slug
 	_apply_progress_visibility(project)
