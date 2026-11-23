@@ -7,7 +7,7 @@ SLUG_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
 def set_slug(doc, max_length: int | None = None):
-	"""Normalise a manually entered slug, or generate one from the English title.
+	"""Normalise a manually entered slug, or generate one from the title.
 
 	Like Frappe's website routes, a slug is generated once and never follows later title edits,
 	so shared links keep working.
@@ -17,14 +17,14 @@ def set_slug(doc, max_length: int | None = None):
 		if not SLUG_PATTERN.match(doc.slug):
 			frappe.throw(_("Slug may only contain lowercase letters, digits and single hyphens"))
 	else:
-		slug = slugify(get_english_title(doc.title), max_length)
+		slug = slugify(doc.title, max_length)
 		if not slug:
-			frappe.throw(_("Enter a slug or add an English translation for the title"))
+			frappe.throw(_("Enter a slug for this record"))
 		doc.slug = get_unique_slug(doc.doctype, slug, doc.name)
 
 
 def get_english_title(title: str | None) -> str:
-	# Titles are stored in Arabic; the English version lives in the Translation doctype
+	"""Kept for the historical slug patches only; donation titles are stored in English now."""
 	if not title:
 		return ""
 	return frappe.db.get_value("Translation", {"source_text": title, "language": "en"}, "translated_text") or title

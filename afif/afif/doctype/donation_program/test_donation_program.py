@@ -14,16 +14,22 @@ def make_program(title, slug=None):
 
 
 class TestDonationProgram(FrappeTestCase):
-	def test_slug_is_generated_from_english_translation(self):
-		frappe.get_doc(
-			{"doctype": "Translation", "source_text": "برنامج اختبار", "translated_text": "Slug Test & Care", "language": "en"}
-		).insert()
+	def test_slug_is_generated_from_the_title(self):
+		self.assertEqual(make_program("Slug Test & Care").slug, "slug-test-care")
 
-		self.assertEqual(make_program("برنامج اختبار").slug, "slug-test-care")
+	def test_slug_ignores_the_translation_doctype(self):
+		frappe.get_doc({
+			"doctype": "Translation",
+			"source_text": "Slug From Title",
+			"translated_text": "Slug From Translation",
+			"language": "en",
+		}).insert()
 
-	def test_arabic_title_without_translation_or_slug_is_rejected(self):
-		with self.assertRaisesRegex(frappe.ValidationError, "English translation"):
-			make_program("عنوان بلا ترجمة")
+		self.assertEqual(make_program("Slug From Title").slug, "slug-from-title")
+
+	def test_title_without_latin_characters_and_without_slug_is_rejected(self):
+		with self.assertRaisesRegex(frappe.ValidationError, "Enter a slug for this record"):
+			make_program("عنوان بالعربية فقط")
 
 	def test_manual_slug_with_invalid_format_is_rejected(self):
 		with self.assertRaisesRegex(frappe.ValidationError, "Slug may only contain"):
